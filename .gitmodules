@@ -1,0 +1,3 @@
+[submodule "hardware"]
+	path = hardware
+	url = https://github.com/Duybuice23/DADN_HK252.git
