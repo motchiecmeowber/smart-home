@@ -1,0 +1,17 @@
+{
+    "name": "smart_home",
+    "version": "1.0.0",
+    "description": "",
+    "private": true,
+    "scripts": {
+        "dev": "pnpm --parallel -r run dev",
+        "dev:client": "pnpm --filter client run dev",
+        "dev:server": "pnpm --filter server run dev",
+        "install:all": "pnpm install",
+        "build": "pnpm --filter client run build"
+    },
+    "devDependencies": {
+        "eslint": "^10.2.0",
+        "prettier": "^3.8.1"
+    }
+}
