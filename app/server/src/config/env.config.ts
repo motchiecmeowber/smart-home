@@ -1,0 +1,1 @@
+// Đọc và kiểm tra biến môi trường

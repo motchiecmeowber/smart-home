@@ -78,26 +78,33 @@ pnpm dev:server    # http://localhost:5000
 smart-home/
 ├── app/
 │   ├── client/                  # Frontend 
+│   │   ├── public/
+│   │   └── src/
 │   └── server/                  # Backend 
 │       └── src/
 │           ├── config/          # Quản lý kết nối ThingsBoard & Database
-│           ├── controllers/     # Xử lý Logic (ví dụ: lấy dữ liệu gas, điều khiển LED)
+│           ├── controllers/     # Giao tiếp HTTP (nhận Request, gọi Service, trả Response)
+│           ├── dtos/            # Data Transfer Objects (Kiểm duyệt dữ liệu đầu vào API) 
 │           ├── middlewares/     # Bảo mật (Auth JWT), kiểm tra quyền truy cập
-│           ├── models/          # Định nghĩa bảng Database
-│           ├── routes/          # Danh sách các đường dẫn API
+│           ├── models/          # Định nghĩa Class/Schema của thực thể Database
+│           ├── repositories/    # Truy xuất Cơ sở dữ liệu
+│           ├── routes/          # Danh sách và điều hướng các đường dẫn API
 │           ├── services/        # Logic kết nối MQTT với ThingsBoard
 │           └── utils/           # Hàm hỗ trợ mã hóa, định dạng dữ liệu
+├── hardware/                    
 ├── packages/                    # Các gói chia sẻ dùng chung cho toàn dự án
+│   ├── config/                  # Quy chuẩn code (ESLint, Prettier shared configs)
 │   ├── database/                # Scripts khởi tạo Database, SQL Schemas, Migrations
-│   └── config/                  # Quy chuẩn code (ESLint, Prettier shared configs)
+│   └── shared/                  # Type/Interfaces và Constants dùng chung cho cả Client & Server
 ├── package.json                 # Scripts quản lý tổng
+├── pnpm-lock.yaml               # Khóa phiên bản thư viện
 └── pnpm-workspace.yaml          # Cấu hình Monorepo
 ```
 
 ## Tech Stack
 | Layer | Công nghệ |
 | ----- | --------- |
-| **Frontend** |  |
-| **Backend** |  |
+| **Frontend** |  React, TypeScript, Vite |
+| **Backend** |  Node.js, Express, TypeScript |
 | **Database**|  |
 | **IoT**| ThingsBoard (MQTT protocol) |

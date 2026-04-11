@@ -1,0 +1,1 @@
+// Validate dữ liệu tạo/sửa thiết bị

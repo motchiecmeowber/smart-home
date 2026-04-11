@@ -1,0 +1,1 @@
+// Bắt lỗi Global -> tránh sập server
