@@ -1,0 +1,12 @@
+{
+    "extends": "@smart-home/config/tsconfig",
+    "compilerOptions": {
+      "outDir": "./dist",
+      "rootDir": "./src",
+      "baseUrl": ".",
+      "paths": {
+        "@smart-home/shared": ["../../packages/shared/src/index.ts"]
+      }
+    },
+    "include": ["src/**/*"]
+}

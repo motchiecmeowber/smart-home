@@ -1,1 +1,0 @@
-// gồm device, sensor, actuator

@@ -1,1 +1,0 @@
-// Kết nối Sequelize/TypeORM
