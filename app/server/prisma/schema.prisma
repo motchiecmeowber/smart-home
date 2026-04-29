@@ -1,0 +1,252 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+    CUSTOMER
+    ADMIN
+}
+
+// ─── LOCATION ─────────────────────────────────────────────────────────────────
+
+model Location {
+    locationId   String  @id @default(cuid()) @map("Location_ID")
+    locationName String? @map("Location_name")
+
+    devices Device[] // owning side
+
+    @@map("LOCATION")
+}
+
+// ─── USER (superclass) ────────────────────────────────────────────────────────
+
+model User {
+    userId    String   @id @default(cuid()) @map("User_ID")
+    username  String   @unique @map("Username")
+    email     String   @unique @map("Email")
+    password  String   @map("Password")
+    firstName String?  @map("F_name")
+    lastName  String?  @map("L_name")
+    role      Role     @default(CUSTOMER) @map("Role")
+    createdAt DateTime @default(now()) @map("Created_at") // Adding field
+
+    // owning side
+    notifications Notification[]
+    customer      Customer?
+    admin         Admin?
+
+    @@map("USER")
+}
+
+// ─── CUSTOMER (subclass of USER) ──────────────────────────────────────────────
+
+model Customer {
+    userId  String  @id @map("User_ID")
+    adminId String? @map("Customer_AdminID")
+
+    // superclass
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+    // managed by Admin
+    admin Admin? @relation("AdminManagesCustomer", fields: [adminId], references: [userId])
+
+    // owning side
+    actuators Actuator[]
+    schedules Schedule[]
+    reports   Report[]
+    requests  Request[]  @relation("CustomerRequests")
+
+    @@index([adminId])
+    @@map("CUSTOMER")
+}
+
+// ─── ADMIN (subclass of USER) ─────────────────────────────────────────────────
+
+model Admin {
+    userId String @id @map("User_ID")
+
+    // superclass
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+    // owning side
+    customers Customer[] @relation("AdminManagesCustomer")
+    requests  Request[]  @relation("AdminHandlesRequest")
+
+    @@map("ADMIN")
+}
+
+// ─── DEVICE (superclass) ──────────────────────────────────────────────────────
+
+model Device {
+    deviceId   String  @id @default(cuid()) @map("Device_ID")
+    deviceName String? @map("Device_name")
+    status     String? @map("Status")
+    deviceType String? @map("Device_type")
+    locationId String? @map("Device_LocationID")
+
+    location Location? @relation(fields: [locationId], references: [locationId])
+
+    // owning side
+    notifications Notification[]
+    requests      Request[]
+
+    // subclass relations (1-1)
+    actuator Actuator?
+    sensor   Sensor?
+
+    @@index([locationId])
+    @@map("DEVICE")
+}
+
+// ─── ACTUATOR (subclass of DEVICE) ────────────────────────────────────────────
+
+model Actuator {
+    deviceId   String  @id @map("Device_ID")
+    customerId String? @map("Actuator_CustomerID")
+
+    // superclass
+    device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
+    // controlled by Customer
+    customer Customer? @relation(fields: [customerId], references: [userId])
+
+    schedules Schedule[]
+
+    @@index([customerId])
+    @@map("ACTUATOR")
+}
+
+// ─── SENSOR (subclass of DEVICE) ──────────────────────────────────────────────
+
+model Sensor {
+    deviceId  String  @id @map("Device_ID")
+    unit      String? @map("Unit")
+    threshold String? @map("Threshold")
+
+    // superclass
+    device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
+    data        Data[]
+    summaryData SummaryData[]
+
+    @@map("SENSOR")
+}
+
+// ─── DATA (weak entity) ───────────────────────────────────────────────────────
+
+model Data {
+    timestamp DateTime @map("Time_stamp")
+    sensorId  String   @map("Sensor_ID")
+    dataType  String   @map("Data_type")
+    value     String?  @map("Value")
+
+    sensor Sensor @relation(fields: [sensorId], references: [deviceId], onDelete: Cascade)
+
+    @@id([timestamp, sensorId, dataType])
+    @@index([sensorId, timestamp]) // query range theo sensor + thời gian
+    @@map("DATA")
+}
+
+// ─── NOTIFICATION ─────────────────────────────────────────────────────────────
+
+model Notification {
+    notiId    String   @id @default(cuid()) @map("Noti_ID")
+    title     String?  @map("Title")
+    content   String?  @map("Content")
+    isRead    Boolean  @default(false) @map("Is_read")
+    createdAt DateTime @default(now()) @map("Created_at")
+    userId    String   @map("Noti_UserID")
+    deviceId  String?  @map("Noti_DeviceID")
+
+    user   User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+    device Device? @relation(fields: [deviceId], references: [deviceId])
+
+    @@index([userId]) // query: thông báo của user
+    @@index([deviceId]) // query: thông báo theo thiết bị
+    @@index([userId, isRead]) // query: thông báo chưa đọc của user
+    @@map("NOTIFICATION")
+}
+
+// ─── REQUEST ──────────────────────────────────────────────────────────────────
+
+model Request {
+    requestId   String   @id @default(cuid()) @map("Request_ID")
+    targetInfo  String?  @map("Target_info")
+    content     String?  @map("Content")
+    requestType String?  @map("Request_type")
+    status      String?  @map("Status")
+    createdAt   DateTime @default(now()) @map("Created_at")
+    note        String?  @map("Note")
+    deviceId    String?  @map("Request_DeviceID")
+    customerId  String?  @map("Request_UserID") // optional: request có thể từ system
+    adminId     String?  @map("Request_AdminID") // optional: chưa assign admin
+
+    device   Device?   @relation(fields: [deviceId], references: [deviceId])
+    customer Customer? @relation("CustomerRequests", fields: [customerId], references: [userId])
+    admin    Admin?    @relation("AdminHandlesRequest", fields: [adminId], references: [userId])
+
+    @@index([customerId]) // query: request của customer
+    @@index([adminId]) // query: request admin đang xử lý
+    @@index([deviceId]) // query: request liên quan thiết bị
+    @@index([status, createdAt]) // query: lọc theo status + sort thời gian
+    @@map("REQUEST")
+}
+
+// ─── SCHEDULE ─────────────────────────────────────────────────────────────────
+
+model Schedule {
+    scheduleId String    @id @default(cuid()) @map("Schedule_ID")
+    duration   Int?      @map("Duration")
+    action     String?   @map("Action")
+    frequency  String?   @map("Frequency")
+    startTime  DateTime? @map("Start_time")
+    customerId String    @map("Sched_UserID")
+    actuatorId String    @map("Sched_DeviceID")
+
+    customer Customer @relation(fields: [customerId], references: [userId])
+    actuator Actuator @relation(fields: [actuatorId], references: [deviceId])
+
+    @@index([customerId]) // query: lịch của customer
+    @@index([actuatorId]) // query: lịch của thiết bị
+    @@map("SCHEDULE")
+}
+
+// ─── REPORT ───────────────────────────────────────────────────────────────────
+
+model Report {
+    reportId   String    @id @default(cuid()) @map("Report_ID")
+    reportType String?   @map("Report_type")
+    createdAt  DateTime  @default(now()) @map("Created_at")
+    startTime  DateTime? @map("Start_time")
+    endTime    DateTime? @map("End_time")
+    customerId String    @map("Report_UserID")
+
+    customer    Customer      @relation(fields: [customerId], references: [userId])
+    summaryData SummaryData[]
+
+    @@index([customerId]) // query: report của customer
+    @@map("REPORT")
+}
+
+// ─── SUMMARY_DATA (weak entity, PK = metricName + reportId) ──────────────────
+
+model SummaryData {
+    metricName String  @map("Metric_name")
+    reportId   String  @map("Report_ID")
+    sensorId   String  @map("Sensor_ID")
+    value      String? @map("Value")
+
+    report Report @relation(fields: [reportId], references: [reportId], onDelete: Cascade)
+    sensor Sensor @relation(fields: [sensorId], references: [deviceId])
+
+    @@id([metricName, reportId])
+    @@index([sensorId]) // query: summary theo sensor
+    @@index([reportId]) // query: tất cả metrics của 1 report
+    @@map("SUMMARY_DATA")
+}

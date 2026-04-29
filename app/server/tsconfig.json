@@ -6,7 +6,8 @@
       "baseUrl": ".",
       "paths": {
         "@smart-home/shared": ["../../packages/shared/src/index.ts"]
-      }
+      },
+      "types": ["node"]
     },
     "include": ["src/**/*"]
 }
