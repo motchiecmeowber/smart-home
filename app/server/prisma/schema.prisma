@@ -34,7 +34,7 @@ model User {
     firstName String?  @map("F_name")
     lastName  String?  @map("L_name")
     role      Role     @default(CUSTOMER) @map("Role")
-    createdAt DateTime @default(now()) // Adding field
+    createdAt DateTime @default(now()) @map("Created_at") // Adding field
 
     // owning side
     notifications Notification[]
