@@ -94,5 +94,5 @@ smart-home/
 | ----- | --------- |
 | **Frontend** |  React, TypeScript, Vite |
 | **Backend** |  Node.js, Express, TypeScript |
-| **Database**| , Dizzle ORM |
+| **Database**| Postgres (Neon), Prisma ORM |
 | **IoT**| ThingsBoard (MQTT protocol) |

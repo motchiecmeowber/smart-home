@@ -13,6 +13,47 @@ enum Role {
     ADMIN
 }
 
+enum DeviceType {
+    SENSOR
+    ACTUATOR
+}
+
+enum DeviceStatus {
+    ONLINE
+    OFFLINE
+    DISCONNECTED
+}
+
+enum Frequency {
+    ONCE
+    DAILY
+    WEEKLY
+}
+
+enum DataType {
+    TEMPERATURE
+    HUMIDITY
+    GAS
+}
+
+enum RequestType {
+    ADD
+    UPDATE
+    DELETE
+}
+
+enum RequestStatus {
+    PENDING
+    APPROVED
+    REJECTED
+}
+
+enum ReportType {
+    DAILY
+    WEEKLY
+    MONTHLY
+}
+
 // ─── LOCATION ─────────────────────────────────────────────────────────────────
 
 model Location {
@@ -85,9 +126,10 @@ model Admin {
 
 model Device {
     deviceId   String  @id @default(cuid()) @map("Device_ID")
+    serial     String  @unique @map("Serial")
     deviceName String? @map("Device_name")
-    status     String? @map("Status")
-    deviceType String? @map("Device_type")
+    status     DeviceStatus? @map("Status")
+    deviceType DeviceType? @map("Device_type")
     locationId String? @map("Device_LocationID")
 
     location Location? @relation(fields: [locationId], references: [locationId])
@@ -101,6 +143,7 @@ model Device {
     sensor   Sensor?
 
     @@index([locationId])
+    @@index([serial])
     @@map("DEVICE")
 }
 
@@ -127,7 +170,7 @@ model Actuator {
 model Sensor {
     deviceId  String  @id @map("Device_ID")
     unit      String? @map("Unit")
-    threshold String? @map("Threshold")
+    threshold Float? @map("Threshold")
 
     // superclass
     device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
@@ -143,8 +186,8 @@ model Sensor {
 model Data {
     timestamp DateTime @map("Time_stamp")
     sensorId  String   @map("Sensor_ID")
-    dataType  String   @map("Data_type")
-    value     String?  @map("Value")
+    dataType  DataType   @map("Data_type")
+    value     Float?  @map("Value")
 
     sensor Sensor @relation(fields: [sensorId], references: [deviceId], onDelete: Cascade)
 
@@ -177,12 +220,12 @@ model Notification {
 
 model Request {
     requestId   String   @id @default(cuid()) @map("Request_ID")
-    targetInfo  String?  @map("Target_info")
     content     String?  @map("Content")
-    requestType String?  @map("Request_type")
-    status      String?  @map("Status")
+    requestType RequestType?    @map("Request_type")
+    status      RequestStatus?  @map("Status")
     createdAt   DateTime @default(now()) @map("Created_at")
     note        String?  @map("Note")
+    serial      String?  @map("Serial")
     deviceId    String?  @map("Request_DeviceID")
     customerId  String?  @map("Request_UserID") // optional: request có thể từ system
     adminId     String?  @map("Request_AdminID") // optional: chưa assign admin
@@ -204,7 +247,7 @@ model Schedule {
     scheduleId String    @id @default(cuid()) @map("Schedule_ID")
     duration   Int?      @map("Duration")
     action     String?   @map("Action")
-    frequency  String?   @map("Frequency")
+    frequency  Frequency?   @map("Frequency")
     startTime  DateTime? @map("Start_time")
     customerId String    @map("Sched_UserID")
     actuatorId String    @map("Sched_DeviceID")
@@ -221,7 +264,7 @@ model Schedule {
 
 model Report {
     reportId   String    @id @default(cuid()) @map("Report_ID")
-    reportType String?   @map("Report_type")
+    reportType ReportType?   @map("Report_type")
     createdAt  DateTime  @default(now()) @map("Created_at")
     startTime  DateTime? @map("Start_time")
     endTime    DateTime? @map("End_time")
@@ -240,7 +283,7 @@ model SummaryData {
     metricName String  @map("Metric_name")
     reportId   String  @map("Report_ID")
     sensorId   String  @map("Sensor_ID")
-    value      String? @map("Value")
+    value      Float? @map("Value")
 
     report Report @relation(fields: [reportId], references: [reportId], onDelete: Cascade)
     sensor Sensor @relation(fields: [sensorId], references: [deviceId])

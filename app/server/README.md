@@ -6,7 +6,7 @@
 - **Framework:** Express.js (Node.js)
 - **Ngôn ngữ:** TypeScript
 - **Database ORM:** Prisma ORM
-- **Cơ sở dữ liệu:** PostgreSQL
+- **Cơ sở dữ liệu:** Postgres (Neon)
 - **Data Validation:** Zod
 - **API Documentation:** Swagger UI (Zod to OpenAPI)
 
@@ -37,7 +37,7 @@ server/
 │   │   │   ├── analytics.repository.ts
 │   │   │   ├── analytics.dto.ts
 │   │   │   └── analytics.route.ts
-│   │   ├── automation/                     # Xử lý logic lập lịch, cảnh báo tự động
+│   │   ├── automation/                     # Xử lý logic lập lịch
 │   │   │   ├── automation.controller.ts
 │   │   │   ├── automation.service.ts
 │   │   │   ├── automation.repository.ts
@@ -55,7 +55,7 @@ server/
 │   │   │   ├── interaction.repository.ts
 │   │   │   ├── interaction.dto.ts
 │   │   │   └── interaction.route.ts
-│   │   └── interaction/                    # Nhật ký hoạt động (Audit Logs)
+│   │   └── interaction/                    # Cảnh báo/thông báo hoạt động
 │   │       ├── interaction.controller.ts
 │   │       ├── interaction.service.ts
 │   │       ├── interaction.repository.ts
