@@ -127,6 +127,7 @@ model Admin {
 model Device {
     deviceId   String  @id @default(cuid()) @map("Device_ID")
     serial     String  @unique @map("Serial")
+    tbDeviceId String  @unique @map("TB_Device_ID")
     deviceName String? @map("Device_name")
     status     DeviceStatus? @map("Status")
     deviceType DeviceType? @map("Device_type")
