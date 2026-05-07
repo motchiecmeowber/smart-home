@@ -59,7 +59,11 @@ pnpm install
 
 ### 5. Cấu hình biến môi trường
 - Tại `app/client/`: tạo file `.env` từ `.env.example` và kiểm tra `REACT_APP_API_URL`
-- Tại `api/server/`: tạo file `.env` từ `.env.example` và điền thông số Database, JWT Secret và ThingsBoard Token
+- Tại `api/server/`: tạo file `.env` từ `.env.example` và điền thông số Database, JWT Secret, ThingsBoard Token và Redis(Lưu ý format của redis_url).
+- Tại thư mục project root `./smart-home`, khởi động redis bằng 
+```
+docker compose up -d
+```
 
 ### 6. Chạy ứng dụng
 Khởi động đồng thời cả client và server:
