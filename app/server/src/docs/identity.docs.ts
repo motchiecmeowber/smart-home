@@ -15,12 +15,14 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
     registry.register("RegisterRequest", RegisterRequestSchema);
     registry.register("RefreshTokenRequest", RefreshTokenRequestSchema);
     registry.register("ChangePasswordRequest", ChangePasswordRequestSchema);
+    registry.register("UserResponse", UserResponseSchema);
+    registry.register("AuthResponse", AuthResponseSchema);
 
     // Register api endpoints
-    // Post /api/identity/register
+    // Post /api/auth/register
     registry.registerPath({
         method: "post",
-        path: "/api/identity/register",
+        path: "/api/auth/register",
         tags: ["Identity"],
         summary: "Đăng ký",
         description: "Tạo tài khoản người dùng mới với email, tên người dùng, mật khẩu và thông tin cá nhân.",
@@ -38,7 +40,10 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
                 description: "Tài khoản được tạo thành công",
                 content: {
                     "application/json": {
-                        schema: AuthResponseSchema
+                        schema: z.object({
+                            message: z.string(),
+                            data: UserResponseSchema,
+                        })
                     }
                 }
             },
@@ -48,10 +53,10 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
         }
     })
 
-    // Post /api/identity/login
+    // Post /api/auth/login
     registry.registerPath({
         method: "post",
-        path: "/api/identity/login",
+        path: "/api/auth/login",
         tags: ["Identity"],
         summary: "Đăng nhập",
         description: "Đăng nhập vào hệ thống với email hoặc username và mật khẩu.",
@@ -70,7 +75,13 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
                 description: "Đăng nhập thành công",
                 content: {
                     "application/json": {
-                        schema: AuthResponseSchema
+                        schema: z.object({
+                            message: z.string(),
+                            data: z.object({
+                                accessToken: z.string(),
+                                user: UserResponseSchema,
+                            })
+                        })
                     }
                 }
             },
@@ -80,10 +91,10 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
         }
     });
 
-    // Post /api/identity/logout
+    // Post /api/auth/logout
     registry.registerPath({
         method: "post",
-        path: "/api/identity/logout",
+        path: "/api/auth/logout",
         tags: ["Identity"],
         summary: "Đăng xuất",
         description: "Đăng xuất khỏi hệ thống, xóa refresh token khỏi Redis.",
@@ -95,10 +106,10 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
         }
     });
 
-    // Post /api/identity/refresh-token
+    // Post /api/auth/refresh-token
     registry.registerPath({
         method: "post",
-        path: "/api/identity/refresh-token",
+        path: "/api/auth/refresh-token",
         tags: ["Identity"],
         summary: "Làm mới token",
         description: "Làm mới access token bằng refresh token.",
@@ -126,10 +137,10 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
         }
     });
 
-    // Post /api/identity/change-password
+    // Post /api/auth/change-password
     registry.registerPath({
         method: "post",
-        path: "/api/identity/change-password",
+        path: "/api/auth/change-password",
         tags: ["Identity"],
         summary: "Đổi mật khẩu",
         description: "Đổi mật khẩu của người dùng.",
@@ -152,5 +163,4 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
             }
         }
     });
-
 }

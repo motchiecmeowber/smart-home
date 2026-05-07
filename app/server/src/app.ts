@@ -32,14 +32,17 @@ app.use("/api/identity", identityRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-connectRedis().then(() => {
+async function bootstrap() {
+    await connectRedis();
     console.log("Đã kết nối Redis, khởi động server...");
-}).catch((err) => {
-    console.error("Lỗi khi kết nối Redis:", err);
-    process.exit(1);
-});
 
-app.listen(env.PORT, () => {
-    console.log(`Server is running at http://localhost:${env.PORT}`);
-    console.log(`API Docs are available at http://localhost:${env.PORT}/api-docs`)
+    app.listen(env.PORT, () => {
+        console.log(`Server is running at http://localhost:${env.PORT}`);
+        console.log(`API Docs are available at http://localhost:${env.PORT}/api-docs`);
+    });
+}
+
+bootstrap().catch((err) => {
+    console.error("Lỗi khởi động server:", err);
+    process.exit(1);
 });

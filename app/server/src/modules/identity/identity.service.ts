@@ -82,7 +82,7 @@ export class IdentityService {
     }
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
 
-    if (!user || !isPasswordValid) {
+    if (!isPasswordValid) {
       await redisClient.multi()
       .incr(loginAttemptsKey)
       .expire(loginAttemptsKey, BLOCK_DURATION)
@@ -177,10 +177,18 @@ export class IdentityService {
         expiresIn: "15m",
       });
 
+      const userResponse: UserResponse = {
+        userId: user.userId,
+        email: user.email,
+        username: user.username,
+        createdAt: user.createdAt,
+        role: user.role,
+      };
+
       return {
-        accessToken: accessToken,
+        accessToken,
         refreshToken: storedToken.token,
-        user,
+        user: userResponse,
       };
     } catch {
       throw new Error("Refresh token không hợp lệ");

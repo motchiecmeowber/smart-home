@@ -40,7 +40,7 @@ export class RefreshTokenRepository {
         const cached = await redisClient.get(REDIS_KEYS.refreshToken(token));
         if (cached) {
             const parse = JSON.parse(cached);
-            if (parse.invoked) return null;
+            if (parse.revoked) return null;
             return parse;
         }
 
@@ -71,7 +71,8 @@ export class RefreshTokenRepository {
                 { EX: ttl }
             );
         }
-            
+        
+        return refreshRecord ?? null;
     }
 
     async findActiveByUserId(userId: string) {

@@ -114,21 +114,22 @@ export class IdentityController {
     // TBD: Enable this feature in the future
   }
 
-  // FIXME: feeling sth is wrong with this method but I can't figure out what T_T
   refreshToken = async (req: Request, res: Response) => {
-    const parsed = RefreshTokenRequestSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({
-        message: "Dữ liệu không hợp lệ",
-        errors: z.prettifyError(parsed.error),
-      });
+    const tokenFromCookie = req.cookies?.refreshToken;
+    const tokenFromBody = req.body?.refreshToken;
+    const token = tokenFromCookie ?? tokenFromBody;
+
+    if (typeof token !== "string") {
+        return res.status(400).json({ message: "Refresh token không được cung cấp" });
     }
 
     try {
-      const result = await this.identityService.refreshToken(
-        parsed.data.refreshToken,
-      );
-      return res.status(200).json(result);
+      const result = await this.identityService.refreshToken(token);
+
+      return res.status(200).json({
+        accessToken: result.accessToken,
+        user: result.user,
+      });
     } catch (error) {
       return this.handleError(error, res);
     }

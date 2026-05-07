@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { IdentityController } from "./identity.controller";
 import { authMiddleware } from "@/middlewares/auth.middleware";
-import { roleMiddleware } from "@/middlewares/role.middleware";
 
 const identityController = new IdentityController();
 export const identityRouter = Router();
