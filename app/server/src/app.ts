@@ -5,10 +5,17 @@ import  cookieParser  from "cookie-parser";
 import "@/config/zod.extend";
 
 import { env } from "./config/env";
+import { prisma } from "./config/prisma";
 import { openApiDocument } from "./docs/openapi";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 import { connectRedis } from "@/config/redis";
 import identityRouter from "./modules/identity/identity.routes";
+
+import { hardwareRouter } from "./modules/hardware/hardware.routes";
+import { automationRouter } from "./modules/automation/automation.routes";
+import { interactionRouter } from "./modules/interaction/interaction.routes";
+import { locationRouter } from "./modules/location/location.routes";
+import { requestRouter } from "./modules/request/request.routes";
 
 const app = express();
 
@@ -23,8 +30,13 @@ app.use(
 );
 app.use(cookieParser());
 
-app.get("/health", (_req, res) => {
-    res.status(200).json({ status: "ok" });
+app.get("/health", async (_req, res) => {
+    try {
+        await prisma.$queryRaw`SELECT 1`;
+        res.status(200).json({ status: "ok", database: "connected" });
+    } catch (error) {
+        res.status(500).json({ status: "error", database: "disconnected", details: String(error) });
+    }
 });
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument, {
@@ -32,6 +44,14 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument, {
         withCredentials: true,
     }
 }));
+
+app.use("/api", hardwareRouter);
+app.use("/api", automationRouter);
+app.use("/api", interactionRouter);
+app.use("/api", locationRouter);
+app.use("/api", requestRouter);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use("/api/auth", identityRouter);
 

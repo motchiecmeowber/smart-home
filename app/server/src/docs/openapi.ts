@@ -3,6 +3,11 @@ import { z } from "zod";
 import { env } from "../config/env";
 
 import { registerIdentityDocs } from "./identity.docs";
+import { registerAutomationDocs } from "./automation.docs";
+import { registerHardwareDocs } from "./hardware.docs";
+import { registerInteractionDocs } from "./interaction.docs";
+import { registerRequestDocs } from "./request.docs";
+import { registerLocationDocs } from "./location.docs";
 
 const registry = new OpenAPIRegistry();
 
@@ -21,6 +26,11 @@ registry.registerComponent("securitySchemes", "cookieAuth", {
 });
 
 registerIdentityDocs(registry);
+registerAutomationDocs(registry);
+registerHardwareDocs(registry);
+registerInteractionDocs(registry);
+registerRequestDocs(registry);
+registerLocationDocs(registry);
 
 export const openApiDocument = new OpenApiGeneratorV3(registry.definitions).generateDocument({
     openapi: "3.0.3",

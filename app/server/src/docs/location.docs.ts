@@ -1,0 +1,50 @@
+import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
+import { z } from "zod";
+
+import { createLocationDto, updateLocationDto } from "@/modules/location/location.dto";
+
+export function registerLocationDocs(registry: OpenAPIRegistry){
+    registry.registerPath({
+        method: "post",
+        path: "/api/locations",
+        summary: "Add a new location",
+        tags: ["Location"],
+        request: {
+        body: {
+            content: { "application/json": { schema: createLocationDto } }
+        }
+        },
+        responses: { 201: { description: "Created successfully" } }
+    });
+    
+    registry.registerPath({
+        method: "get",
+        path: "/api/locations",
+        summary: "Get all locations",
+        tags: ["Location"],
+        responses: { 200: { description: "Success" } }
+    });
+    
+    registry.registerPath({
+        method: "patch",
+        path: "/api/locations/{id}",
+        summary: "Update a location",
+        tags: ["Location"],
+        request: {
+        params: z.object({ id: z.string().openapi({ description: "Location ID" }) }),
+        body: {
+            content: { "application/json": { schema: updateLocationDto } }
+        }
+        },
+        responses: { 200: { description: "Updated successfully" } }
+    });
+    
+    registry.registerPath({
+        method: "delete",
+        path: "/api/locations/{id}",
+        summary: "Delete a location",
+        tags: ["Location"],
+        request: { params: z.object({ id: z.string().openapi({ description: "Location ID" }) }) },
+        responses: { 200: { description: "Deleted successfully" } }
+    });
+}
