@@ -1,6 +1,7 @@
 import { requestRepo } from "./request.repository";
 import { HttpError } from "../../common/app-error";
-import { Prisma, RequestType, RequestStatus } from "@prisma/client";
+import { Prisma, RequestType, RequestStatus, DeviceType } from "@prisma/client";
+import { deviceService } from "../hardware/device.service";
 
 export class RequestService {
   async deleteRequest(id: string) {
@@ -52,6 +53,31 @@ export class RequestService {
     const existing = await requestRepo.getRequestById(id);
     if (!existing) {
       throw new HttpError(404, "Request not found");
+    }
+
+    if (status === "APPROVED") {
+      if (existing.requestType === "ADD") {
+        if (!existing.serial) {
+          throw new HttpError(400, "Cannot approve ADD request: serial is missing");
+        }
+        try {
+          await deviceService.addDevice({
+            serial: existing.serial,
+            deviceType: DeviceType.SENSOR
+          });
+        } catch (err: any) {
+          throw new HttpError(500, `Failed to provision device: ${err.message}`);
+        }
+      } else if (existing.requestType === "DELETE") {
+        if (!existing.deviceId) {
+          throw new HttpError(400, "Cannot approve DELETE request: deviceId is missing");
+        }
+        try {
+          await deviceService.removeDevice(existing.deviceId);
+        } catch (err: any) {
+          throw new HttpError(500, `Failed to remove device: ${err.message}`);
+        }
+      }
     }
 
     return requestRepo.updateRequestStatus(id, status, note, adminId);

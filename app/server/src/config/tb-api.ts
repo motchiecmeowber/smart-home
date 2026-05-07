@@ -31,31 +31,36 @@ export async function sendRpcCommand(deviceId: string, method: string, params: a
   return await response.json();
 }
 
-/**
- * Checks if a device exists in ThingsBoard by its ID (UUID)
- */
-export async function checkDeviceExists(deviceId: string): Promise<boolean> {
+export async function createDeviceAndGetId(name: string, type: string = "default"): Promise<string> {
   const host = env.THINGSBOARD_HOST;
   const token = env.THINGSBOARD_API_TOKEN;
 
   if (!token) {
-    console.warn("WARNING: THINGSBOARD_API_TOKEN is missing. Device existence check skipped.");
-    throw new Error("ThingsBoard API token missing (503)");
+    throw new Error("Missing THINGSBOARD_API_TOKEN in .env");
   }
 
-  const url = `https://${host}/api/device/${deviceId}`;
+  const url = `https://${host}/api/device`;
 
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "X-Authorization": `Bearer ${token}`
-      }
-    });
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ name, type })
+  });
 
-    return response.ok;
-  } catch (error) {
-    console.error("Error checking device existence in ThingsBoard:", error);
-    return false;
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to create device in ThingsBoard: ${response.status} - ${errorText}`);
   }
+
+  const result = await response.json();
+  const tbDeviceId: string = result?.id?.id;
+
+  if (!tbDeviceId) {
+    throw new Error("ThingsBoard did not return a device ID in the response");
+  }
+
+  return tbDeviceId;
 }

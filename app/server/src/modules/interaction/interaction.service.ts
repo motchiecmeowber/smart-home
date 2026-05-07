@@ -23,7 +23,7 @@ export class InteractionService {
 
         if (buzzer) {
           try {
-            await sendRpcCommand(buzzer.serial, "setBuzzer", { action: "ON" });
+            await sendRpcCommand(buzzer.tbDeviceId, "setBuzzer", { action: "ON" });
             console.log(`[RPC] Triggered Buzzer (${buzzer.deviceName}) for alert in location ${triggeringDevice.locationId}`);
           } catch (rpcErr: any) {
             console.error(`[RPC ERROR] Failed to trigger buzzer: ${rpcErr.message}`);

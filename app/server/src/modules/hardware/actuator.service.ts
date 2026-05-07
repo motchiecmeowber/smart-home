@@ -25,7 +25,7 @@ export class ActuatorService {
     }
 
     try {
-      await sendRpcCommand(device.serial, methodName, { action });
+      await sendRpcCommand(device.tbDeviceId, methodName, { action });
       return { success: true, message: `Sent command ${action} to ${device.deviceName || actuatorId}` };
     } catch (error: any) {
       console.error("ThingsBoard RPC Error:", error.message);

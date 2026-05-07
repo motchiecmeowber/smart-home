@@ -8,6 +8,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   DATABASE_URL: z.url({ message: "DATABASE_URL phải là một URL hợp lệ" }),
+  REDIS_URL: z.url({ message: "REDIS_URL phải là một URL hợp lệ" }).default("redis://localhost:6379"),
+  REDIS_PASSWORD: z.string().optional(),
 
   REDIS_URL: z.url({ message: "REDIS_URL phải là một URL hợp lệ" }),
   REDIS_PASSWORD: z.string().optional(),
