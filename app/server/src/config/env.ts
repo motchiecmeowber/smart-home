@@ -7,13 +7,14 @@ const envSchema = z.object({
   PORT: z.string().default("5000"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
-  DATABASE_URL: z.string().url({ message: "DATABASE_URL phải là một URL hợp lệ" }),
+  DATABASE_URL: z.url({ message: "DATABASE_URL phải là một URL hợp lệ" }),
 
   JWT_SECRET: z.string().min(10, { message: "JWT_SECRET phải có ít nhất 10 ký tự" }),
 
   THINGSBOARD_HOST: z.string().default("demo.thingsboard.io"),
   THINGSBOARD_PORT: z.string().default("1883"),
-  THINGSBOARD_ACCESS_TOKEN: z.string().min(1, { message: "Thiếu ThingsBoard Access Token" }),
+  THINGSBOARD_ACCESS_TOKEN: z.string().min(1, { message: "Thiếu ThingsBoard Access Token" }).optional(),
+  THINGSBOARD_API_TOKEN: z.string().optional(),
 
   TB_TELEMETRY_TEMPERATURE: z.string().default("temperature"),
   TB_TELEMETRY_HUMIDITY: z.string().default("humidity"),

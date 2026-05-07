@@ -81,6 +81,7 @@ model User {
     notifications Notification[]
     customer      Customer?
     admin         Admin?
+    refreshTokens  RefreshToken[]
 
     @@map("USER")
 }
@@ -293,4 +294,21 @@ model SummaryData {
     @@index([sensorId]) // query: summary theo sensor
     @@index([reportId]) // query: tất cả metrics của 1 report
     @@map("SUMMARY_DATA")
+}
+
+// ─── REFRESH_TOKEN ───────────────────────────────────────────────────────────────────
+model RefreshToken {
+    id String @id @default(cuid()) @map("ID")
+    token String @unique @map("Token")
+    userId String @map("User_ID")
+    createdAt DateTime @default(now()) @map("Created_at")
+    expiresAt DateTime @map("Expires_at")
+    revoked Boolean @default(false) @map("Revoked")
+
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+
+    @@index([userId])
+    @@index([token])
+    @@map("REFRESH_TOKEN")
 }
