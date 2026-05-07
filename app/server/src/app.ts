@@ -2,6 +2,7 @@ import express from "express";
 import swaggerUi from "swagger-ui-express";
 import cors from "cors";
 import  cookieParser  from "cookie-parser";
+import "@/config/zod.extend";
 
 import { env } from "./config/env";
 import { openApiDocument } from "./docs/openapi";

@@ -17,7 +17,7 @@ const IdentifierSchema = z
 export const LoginRequestSchema = z.object({
   identifier: IdentifierSchema,
   password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-});
+}).openapi("LoginRequest");
 
 export const RegisterRequestSchema = z.object({
   email: z.email("Email không hợp lệ"),
@@ -25,16 +25,16 @@ export const RegisterRequestSchema = z.object({
   password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
   firstName: z.string().min(1, "Tên phải có ít nhất 1 ký tự"),
   lastName: z.string().min(1, "Họ phải có ít nhất 1 ký tự"),
-});
+}).openapi("RegisterRequest");
 
 export const RefreshTokenRequestSchema = z.object({
   refreshToken: z.string().min(1, "Refresh token là bắt buộc"),
-});
+}).openapi("RefreshTokenRequest");
 
 export const ChangePasswordRequestSchema = z.object({
   currentPassword: z.string().min(6, "Mật khẩu hiện tại phải có ít nhất 6 ký tự"),
   newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
-});
+}).openapi("ChangePasswordRequest");
 
 // Response DTOs
 export const UserResponseSchema = z.object({
