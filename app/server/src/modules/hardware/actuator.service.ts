@@ -5,8 +5,8 @@ import { sendRpcCommand } from "../../config/tb-api";
 
 
 export class ActuatorService {
-  async controlActuator(actuatorId: string, action: "ON" | "OFF", userId: string) {
-    const device = await hardwareRepo.getDeviceById(actuatorId);
+  async controlActuator(deviceId: string, action: "ON" | "OFF", userId: string) {
+    const device = await hardwareRepo.getDeviceById(deviceId);
     if (!device || device.deviceType !== "ACTUATOR") {
       throw new HttpError(404, "Actuator not found");
     }
@@ -20,13 +20,9 @@ export class ActuatorService {
       methodName = env.TB_RPC_SET_HUMI_LED;
     }
 
-    if (!env.THINGSBOARD_API_TOKEN) {
-      throw new HttpError(503, "THINGSBOARD_API_TOKEN is missing in .env configuration");
-    }
-
     try {
       await sendRpcCommand(device.tbDeviceId, methodName, { action });
-      return { success: true, message: `Sent command ${action} to ${device.deviceName || actuatorId}` };
+      return { success: true, message: `Sent command ${action} to ${device.deviceName || deviceId}` };
     } catch (error: any) {
       console.error("ThingsBoard RPC Error:", error.message);
       throw new HttpError(500, `Failed to control device: ${error.message}`);

@@ -1,11 +1,11 @@
 import { hardwareRepo } from "./hardware.repository";
 import { HttpError } from "../../common/app-error";
 import { Prisma, DeviceType, DeviceStatus } from "@prisma/client";
-import { createDeviceAndGetId } from "../../config/tb-api";
 
 export class DeviceService {
   async addDevice(data: {
     serial: string;
+    tbDeviceId: string;
     deviceName?: string;
     deviceType: DeviceType;
     status?: DeviceStatus;
@@ -19,17 +19,9 @@ export class DeviceService {
       throw new HttpError(400, "Device with this serial already exists");
     }
 
-    // Auto-create device in ThingsBoard and get its UUID
-    let tbDeviceId: string;
-    try {
-      tbDeviceId = await createDeviceAndGetId(data.serial);
-    } catch (err: any) {
-      throw new HttpError(503, `Failed to register device in ThingsBoard: ${err.message}`);
-    }
-
     const createData: Prisma.DeviceCreateInput = {
       serial: data.serial,
-      tbDeviceId,
+      tbDeviceId: data.tbDeviceId,
       deviceName: data.deviceName,
       deviceType: data.deviceType,
       status: data.status,

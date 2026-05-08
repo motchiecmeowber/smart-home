@@ -7,7 +7,7 @@ export class AutomationController {
   async createSchedule(req: Request, res: Response, next: NextFunction) {
     try {
       const data = createScheduleDto.parse(req.body);
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).userId;
       const schedule = await automationService.createSchedule(userId, data);
       return sendSuccess(res, 201, schedule, "Schedule created successfully");
     } catch (error) {
@@ -17,7 +17,7 @@ export class AutomationController {
 
   async getSchedules(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).userId;
       const schedules = await automationService.getSchedules(userId);
       return sendSuccess(res, 200, schedules);
     } catch (error) {
@@ -28,7 +28,7 @@ export class AutomationController {
   async getScheduleById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).userId;
       const schedule = await automationService.getScheduleById(id, userId);
       return sendSuccess(res, 200, schedule);
     } catch (error) {
@@ -40,7 +40,7 @@ export class AutomationController {
     try {
       const data = updateScheduleDto.parse(req.body);
       const id = req.params.id as string;
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).userId;
       const schedule = await automationService.updateSchedule(id, userId, data);
       return sendSuccess(res, 200, schedule, "Schedule updated successfully");
     } catch (error) {
@@ -51,7 +51,7 @@ export class AutomationController {
   async deleteSchedule(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).userId;
       const schedule = await automationService.deleteSchedule(id, userId);
       return sendSuccess(res, 200, schedule, "Schedule deleted successfully");
     } catch (error) {

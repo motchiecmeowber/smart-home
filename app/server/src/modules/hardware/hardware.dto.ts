@@ -6,6 +6,7 @@ extendZodWithOpenApi(z);
 
 export const createDeviceDto = z.object({
   serial: z.string().min(1, "Serial is required"),
+  tbDeviceId: z.string().min(1, "tbDeviceId is required"),
   deviceName: z.string().optional(),
   deviceType: z.enum(DeviceType),
   status: z.enum(DeviceStatus).optional().default(DeviceStatus.OFFLINE),
@@ -17,7 +18,10 @@ export const createDeviceDto = z.object({
   customerId: z.string().optional(),  // Actuator
 }).openapi("CreateDevice");
 
-export const updateDeviceDto = createDeviceDto.partial().openapi("UpdateDevice");
+export const updateDeviceDto = createDeviceDto
+  .omit({ serial: true, tbDeviceId: true, deviceType: true })
+  .partial()
+  .openapi("UpdateDevice");
 
 export const controlActuatorDto = z.object({
   action: z.enum(["ON", "OFF"]),

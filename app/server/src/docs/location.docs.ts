@@ -7,7 +7,7 @@ export function registerLocationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "post",
         path: "/api/locations",
-        summary: "Add a new location",
+        summary: "[CUSTOMER] Add a new location",
         tags: ["Location"],
         request: {
         body: {
@@ -20,7 +20,7 @@ export function registerLocationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "get",
         path: "/api/locations",
-        summary: "Get all locations",
+        summary: "[CUSTOMER] Get all locations",
         tags: ["Location"],
         responses: { 200: { description: "Success" } }
     });
@@ -28,7 +28,7 @@ export function registerLocationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "patch",
         path: "/api/locations/{id}",
-        summary: "Update a location",
+        summary: "[CUSTOMER] Update a location",
         tags: ["Location"],
         request: {
         params: z.object({ id: z.string().openapi({ description: "Location ID" }) }),
@@ -42,7 +42,7 @@ export function registerLocationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "delete",
         path: "/api/locations/{id}",
-        summary: "Delete a location",
+        summary: "[CUSTOMER] Delete a location",
         tags: ["Location"],
         request: { params: z.object({ id: z.string().openapi({ description: "Location ID" }) }) },
         responses: { 200: { description: "Deleted successfully" } }

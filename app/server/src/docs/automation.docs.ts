@@ -7,7 +7,7 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "post",
         path: "/api/schedules",
-        summary: "Create a schedule",
+        summary: "[CUSTOMER] Create a schedule",
         tags: ["Automation"],
         request: {
             body: {
@@ -20,7 +20,7 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "get",
         path: "/api/schedules",
-        summary: "Get schedules for current user",
+        summary: "[CUSTOMER] Get schedules for current user",
         tags: ["Automation"],
         responses: { 200: { description: "Success" } }
     });
@@ -28,7 +28,7 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "get",
         path: "/api/schedules/{id}",
-        summary: "Get schedule by ID",
+        summary: "[CUSTOMER] Get schedule by ID",
         tags: ["Automation"],
         request: {
             params: z.object({ id: z.string().openapi({ description: "Schedule ID" }) })
@@ -39,7 +39,7 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "patch",
         path: "/api/schedules/{id}",
-        summary: "Update a schedule",
+        summary: "[CUSTOMER] Update a schedule",
         tags: ["Automation"],
         request: {
             params: z.object({ id: z.string().openapi({ description: "Schedule ID" }) }),
@@ -53,7 +53,7 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "delete",
         path: "/api/schedules/{id}",
-        summary: "Delete a schedule",
+        summary: "[CUSTOMER] Delete a schedule",
         tags: ["Automation"],
         request: { params: z.object({ id: z.string().openapi({ description: "Schedule ID" }) }) },
         responses: { 200: { description: "Deleted successfully" } }

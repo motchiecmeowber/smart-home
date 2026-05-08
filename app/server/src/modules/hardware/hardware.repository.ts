@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma";
-import { Prisma, DeviceType, DataType } from "@prisma/client";
+import { Prisma, DeviceType } from "@prisma/client";
 
 export class HardwareRepository {
   async createDevice(data: Prisma.DeviceCreateInput) {

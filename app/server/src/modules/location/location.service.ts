@@ -1,5 +1,6 @@
 import { locationRepo } from "./location.repository";
 import { HttpError } from "../../common/app-error";
+import { hardwareRepo } from "../hardware/hardware.repository";
 
 export class LocationService {
   async createLocation(data: { locationName: string }) {
@@ -23,6 +24,12 @@ export class LocationService {
     if (!existing) {
       throw new HttpError(404, "Location not found");
     }
+
+    const devicesInLocation = await hardwareRepo.getDevices({ locationId: id });
+    if (devicesInLocation.length > 0) {
+      throw new HttpError(400, `Cannot delete location: ${devicesInLocation.length} device(s) still assigned`)
+    }
+    
     return locationRepo.deleteLocation(id);
   }
 }

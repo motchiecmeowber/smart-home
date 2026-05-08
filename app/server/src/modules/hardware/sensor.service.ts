@@ -25,13 +25,15 @@ export class SensorService {
       metrics.push({ type: "GAS", value: Number(data.gas_value) });
     }
 
-    for (const metric of metrics) {
-      await analyticsService.recordSensorData(device.deviceId, metric.type, metric.value, timestamp);
+    await Promise.all(
+      metrics.map(async (metric) => {
+        await analyticsService.recordSensorData(device.deviceId, metric.type, metric.value, timestamp);
 
-      if (device.sensor?.threshold !== null && device.sensor?.threshold !== undefined) {
-        await interactionService.checkThresholdAndAlert(device.deviceId, metric.type, metric.value, device.sensor.threshold);
-      }
-    }
+        if (device.sensor?.threshold !== null && device.sensor?.threshold !== undefined) 
+          await interactionService.checkThresholdAndAlert(device.deviceId, metric.type, metric.value, device.sensor.threshold);
+        
+      })
+    )
   }
 }
 

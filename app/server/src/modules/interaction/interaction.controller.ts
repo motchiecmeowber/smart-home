@@ -5,7 +5,7 @@ import { sendSuccess } from "../../common/app-error";
 export class InteractionController {
   async getNotifications(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).userId;
       const isReadParam = req.query.isRead;
       const isRead = isReadParam === "true" ? true : isReadParam === "false" ? false : undefined;
       const notifications = await interactionService.getNotifications(userId, isRead);
@@ -18,7 +18,8 @@ export class InteractionController {
   async markAsRead(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const notification = await interactionService.markAsRead(id);
+      const userId = (req as any).userId;
+      const notification = await interactionService.markAsRead(id, userId);
       return sendSuccess(res, 200, notification, "Notification marked as read");
     } catch (error) {
       next(error);

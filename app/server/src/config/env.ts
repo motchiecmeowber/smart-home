@@ -11,9 +11,6 @@ const envSchema = z.object({
   REDIS_URL: z.url({ message: "REDIS_URL phải là một URL hợp lệ" }).default("redis://localhost:6379"),
   REDIS_PASSWORD: z.string().optional(),
 
-  REDIS_URL: z.url({ message: "REDIS_URL phải là một URL hợp lệ" }),
-  REDIS_PASSWORD: z.string().optional(),
-
   JWT_ACCESS_SECRET: z.string().min(10, { message: "JWT_ACCESS_SECRET phải có ít nhất 10 ký tự" }),
   JWT_REFRESH_SECRET: z.string().min(10, { message: "JWT_REFRESH_SECRET phải có ít nhất 10 ký tự" }),
 

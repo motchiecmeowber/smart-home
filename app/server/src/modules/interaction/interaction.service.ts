@@ -1,6 +1,7 @@
 import { interactionRepo } from "./interaction.repository";
 import { hardwareRepo } from "../hardware/hardware.repository";
 import { sendRpcCommand } from "../../config/tb-api";
+import { HttpError } from "@/common/app-error";
 
 export class InteractionService {
   async checkThresholdAndAlert(deviceId: string, dataType: string, value: number, threshold: number) {
@@ -71,7 +72,11 @@ export class InteractionService {
     return interactionRepo.getNotificationsByUser(userId, isRead);
   }
 
-  async markAsRead(notiId: string) {
+  async markAsRead(notiId: string, userId: string) {
+    const noti = await interactionRepo.getNotificationById(notiId);
+    if (!noti || noti.userId !== userId)
+      throw new HttpError(404, "Notification not found");
+
     return interactionRepo.markAsRead(notiId);
   }
 }

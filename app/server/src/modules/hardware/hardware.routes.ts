@@ -1,18 +1,22 @@
 import { Router } from "express";
 import { hardwareController } from "./hardware.controller";
+import { authMiddleware } from "@/middlewares/auth.middleware";
+import { roleMiddleware } from "@/middlewares/role.middleware";
 
 const hardwareRouter = Router();
 
-hardwareRouter.post("/devices", hardwareController.addDevice);
-hardwareRouter.get("/devices", hardwareController.getDevices);
-hardwareRouter.get("/devices/:id", hardwareController.getDeviceById);
-hardwareRouter.patch("/devices/:id", hardwareController.updateDevice);
-hardwareRouter.post("/actuators/:id/control", hardwareController.controlActuator);
+hardwareRouter.get("/devices", authMiddleware, hardwareController.getDevices);
+hardwareRouter.get("/devices/:id", authMiddleware, hardwareController.getDeviceById);
 
 // Admin
-hardwareRouter.delete("/devices/:id", hardwareController.deleteDevice);
+hardwareRouter.post("/devices", authMiddleware, roleMiddleware("ADMIN"), hardwareController.addDevice);
+hardwareRouter.delete("/devices/:id", authMiddleware, roleMiddleware("ADMIN"), hardwareController.deleteDevice);
+hardwareRouter.patch("/devices/:id", authMiddleware, roleMiddleware("ADMIN"), hardwareController.updateDevice);
 
 // Customer
-hardwareRouter.post("/devices/:id/request-delete", hardwareController.requestDeleteDevice);
+hardwareRouter.post("/devices/:id/request-delete", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.requestDeleteDevice);
+hardwareRouter.post("/devices/:id/request-update", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.requestUpdateDevice);
+hardwareRouter.post("/devices/request-add", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.requestAddDevice);
+hardwareRouter.post("/actuators/:id/control", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.controlActuator);
 
 export { hardwareRouter };

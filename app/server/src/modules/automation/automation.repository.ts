@@ -1,5 +1,6 @@
+import { includes } from "zod";
 import { prisma } from "../../config/prisma";
-import { Prisma } from "@prisma/client";
+import { Frequency, Prisma } from "@prisma/client";
 
 export class AutomationRepository {
   async createSchedule(data: Prisma.ScheduleCreateInput) {
@@ -32,8 +33,16 @@ export class AutomationRepository {
     });
   }
 
-  async getAllSchedules() {
+  async getAllSchedules(hour: number, minute: number, day: number) {
     return prisma.schedule.findMany({
+      where: { 
+        startTime: { not: null },
+        OR: [
+          { frequency: "DAILY" },
+          { frequency: "WEEKLY" },
+          { frequency: "ONCE", startTime: { gte: new Date(Date.now() - 60000 )} },
+        ]
+      },
       include: { actuator: true },
     });
   }

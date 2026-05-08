@@ -16,6 +16,10 @@ export class InteractionRepository {
     });
   }
 
+  async getNotificationById(notiId: string) {
+    return prisma.notification.findUnique({ where: { notiId }})
+  }
+
   async markAsRead(notiId: string) {
     return prisma.notification.update({
       where: { notiId },
@@ -28,6 +32,7 @@ export class InteractionRepository {
       where: { deviceId },
       include: {
         actuator: { include: { customer: true } },
+        sensor: true
       }
     });
 

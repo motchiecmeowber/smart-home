@@ -3,12 +3,20 @@ import { HttpError } from "../../common/app-error";
 import { Prisma, Frequency } from "@prisma/client";
 import cron from "node-cron";
 import { actuatorService } from "../hardware/actuator.service";
+import { hardwareRepo } from "../hardware/hardware.repository";
 
 export class AutomationService {
-  constructor() {
+  private schedulerStarted = false;
+  
+  async init() {
+    if (this.schedulerStarted)
+      return
+
     cron.schedule("* * * * *", async () => {
       await this.executeSchedules();
     });
+
+    this.schedulerStarted = true;
   }
 
   async createSchedule(customerId: string, data: {
@@ -18,6 +26,13 @@ export class AutomationService {
     duration?: number;
     frequency?: Frequency;
   }) {
+    const device = await hardwareRepo.getDeviceById(data.actuatorId)
+    if (!device || device.deviceType !== "ACTUATOR")
+      throw new HttpError(404, "Actuator not found")
+
+    if (device.actuator?.customerId && device.actuator.customerId !== customerId) 
+      throw new HttpError(403, "You do not have permission to schedule this actuator")
+    
     const createData: Prisma.ScheduleCreateInput = {
       action: data.action,
       duration: data.duration,
@@ -69,8 +84,11 @@ export class AutomationService {
 
   private async executeSchedules() {
     try {
-      const schedules = await automationRepo.getAllSchedules();
-      const now = new Date();
+      const nowUTC = new Date();
+      const hh = nowUTC.getUTCHours();
+      const mm = nowUTC.getUTCMinutes();
+
+      const schedules = await automationRepo.getAllSchedules(hh, mm, nowUTC.getUTCDay());
 
       for (const schedule of schedules) {
         if (!schedule.startTime) continue;
@@ -80,16 +98,16 @@ export class AutomationService {
         let shouldExecute = false;
 
         if (schedule.frequency === "ONCE") {
-          const diffMs = now.getTime() - scheduleTime.getTime();
+          const diffMs = nowUTC.getTime() - scheduleTime.getTime();
           if (diffMs >= 0 && diffMs < 60000) {
             shouldExecute = true;
           }
         } else if (schedule.frequency === "DAILY") {
-          if (scheduleTime.getHours() === now.getHours() && scheduleTime.getMinutes() === now.getMinutes()) {
+          if (scheduleTime.getUTCHours() === hh && scheduleTime.getUTCMinutes() === mm) {
             shouldExecute = true;
           }
         } else if (schedule.frequency === "WEEKLY") {
-          if (scheduleTime.getDay() === now.getDay() && scheduleTime.getHours() === now.getHours() && scheduleTime.getMinutes() === now.getMinutes()) {
+          if (scheduleTime.getDay() === nowUTC.getUTCDay() && scheduleTime.getUTCHours() === hh && scheduleTime.getUTCMinutes() === mm) {
             shouldExecute = true;
           }
         }
@@ -97,10 +115,20 @@ export class AutomationService {
         if (shouldExecute) {
           console.log(`Executing schedule ${schedule.scheduleId}: ${schedule.action} on actuator ${schedule.actuatorId}`);
           try {
-            await actuatorService.controlActuator(schedule.actuatorId, schedule.action as "ON" | "OFF", schedule.customerId);
-
             if (schedule.frequency === "ONCE") {
               await automationRepo.deleteSchedule(schedule.scheduleId);
+              await actuatorService.controlActuator(schedule.actuatorId, schedule.action as "ON" | "OFF", schedule.customerId);
+            }
+
+            if (schedule.duration && schedule.action === "ON") {
+              setTimeout(async () => {
+                try {
+                  await actuatorService.controlActuator(schedule.actuatorId, "OFF", schedule.customerId)
+                  console.log(`Auto-OFF executed for actuator ${schedule.actuatorId}`)
+                } catch (err) {
+                  console.error(`Auto-OFF after duration failed for ${schedule.actuatorId}:`, err)
+                }
+              }, schedule.duration * 60 * 1000)
             }
           } catch (error) {
             console.error(`Failed to execute schedule ${schedule.scheduleId}:`, error);

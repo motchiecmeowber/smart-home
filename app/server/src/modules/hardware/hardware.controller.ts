@@ -67,8 +67,12 @@ export class HardwareController {
   async requestDeleteDevice(req: Request, res: Response, next: NextFunction) {
     try {
       const deviceId = req.params.id as string;
-      const customerId = (req as any).user?.userId;
+      const customerId = (req as any).userId;
+      
       const existing = await deviceService.getDeviceById(deviceId);
+      if (!existing)
+        throw new HttpError(404, "Device not found");
+
       const request = await requestService.createRequest(customerId, {
         requestType: "DELETE",
         deviceId,
@@ -81,12 +85,54 @@ export class HardwareController {
     }
   }
 
+  async requestAddDevice(req: Request, res: Response, next: NextFunction) {
+    try {
+      const customerId = (req as any).userId;
+      const { serial, note } = req.body;
+
+      const requestEntity = await requestService.createRequest(customerId, {
+        requestType: "ADD",
+        serial,
+        content: `Request to add device with serial: ${serial}`,
+        note,
+      });
+
+      return sendSuccess(res, 201, requestEntity, "Request created successfully");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async requestUpdateDevice(req: Request, res: Response, next: NextFunction) {
+    try {
+      const customerId = (req as any).userId;
+      const deviceId = req.params.id as string;
+
+      const existing = await deviceService.getDeviceById(deviceId);
+      if (!existing)
+        throw new HttpError(404, "Device not found");
+
+      const { note, content } = req.body;
+      const request = await requestService.createRequest(customerId, {
+        content: content ?? `Request to update device: ${existing.deviceName ?? deviceId}`,
+        requestType: "UPDATE",
+        deviceId,
+        serial: existing.serial,
+        note,
+      });
+
+      return sendSuccess(res, 201, request, "Update request submitted, awaiting admin approval");
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async controlActuator(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
       const data = controlActuatorDto.parse(req.body);
 
-      const userId = (req as any).user?.userId;
+      const userId = (req as any).userId;
 
       const result = await actuatorService.controlActuator(id, data.action, userId);
       return sendSuccess(res, 200, result, result.message);

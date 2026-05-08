@@ -7,7 +7,7 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "post",
         path: "/api/devices",
-        summary: "Add a new device",
+        summary: "[ADMIN] Add a new device",
         tags: ["Hardware"],
         request: {
             body: {
@@ -53,7 +53,7 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
     registry.registerPath({
             method: "patch",
             path: "/api/devices/{id}",
-            summary: "Update a device",
+            summary: "[ADMIN] Update a device",
             tags: ["Hardware"],
             request: {
                 params: z.object({ id: z.string().openapi({ description: "Device ID" }) }),
@@ -83,7 +83,7 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
         method: "post",
         path: "/api/devices/{id}/request-delete",
         summary: "[CUSTOMER] Submit a delete request",
-        tags: ["Hardware", "Request"],
+        tags: ["Hardware"],
         request: {
             params: z.object({ id: z.string().openapi({ description: "Device ID" }) })
         },
@@ -92,8 +92,49 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
 
     registry.registerPath({
         method: "post",
+        path: "/api/devices/{id}/request-update",
+        summary: "[CUSTOMER] Submit an update request",
+        tags: ["Hardware"],
+        request: {
+            params: z.object({ id: z.string().openapi({ description: "Device ID" }) }),
+            body: {
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            note: z.string().optional().openapi({ example: "Request to change device name" }),
+                            content: z.string().optional().openapi({ example: "Please change my sensor name to Kitchen Temp" })
+                        })
+                    }
+                }
+            }
+        },
+        responses: { 201: { description: "Update request submitted" } }
+    });
+
+    registry.registerPath({
+        method: "post",
+        path: "/api/devices/request-add",
+        summary: "[CUSTOMER] Submit an add request",
+        tags: ["Hardware"],
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            serial: z.string().min(1, "Serial is required").openapi({ example: "SN-TEMP-999" }),
+                            note: z.string().optional().openapi({ example: "Adding new bedroom sensor" })
+                        })
+                    }
+                }
+            }
+        },
+        responses: { 201: { description: "Add request submitted" } }
+    });
+
+    registry.registerPath({
+        method: "post",
         path: "/api/actuators/{id}/control",
-        summary: "Control an actuator (ON/OFF)",
+        summary: "[CUSTOMER] Control an actuator (ON/OFF)",
         tags: ["Hardware"],
         request: {
             params: z.object({ id: z.string().openapi({ description: "Actuator ID" }) }),
