@@ -7,6 +7,7 @@ export function registerInteractionDocs(registry: OpenAPIRegistry) {
         path: "/api/notifications",
         summary: "Get notifications",
         tags: ["Interaction"],
+        security: [{ bearerAuth: [] }],
         request: {
             query: z.object({
                 isRead: z.enum(["true", "false"]).optional().openapi({ description: "Filter by read status" })
@@ -20,6 +21,7 @@ export function registerInteractionDocs(registry: OpenAPIRegistry) {
         path: "/api/notifications/{id}/read",
         summary: "Mark notification as read",
         tags: ["Interaction"],
+        security: [{ bearerAuth: [] }],
         request: { params: z.object({ id: z.string().openapi({ description: "Notification ID" }) }) },
         responses: { 200: { description: "Success" } }
     });

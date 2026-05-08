@@ -88,16 +88,35 @@ export class HardwareController {
   async requestAddDevice(req: Request, res: Response, next: NextFunction) {
     try {
       const customerId = (req as any).userId;
-      const { serial, note } = req.body;
+      const { serial, deviceName, deviceType, locationId, unit, threshold, note: userNote } = req.body;
+
+      // Phân loại thông tin theo loại thiết bị
+      const infoParts = [
+        `Type: ${deviceType || "N/A"}`,
+        `Name: ${deviceName || "N/A"}`,
+        `Location ID: ${locationId || "N/A"}`
+      ];
+
+      if (deviceType === "SENSOR") {
+        if (unit) infoParts.push(`Unit: ${unit}`);
+        if (threshold !== undefined) infoParts.push(`Threshold: ${threshold}`);
+      } else if (deviceType === "ACTUATOR") {
+        // Có thể thêm các thông tin riêng cho Actuator ở đây nếu cần
+        infoParts.push("Role: Actuator Control");
+      }
+
+      if (userNote) infoParts.push(`UserNote: ${userNote}`);
+
+      const detailedNote = infoParts.join(" | ");
 
       const requestEntity = await requestService.createRequest(customerId, {
         requestType: "ADD",
         serial,
-        content: `Request to add device with serial: ${serial}`,
-        note,
+        content: `Request to add ${deviceType || "Device"}: ${deviceName || serial}`,
+        note: detailedNote,
       });
 
-      return sendSuccess(res, 201, requestEntity, "Request created successfully");
+      return sendSuccess(res, 201, requestEntity, "Add device request submitted successfully");
     } catch (error) {
       next(error);
     }

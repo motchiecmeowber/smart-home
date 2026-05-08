@@ -50,9 +50,6 @@ app.use("/api", automationRouter);
 app.use("/api", interactionRouter);
 app.use("/api", locationRouter);
 app.use("/api", requestRouter);
-
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
-
 app.use("/api/auth", identityRouter);
 
 app.use(notFoundHandler);

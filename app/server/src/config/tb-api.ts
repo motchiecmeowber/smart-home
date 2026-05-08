@@ -13,31 +13,42 @@ function tbHeader() {
 }
 
 function tbUrl(path: string) {
-  return `http://${env.THINGSBOARD_HOST}/api${path}`;
+  return `https://${env.THINGSBOARD_HOST}${path}`;
 }
 
 // RPC
-export async function sendRpcCommand(deviceId: string, method: string, params: any) {
-  const host = env.THINGSBOARD_HOST;
-  const token = env.THINGSBOARD_API_TOKEN;
-
-  if (!token) {
-    throw new Error("Missing THINGSBOARD_API_TOKEN in .env");
-  }
-
-  const response = await fetch(tbUrl(`/rpc/twoway/${deviceId}`), {
+export async function sendRpcCommand(deviceId: string, method: string, params: any, timeout = 5000) {
+  const response = await fetch(tbUrl(`/api/rpc/twoway/${deviceId}`), {
     method: "POST",
     headers: tbHeader(),
     body: JSON.stringify({
       method: method,
       params: params,
-      timeout: 5000
+      timeout,
     })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`ThingsBoard RPC failed: ${response.status} - ${errorText}`);
+    throw new Error(`ThingsBoard RPC (twoway) failed: ${response.status} - ${errorText}`);
+  }
+
+  return await response.json();
+}
+
+export async function sendRpcCommandOneWay(deviceId: string, method: string, params: any) {
+  const response = await fetch(tbUrl(`/api/rpc/oneway/${deviceId}`), {
+    method: "POST",
+    headers: tbHeader(),
+    body: JSON.stringify({
+      method: method,
+      params: params
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`ThingsBoard RPC (oneway) failed: ${response.status} - ${errorText}`);
   }
 
   return await response.json();

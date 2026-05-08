@@ -1,5 +1,4 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
 import { env } from "../config/env";
 
 import { registerIdentityDocs } from "./identity.docs";
@@ -40,4 +39,5 @@ export const openApiDocument = new OpenApiGeneratorV3(registry.definitions).gene
         description: "API quản lý hệ thống nhà thông minh sử dụng Express, Prisma ORM và Zod"
     },
     servers: [{ url: `http://localhost:${env.PORT || 3000}` }],
+    security: [{ bearerAuth: [] }]
 });

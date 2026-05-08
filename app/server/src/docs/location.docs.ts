@@ -9,6 +9,7 @@ export function registerLocationDocs(registry: OpenAPIRegistry){
         path: "/api/locations",
         summary: "[CUSTOMER] Add a new location",
         tags: ["Location"],
+        security: [{ bearerAuth: [] }],
         request: {
         body: {
             content: { "application/json": { schema: createLocationDto } }
@@ -30,6 +31,7 @@ export function registerLocationDocs(registry: OpenAPIRegistry){
         path: "/api/locations/{id}",
         summary: "[CUSTOMER] Update a location",
         tags: ["Location"],
+        security: [{ bearerAuth: [] }],
         request: {
         params: z.object({ id: z.string().openapi({ description: "Location ID" }) }),
         body: {
@@ -44,6 +46,7 @@ export function registerLocationDocs(registry: OpenAPIRegistry){
         path: "/api/locations/{id}",
         summary: "[CUSTOMER] Delete a location",
         tags: ["Location"],
+        security: [{ bearerAuth: [] }],
         request: { params: z.object({ id: z.string().openapi({ description: "Location ID" }) }) },
         responses: { 200: { description: "Deleted successfully" } }
     });

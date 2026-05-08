@@ -10,8 +10,8 @@ export class RequestController {
         req.query
       );
 
-      const user = (req as any).user;
-      if (user.role === "CUSTOMER") filters.customerId = user.userId;
+      const { userId, role } = req as any; 
+      if (role === "CUSTOMER") filters.customerId = userId;
 
       const requests = await requestService.getRequests(filters);
       return sendSuccess(res, 200, requests);
@@ -23,7 +23,10 @@ export class RequestController {
   async getRequestById(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
-      const user = (req as any).user;
+
+      const { userId, role } = req as any;
+      const user = { userId, role };
+
       const requestEntity = await requestService.getRequestById(id, user);
       return sendSuccess(res, 200, requestEntity);
     } catch (error) {
