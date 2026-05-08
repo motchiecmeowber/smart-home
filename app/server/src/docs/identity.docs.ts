@@ -112,6 +112,7 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
         tags: ["Identity"],
         summary: "Làm mới token",
         description: "Làm mới access token bằng refresh token.",
+        security: [{ cookieAuth: [] }],
         request: {
         },
         responses: {
