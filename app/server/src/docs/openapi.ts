@@ -18,7 +18,7 @@ registry.registerComponent("securitySchemes", "cookieAuth", {
     in: "cookie",
     name: "refreshToken",
     description: "Refresh token được lưu trong cookie để làm mới access token"
-})
+});
 
 registerIdentityDocs(registry);
 
