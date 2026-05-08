@@ -9,7 +9,11 @@ const envSchema = z.object({
 
   DATABASE_URL: z.url({ message: "DATABASE_URL phải là một URL hợp lệ" }),
 
-  JWT_SECRET: z.string().min(10, { message: "JWT_SECRET phải có ít nhất 10 ký tự" }),
+  REDIS_URL: z.url({ message: "REDIS_URL phải là một URL hợp lệ" }),
+  REDIS_PASSWORD: z.string().optional(),
+
+  JWT_ACCESS_SECRET: z.string().min(10, { message: "JWT_ACCESS_SECRET phải có ít nhất 10 ký tự" }),
+  JWT_REFRESH_SECRET: z.string().min(10, { message: "JWT_REFRESH_SECRET phải có ít nhất 10 ký tự" }),
 
   THINGSBOARD_HOST: z.string().default("demo.thingsboard.io"),
   THINGSBOARD_PORT: z.string().default("1883"),

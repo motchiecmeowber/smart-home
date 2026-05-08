@@ -13,6 +13,13 @@ registry.registerComponent("securitySchemes", "bearerAuth", {
     description: "Access token trong Authorization header để xác thực người dùng"
 });
 
+registry.registerComponent("securitySchemes", "cookieAuth", {
+    type: "apiKey",
+    in: "cookie",
+    name: "refreshToken",
+    description: "Refresh token được lưu trong cookie để làm mới access token"
+});
+
 registerIdentityDocs(registry);
 
 export const openApiDocument = new OpenApiGeneratorV3(registry.definitions).generateDocument({

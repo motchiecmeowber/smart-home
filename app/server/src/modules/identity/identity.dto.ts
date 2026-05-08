@@ -27,10 +27,6 @@ export const RegisterRequestSchema = z.object({
   lastName: z.string().min(1, "Họ phải có ít nhất 1 ký tự"),
 }).openapi("RegisterRequest");
 
-export const RefreshTokenRequestSchema = z.object({
-  refreshToken: z.string().min(1, "Refresh token là bắt buộc"),
-}).openapi("RefreshTokenRequest");
-
 export const ChangePasswordRequestSchema = z.object({
   currentPassword: z.string().min(6, "Mật khẩu hiện tại phải có ít nhất 6 ký tự"),
   newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
@@ -54,6 +50,5 @@ export const AuthResponseSchema = z.object({
 // Type Exports
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
-export type RefreshTokenRequest = z.infer<typeof RefreshTokenRequestSchema>;
 export type UserResponse = z.infer<typeof UserResponseSchema>;
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;
