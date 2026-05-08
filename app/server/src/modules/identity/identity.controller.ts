@@ -40,11 +40,12 @@ export class IdentityController {
 
     try {
       const result = await this.identityService.login(parsed.data);
+      const isProduction = process.env.NODE_ENV === "production";
       
       res.cookie("refreshToken", result.refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Gửi qua HTTPS trong production
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        secure: isProduction, // Gửi qua HTTPS trong production
+        sameSite: isProduction ? "strict" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
@@ -63,6 +64,7 @@ export class IdentityController {
 
   logout = async (req: Request, res: Response) => {
     try {
+      const isProduction = process.env.NODE_ENV === "production";
       const refreshToken = req.cookies?.refreshToken;
       const accessToken = req.headers.authorization?.split(" ")[1];
 
@@ -76,8 +78,8 @@ export class IdentityController {
       await this.identityService.logout(accessToken, refreshToken);
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: isProduction,
+        sameSite: isProduction ? "strict" : "lax",
       });
       return res.status(200).json({ message: "Đăng xuất thành công" });
     } catch (error) {
