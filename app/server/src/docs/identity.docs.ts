@@ -120,7 +120,10 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
                 description: "Làm mới token thành công",
                 content: {
                     "application/json": {
-                        schema: AuthResponseSchema
+                        schema: z.object({
+                            accessToken: z.string(),
+                            user: UserResponseSchema,
+                        })
                     }
                 }
             },
