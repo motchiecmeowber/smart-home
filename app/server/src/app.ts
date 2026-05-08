@@ -15,7 +15,9 @@ const app = express();
 app.use(express.json());
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: [
+            "http://localhost:3000",
+        ],
         credentials: true,
     })
 );
@@ -25,9 +27,13 @@ app.get("/health", (_req, res) => {
     res.status(200).json({ status: "ok" });
 });
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiDocument, {
+    swaggerOptions: {
+        withCredentials: true,
+    }
+}));
 
-app.use("/api/identity", identityRouter);
+app.use("/api/auth", identityRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

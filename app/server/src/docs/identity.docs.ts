@@ -4,7 +4,6 @@ import { z } from "zod";
 import { 
     LoginRequestSchema, 
     RegisterRequestSchema, 
-    RefreshTokenRequestSchema, 
     ChangePasswordRequestSchema, 
     UserResponseSchema, 
     AuthResponseSchema 
@@ -14,7 +13,6 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
     // Register schemas
     registry.register("LoginRequest", LoginRequestSchema);
     registry.register("RegisterRequest", RegisterRequestSchema);
-    registry.register("RefreshTokenRequest", RefreshTokenRequestSchema);
     registry.register("ChangePasswordRequest", ChangePasswordRequestSchema);
     registry.register("UserResponse", UserResponseSchema);
     registry.register("AuthResponse", AuthResponseSchema);
@@ -115,13 +113,6 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
         summary: "Làm mới token",
         description: "Làm mới access token bằng refresh token.",
         request: {
-            body: {
-                content: {
-                    "application/json": {
-                        schema: RefreshTokenRequestSchema
-                    }
-                }
-            }
         },
         responses: {
             200: {

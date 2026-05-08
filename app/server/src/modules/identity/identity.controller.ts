@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import {
   LoginRequestSchema,
-  RefreshTokenRequestSchema,
   RegisterRequestSchema,
   ChangePasswordRequestSchema,
 } from "./identity.dto";
@@ -45,7 +44,7 @@ export class IdentityController {
       res.cookie("refreshToken", result.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production", // Gửi qua HTTPS trong production
-        sameSite: "strict",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
@@ -116,15 +115,13 @@ export class IdentityController {
 
   refreshToken = async (req: Request, res: Response) => {
     const tokenFromCookie = req.cookies?.refreshToken;
-    const tokenFromBody = req.body?.refreshToken;
-    const token = tokenFromCookie ?? tokenFromBody;
 
-    if (typeof token !== "string") {
+    if (typeof tokenFromCookie !== "string") {
         return res.status(400).json({ message: "Refresh token không được cung cấp" });
     }
 
     try {
-      const result = await this.identityService.refreshToken(token);
+      const result = await this.identityService.refreshToken(tokenFromCookie);
 
       return res.status(200).json({
         accessToken: result.accessToken,
