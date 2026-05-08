@@ -1,0 +1,193 @@
+.devices-page {
+  display: grid;
+  gap: 28px;
+}
+
+.devices-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.breadcrumb {
+  margin-bottom: 8px;
+}
+
+.breadcrumb .ant-breadcrumb-link,
+.breadcrumb .ant-breadcrumb-separator {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.devices-heading .ant-typography {
+  margin: 0;
+  color: #122d3a;
+  font-size: 38px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.devices-summary {
+  flex-wrap: nowrap;
+}
+
+.summary-box.ant-card {
+  min-width: 104px;
+  border-color: #d4dde3;
+  text-align: center;
+}
+
+.summary-box .ant-card-body {
+  padding: 14px 16px;
+}
+
+.summary-box .ant-statistic-title {
+  color: #60727c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-box .ant-statistic-content {
+  color: #0b5f95;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.rooms-list {
+  display: grid;
+  gap: 22px;
+}
+
+.room-card.ant-card {
+  overflow: hidden;
+  border-color: #d4dde3;
+  box-shadow: 0 8px 20px rgba(30, 50, 62, 0.08);
+}
+
+.room-card > .ant-card-head {
+  min-height: 84px;
+  background: #1fa8c5;
+  border-bottom-color: #168ca6;
+}
+
+.room-card > .ant-card-head .ant-card-head-title {
+  padding: 18px 0;
+}
+
+.room-card > .ant-card-head .ant-typography {
+  margin: 0;
+}
+
+.room-card > .ant-card-head h2.ant-typography {
+  color: #071d26;
+  font-size: 25px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.room-card > .ant-card-head .ant-typography-secondary {
+  display: block;
+  margin-top: 6px;
+  color: #073342;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.room-count {
+  min-width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #0b5f95;
+  background: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.room-card > .ant-card-body {
+  padding: 22px;
+}
+
+.device-card.ant-card {
+  height: 100%;
+  border-color: #dce4e8;
+  background: #f8fbfc;
+}
+
+.device-card .ant-card-body {
+  padding: 16px;
+}
+
+.device-item {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.device-icon {
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b7cbd5;
+  border-radius: 10px;
+  color: #0b5f95;
+  background: #ffffff;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.device-item .ant-typography {
+  margin: 0;
+}
+
+.device-item h3.ant-typography {
+  color: #17323f;
+  font-size: 17px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.device-item .ant-typography-secondary {
+  display: block;
+  margin-top: 6px;
+  color: #5f727c;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .devices-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .devices-summary {
+    width: 100%;
+  }
+
+  .devices-summary .ant-col {
+    flex: 1;
+  }
+
+  .summary-box.ant-card {
+    width: 100%;
+  }
+
+  .devices-heading .ant-typography {
+    font-size: 31px;
+  }
+
+  .room-card > .ant-card-body {
+    padding: 16px;
+  }
+}
