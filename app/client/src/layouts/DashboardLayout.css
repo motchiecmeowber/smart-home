@@ -1,0 +1,129 @@
+.dashboard-shell {
+  min-height: 100svh;
+  background: #f4f7fa;
+}
+
+.dashboard-sidebar.ant-layout-sider {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100svh;
+  padding: 28px 18px;
+  overflow-y: auto;
+  background: #0b5f95;
+  color: #ffffff;
+}
+
+.dashboard-sidebar .ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.dashboard-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.dashboard-brand-mark {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  border-radius: 10px;
+  background: #084d78;
+}
+
+.dashboard-menu.ant-menu {
+  background: transparent;
+  border-inline-end: 0;
+}
+
+.dashboard-menu.ant-menu-dark .ant-menu-item {
+  height: 46px;
+  margin: 4px 0;
+  color: #eaf5fb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.dashboard-menu.ant-menu-dark .ant-menu-item:hover {
+  background: #084d78;
+}
+
+.dashboard-menu.ant-menu-dark .ant-menu-item-selected {
+  color: #0b5f95;
+  background: #ffffff;
+}
+
+.dashboard-menu .ant-menu-item .ant-menu-item-icon {
+  width: 20px;
+}
+
+.account-menu {
+  margin-top: auto;
+}
+
+.dashboard-content.ant-layout-content {
+  min-width: 0;
+  padding: 34px clamp(22px, 5vw, 64px) 46px;
+  background: #f4f7fa;
+}
+
+@media (max-width: 900px) {
+  .dashboard-shell {
+    display: block;
+  }
+
+  .dashboard-sidebar.ant-layout-sider {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .dashboard-sidebar .ant-layout-sider-children {
+    gap: 16px;
+  }
+
+  .dashboard-brand {
+    padding-bottom: 14px;
+  }
+
+  .dashboard-menu.ant-menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .account-menu {
+    margin-top: 0;
+  }
+
+  .dashboard-content.ant-layout-content {
+    padding: 26px 16px 36px;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-brand {
+    font-size: 20px;
+  }
+
+  .dashboard-menu.ant-menu {
+    grid-template-columns: 1fr;
+  }
+}
