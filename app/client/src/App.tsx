@@ -1,133 +1,120 @@
-import { useEffect, useState } from 'react'
-import { ConfigProvider } from 'antd'
-import { DashboardLayout } from './layouts/DashboardLayout'
-import { LoginPage } from './pages/auth/LoginPage'
-import { RegisterPage } from './pages/auth/RegisterPage'
-import { DevicesPage } from './pages/dashboard/DevicesPage'
-import { ProfilePage } from './pages/dashboard/ProfilePage'
-import { SettingsPage } from './pages/dashboard/SettingsPage'
-import type { AppRoute } from './types/auth'
+import { useState } from 'react'
+import reactLogo from './assets/react.svg'
+import viteLogo from './assets/vite.svg'
+import heroImg from './assets/hero.png'
 import './App.css'
 
-const routePaths: Record<AppRoute, string> = {
-  login: '/login',
-  register: '/register',
-  'dashboard-devices': '/dashboard/devices',
-  'dashboard-settings': '/dashboard/settings',
-  'dashboard-profile': '/dashboard/profile',
-}
-
-function getAppRouteFromLocation(): AppRoute {
-  if (window.location.pathname === routePaths.register) {
-    return 'register'
-  }
-
-  if (window.location.pathname === routePaths['dashboard-devices']) {
-    return 'dashboard-devices'
-  }
-
-  if (window.location.pathname === routePaths['dashboard-settings']) {
-    return 'dashboard-settings'
-  }
-
-  if (window.location.pathname === routePaths['dashboard-profile']) {
-    return 'dashboard-profile'
-  }
-
-  return 'login'
-}
-
 function App() {
-  const [appRoute, setAppRoute] = useState<AppRoute>(getAppRouteFromLocation)
-
-  useEffect(() => {
-    const syncRoute = () => {
-      setAppRoute(getAppRouteFromLocation())
-    }
-
-    window.addEventListener('popstate', syncRoute)
-
-    return () => {
-      window.removeEventListener('popstate', syncRoute)
-    }
-  }, [])
-
-  const navigateToAppRoute = (route: AppRoute) => {
-    setAppRoute(route)
-
-    if (window.location.pathname !== routePaths[route]) {
-      window.history.pushState(null, '', routePaths[route])
-    }
-  }
+  const [count, setCount] = useState(0)
 
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#0b5f95',
-          borderRadius: 8,
-          fontFamily:
-            'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        },
-        components: {
-          Button: {
-            primaryShadow: 'none',
-          },
-          Menu: {
-            itemBorderRadius: 8,
-          },
-        },
-      }}
-    >
-      <div className="app-shell">
-        {appRoute === 'login' && (
-          <LoginPage
-            onLoginSuccess={() => navigateToAppRoute('dashboard-devices')}
-            onNavigateRegister={() => navigateToAppRoute('register')}
-          />
-        )}
+    <>
+      <section id="center">
+        <div className="hero">
+          <img src={heroImg} className="base" width="170" height="179" alt="" />
+          <img src={reactLogo} className="framework" alt="React logo" />
+          <img src={viteLogo} className="vite" alt="Vite logo" />
+        </div>
+        <div>
+          <h1>Get started</h1>
+          <p>
+            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+          </p>
+        </div>
+        <button
+          className="counter"
+          onClick={() => setCount((count) => count + 1)}
+        >
+          Count is {count}
+        </button>
+      </section>
 
-        {appRoute === 'register' && (
-          <RegisterPage onNavigateLogin={() => navigateToAppRoute('login')} />
-        )}
+      <div className="ticks"></div>
 
-        {appRoute === 'dashboard-devices' && (
-          <DashboardLayout
-            activeRoute="dashboard-devices"
-            onLogout={() => navigateToAppRoute('login')}
-            onNavigateDevices={() => navigateToAppRoute('dashboard-devices')}
-            onNavigateSettings={() => navigateToAppRoute('dashboard-settings')}
-            onNavigateProfile={() => navigateToAppRoute('dashboard-profile')}
-          >
-            <DevicesPage />
-          </DashboardLayout>
-        )}
+      <section id="next-steps">
+        <div id="docs">
+          <svg className="icon" role="presentation" aria-hidden="true">
+            <use href="/icons.svg#documentation-icon"></use>
+          </svg>
+          <h2>Documentation</h2>
+          <p>Your questions, answered</p>
+          <ul>
+            <li>
+              <a href="https://vite.dev/" target="_blank">
+                <img className="logo" src={viteLogo} alt="" />
+                Explore Vite
+              </a>
+            </li>
+            <li>
+              <a href="https://react.dev/" target="_blank">
+                <img className="button-icon" src={reactLogo} alt="" />
+                Learn more
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div id="social">
+          <svg className="icon" role="presentation" aria-hidden="true">
+            <use href="/icons.svg#social-icon"></use>
+          </svg>
+          <h2>Connect with us</h2>
+          <p>Join the Vite community</p>
+          <ul>
+            <li>
+              <a href="https://github.com/vitejs/vite" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#github-icon"></use>
+                </svg>
+                GitHub
+              </a>
+            </li>
+            <li>
+              <a href="https://chat.vite.dev/" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#discord-icon"></use>
+                </svg>
+                Discord
+              </a>
+            </li>
+            <li>
+              <a href="https://x.com/vite_js" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#x-icon"></use>
+                </svg>
+                X.com
+              </a>
+            </li>
+            <li>
+              <a href="https://bsky.app/profile/vite.dev" target="_blank">
+                <svg
+                  className="button-icon"
+                  role="presentation"
+                  aria-hidden="true"
+                >
+                  <use href="/icons.svg#bluesky-icon"></use>
+                </svg>
+                Bluesky
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
 
-        {appRoute === 'dashboard-settings' && (
-          <DashboardLayout
-            activeRoute="dashboard-settings"
-            onLogout={() => navigateToAppRoute('login')}
-            onNavigateDevices={() => navigateToAppRoute('dashboard-devices')}
-            onNavigateSettings={() => navigateToAppRoute('dashboard-settings')}
-            onNavigateProfile={() => navigateToAppRoute('dashboard-profile')}
-          >
-            <SettingsPage />
-          </DashboardLayout>
-        )}
-
-        {appRoute === 'dashboard-profile' && (
-          <DashboardLayout
-            activeRoute="dashboard-profile"
-            onLogout={() => navigateToAppRoute('login')}
-            onNavigateDevices={() => navigateToAppRoute('dashboard-devices')}
-            onNavigateSettings={() => navigateToAppRoute('dashboard-settings')}
-            onNavigateProfile={() => navigateToAppRoute('dashboard-profile')}
-          >
-            <ProfilePage />
-          </DashboardLayout>
-        )}
-      </div>
-    </ConfigProvider>
+      <div className="ticks"></div>
+      <section id="spacer"></section>
+    </>
   )
 }
 
