@@ -4,30 +4,31 @@ import { z } from "zod";
 import { controlActuatorDto, createDeviceDto, updateDeviceDto } from "@/modules/hardware/hardware.dto";
 
 export function registerHardwareDocs(registry: OpenAPIRegistry){
-    registry.registerPath({
-        method: "post",
-        path: "/api/devices",
-        summary: "[ADMIN] Add a new device",
-        description: `Admin trực tiếp thêm thiết bị vào hệ thống.
-        \n- **SENSOR**: Cần có 'unit' và 'threshold'.
-        \n- **ACTUATOR**: Cần có 'customerId' để gắn quyền điều khiển.`,
-        tags: ["Hardware"],
-        security: [{ bearerAuth: [] }],
-        request: {
-            body: {
-            content: {
-                "application/json": {
-                schema: createDeviceDto
-                }
-            }
-            }
-        },
-        responses: {
-            201: {
-            description: "Created successfully"
-            }
-        }
-    });
+    // sửa dụng sync device từ tb thay cho nhập thủ công
+    // registry.registerPath({
+    //     method: "post",
+    //     path: "/api/devices",
+    //     summary: "[ADMIN] Add a new device",
+    //     description: `Admin trực tiếp thêm thiết bị vào hệ thống.
+    //     \n- **SENSOR**: Cần có 'unit' và 'threshold'.
+    //     \n- **ACTUATOR**: Cần có 'customerId' để gắn quyền điều khiển.`,
+    //     tags: ["Hardware"],
+    //     security: [{ bearerAuth: [] }],
+    //     request: {
+    //         body: {
+    //         content: {
+    //             "application/json": {
+    //             schema: createDeviceDto
+    //             }
+    //         }
+    //         }
+    //     },
+    //     responses: {
+    //         201: {
+    //         description: "Created successfully"
+    //         }
+    //     }
+    // });
 
     registry.registerPath({
         method: "get",
@@ -43,6 +44,27 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
             })
         },
         responses: { 200: { description: "Success" } }
+    });
+
+    registry.registerPath({
+        method: "post",
+        path: "/api/devices/sync",
+        summary: "Sync devices from ThingsBoard",
+        description: "Đồng bộ danh sách thiết bị từ ThingsBoard. Một thiết bị trên TB có thể được tách thành 2 bản ghi (Sensor và Actuator).",
+        tags: ["Hardware"],
+        security: [{ bearerAuth: [] }],
+        responses: {
+            200: {
+                description: "Sync success",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            createdCount: z.number().openapi({ example: 2 })
+                        })
+                    }
+                }
+            }
+        }
     });
 
     registry.registerPath({
@@ -130,6 +152,7 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
     const addDeviceRequestSchema = registry.register("AddDeviceRequest", z.object({
         serial: z.string().min(1, "Serial is required").openapi({ example: "SN-TEMP-999" }),
         deviceType: z.enum(["SENSOR", "ACTUATOR"]).openapi({ example: "SENSOR" }),
+        status: z.enum(["ONLINE", "OFFLINE", "DISCONNECTED"]).optional().openapi({ example: "ONLINE" }),
         deviceName: z.string().optional().openapi({ example: "Bedroom Sensor" }),
         locationId: z.string().optional().openapi({ example: "loc-123" }),
         unit: z.string().optional().openapi({ example: "°C" }),
@@ -175,5 +198,37 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
             }
         },
         responses: { 200: { description: "Command sent" } }
+    });
+
+    registry.registerPath({
+        method: "post",
+        path: "/api/sensors/{id}/sync-telemetry",
+        summary: "[CUSTOMER] Sync historical telemetry data",
+        description: `Đồng bộ dữ liệu cảm biến (nhiệt độ, độ ẩm, gas...) từ ThingsBoard về Database local để vẽ biểu đồ.
+        \n- Hệ thống sẽ tự động khám phá các loại dữ liệu thiết bị đang có.
+        \n- Mặc định lấy dữ liệu trong 24 giờ qua nếu không truyền tham số 'hours'.`,
+        tags: ["Hardware"],
+        security: [{ bearerAuth: [] }],
+        request: {
+            params: z.object({ id: z.string().openapi({ description: "Sensor Device ID" }) }),
+            query: z.object({
+                hours: z.string().optional().openapi({ 
+                    description: "Số giờ muốn lấy dữ liệu ngược về quá khứ",
+                    example: "24" 
+                })
+            })
+        },
+        responses: {
+            200: {
+                description: "Telemetry synced successfully",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            count: z.number().openapi({ description: "Số lượng bản ghi dữ liệu đã được lưu", example: 150 })
+                        })
+                    }
+                }
+            }
+        }
     });
 }

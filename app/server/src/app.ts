@@ -16,6 +16,7 @@ import { automationRouter } from "./modules/automation/automation.routes";
 import { interactionRouter } from "./modules/interaction/interaction.routes";
 import { locationRouter } from "./modules/location/location.routes";
 import { requestRouter } from "./modules/request/request.routes";
+import { automationService } from "./modules/automation/automation.service";
 
 const app = express();
 
@@ -58,6 +59,9 @@ app.use(errorHandler);
 async function bootstrap() {
     await connectRedis();
     console.log("Đã kết nối Redis, khởi động server...");
+
+    await automationService.init();
+    console.log("Automation scheduler started");
 
     app.listen(env.PORT, () => {
         console.log(`Server is running at http://localhost:${env.PORT}`);

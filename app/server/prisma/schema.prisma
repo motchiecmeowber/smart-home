@@ -1,251 +1,314 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+    provider = "postgresql"
 }
 
-model Location {
-  locationId   String   @id @default(cuid()) @map("Location_ID")
-  locationName String?  @map("Location_name")
-  devices      Device[]
-
-  @@map("LOCATION")
-}
-
-model User {
-  userId        String         @id @default(cuid()) @map("User_ID")
-  username      String         @unique @map("Username")
-  email         String         @unique @map("Email")
-  password      String         @map("Password")
-  firstName     String?        @map("F_name")
-  lastName      String?        @map("L_name")
-  role          Role           @default(CUSTOMER) @map("Role")
-  createdAt     DateTime       @default(now()) @map("Created_at")
-  admin         Admin?
-  customer      Customer?
-  notifications Notification[]
-  refreshTokens RefreshToken[]
-
-  @@map("USER")
-}
-
-model Customer {
-  userId    String     @id @map("User_ID")
-  adminId   String?    @map("Customer_AdminID")
-  actuators Actuator[]
-  admin     Admin?     @relation("AdminManagesCustomer", fields: [adminId], references: [userId])
-  user      User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  reports   Report[]
-  requests  Request[]  @relation("CustomerRequests")
-  schedules Schedule[]
-
-  @@index([adminId])
-  @@map("CUSTOMER")
-}
-
-model Admin {
-  userId    String     @id @map("User_ID")
-  user      User       @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  customers Customer[] @relation("AdminManagesCustomer")
-  requests  Request[]  @relation("AdminHandlesRequest")
-
-  @@map("ADMIN")
-}
-
-model Device {
-  deviceId      String         @id @default(cuid()) @map("Device_ID")
-  serial        String         @unique @map("Serial")
-  deviceName    String?        @map("Device_name")
-  status        DeviceStatus?  @map("Status")
-  deviceType    DeviceType?    @map("Device_type")
-  locationId    String?        @map("Device_LocationID")
-  tbDeviceId    String         @map("TB_Device_ID")
-  actuator      Actuator?
-  location      Location?      @relation(fields: [locationId], references: [locationId])
-  notifications Notification[]
-  requests      Request[]
-  sensor        Sensor?
-
-  @@index([locationId])
-  @@index([serial])
-  @@map("DEVICE")
-}
-
-model Actuator {
-  deviceId   String     @id @map("Device_ID")
-  customerId String?    @map("Actuator_CustomerID")
-  customer   Customer?  @relation(fields: [customerId], references: [userId])
-  device     Device     @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
-  schedules  Schedule[]
-
-  @@index([customerId])
-  @@map("ACTUATOR")
-}
-
-model Sensor {
-  deviceId    String        @id @map("Device_ID")
-  unit        String?       @map("Unit")
-  threshold   Float?        @map("Threshold")
-  data        Data[]
-  device      Device        @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
-  summaryData SummaryData[]
-
-  @@map("SENSOR")
-}
-
-model Data {
-  timestamp DateTime @map("Time_stamp")
-  sensorId  String   @map("Sensor_ID")
-  dataType  DataType @map("Data_type")
-  value     Float?   @map("Value")
-  sensor    Sensor   @relation(fields: [sensorId], references: [deviceId], onDelete: Cascade)
-
-  @@id([timestamp, sensorId, dataType])
-  @@index([sensorId, timestamp])
-  @@map("DATA")
-}
-
-model Notification {
-  notiId    String   @id @default(cuid()) @map("Noti_ID")
-  title     String?  @map("Title")
-  content   String?  @map("Content")
-  isRead    Boolean  @default(false) @map("Is_read")
-  createdAt DateTime @default(now()) @map("Created_at")
-  userId    String   @map("Noti_UserID")
-  deviceId  String?  @map("Noti_DeviceID")
-  device    Device?  @relation(fields: [deviceId], references: [deviceId])
-  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([deviceId])
-  @@index([userId, isRead])
-  @@map("NOTIFICATION")
-}
-
-model Request {
-  requestId   String         @id @default(cuid()) @map("Request_ID")
-  content     String?        @map("Content")
-  requestType RequestType?   @map("Request_type")
-  status      RequestStatus? @map("Status")
-  createdAt   DateTime       @default(now()) @map("Created_at")
-  note        String?        @map("Note")
-  serial      String?        @map("Serial")
-  deviceId    String?        @map("Request_DeviceID")
-  customerId  String?        @map("Request_UserID")
-  adminId     String?        @map("Request_AdminID")
-  admin       Admin?         @relation("AdminHandlesRequest", fields: [adminId], references: [userId])
-  device      Device?        @relation(fields: [deviceId], references: [deviceId])
-  customer    Customer?      @relation("CustomerRequests", fields: [customerId], references: [userId])
-
-  @@index([customerId])
-  @@index([adminId])
-  @@index([deviceId])
-  @@index([status, createdAt])
-  @@map("REQUEST")
-}
-
-model Schedule {
-  scheduleId String     @id @default(cuid()) @map("Schedule_ID")
-  duration   Int?       @map("Duration")
-  action     String?    @map("Action")
-  frequency  Frequency? @map("Frequency")
-  startTime  DateTime?  @map("Start_time")
-  customerId String     @map("Sched_UserID")
-  actuatorId String     @map("Sched_DeviceID")
-  actuator   Actuator   @relation(fields: [actuatorId], references: [deviceId])
-  customer   Customer   @relation(fields: [customerId], references: [userId])
-
-  @@index([customerId])
-  @@index([actuatorId])
-  @@map("SCHEDULE")
-}
-
-model Report {
-  reportId    String        @id @default(cuid()) @map("Report_ID")
-  reportType  ReportType?   @map("Report_type")
-  createdAt   DateTime      @default(now()) @map("Created_at")
-  startTime   DateTime?     @map("Start_time")
-  endTime     DateTime?     @map("End_time")
-  customerId  String        @map("Report_UserID")
-  customer    Customer      @relation(fields: [customerId], references: [userId])
-  summaryData SummaryData[]
-
-  @@index([customerId])
-  @@map("REPORT")
-}
-
-model SummaryData {
-  metricName String @map("Metric_name")
-  reportId   String @map("Report_ID")
-  sensorId   String @map("Sensor_ID")
-  value      Float? @map("Value")
-  report     Report @relation(fields: [reportId], references: [reportId], onDelete: Cascade)
-  sensor     Sensor @relation(fields: [sensorId], references: [deviceId])
-
-  @@id([metricName, reportId])
-  @@index([sensorId])
-  @@index([reportId])
-  @@map("SUMMARY_DATA")
-}
-
-model RefreshToken {
-  id        String   @id @default(cuid()) @map("ID")
-  token     String   @unique @map("Token")
-  userId    String   @map("User_ID")
-  createdAt DateTime @default(now()) @map("Created_at")
-  expiresAt DateTime @map("Expires_at")
-  revoked   Boolean  @default(false) @map("Revoked")
-  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([token])
-  @@map("REFRESH_TOKEN")
-}
+// ─── Enums ────────────────────────────────────────────────────────────────────
 
 enum Role {
-  CUSTOMER
-  ADMIN
+    CUSTOMER
+    ADMIN
 }
 
 enum DeviceType {
-  SENSOR
-  ACTUATOR
+    SENSOR
+    ACTUATOR
 }
 
 enum DeviceStatus {
-  ONLINE
-  OFFLINE
-  DISCONNECTED
+    ONLINE
+    OFFLINE
+    DISCONNECTED
 }
 
 enum Frequency {
-  ONCE
-  DAILY
-  WEEKLY
+    ONCE
+    DAILY
+    WEEKLY
 }
 
 enum DataType {
-  TEMPERATURE
-  HUMIDITY
-  GAS
+    TEMPERATURE
+    HUMIDITY
+    GAS
 }
 
 enum RequestType {
-  ADD
-  UPDATE
-  DELETE
+    ADD
+    UPDATE
+    DELETE
 }
 
 enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
+    PENDING
+    APPROVED
+    REJECTED
 }
 
 enum ReportType {
-  DAILY
-  WEEKLY
-  MONTHLY
+    DAILY
+    WEEKLY
+    MONTHLY
+}
+
+// ─── LOCATION ─────────────────────────────────────────────────────────────────
+
+model Location {
+    locationId   String  @id @default(cuid()) @map("Location_ID")
+    locationName String? @map("Location_name")
+
+    devices Device[] // owning side
+
+    @@map("LOCATION")
+}
+
+// ─── USER (superclass) ────────────────────────────────────────────────────────
+
+model User {
+    userId    String   @id @default(cuid()) @map("User_ID")
+    username  String   @unique @map("Username")
+    email     String   @unique @map("Email")
+    password  String   @map("Password")
+    firstName String?  @map("F_name")
+    lastName  String?  @map("L_name")
+    role      Role     @default(CUSTOMER) @map("Role")
+    createdAt DateTime @default(now()) @map("Created_at") // Adding field
+
+    // owning side
+    notifications Notification[]
+    customer      Customer?
+    admin         Admin?
+    refreshTokens  RefreshToken[]
+
+    @@map("USER")
+}
+
+// ─── CUSTOMER (subclass of USER) ──────────────────────────────────────────────
+
+model Customer {
+    userId  String  @id @map("User_ID")
+    adminId String? @map("Customer_AdminID")
+
+    // superclass
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+    // managed by Admin
+    admin Admin? @relation("AdminManagesCustomer", fields: [adminId], references: [userId])
+
+    // owning side
+    actuators Actuator[]
+    schedules Schedule[]
+    reports   Report[]
+    requests  Request[]  @relation("CustomerRequests")
+
+    @@index([adminId])
+    @@map("CUSTOMER")
+}
+
+// ─── ADMIN (subclass of USER) ─────────────────────────────────────────────────
+
+model Admin {
+    userId String @id @map("User_ID")
+
+    // superclass
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+    // owning side
+    customers Customer[] @relation("AdminManagesCustomer")
+    requests  Request[]  @relation("AdminHandlesRequest")
+
+    @@map("ADMIN")
+}
+
+// ─── DEVICE (superclass) ──────────────────────────────────────────────────────
+
+model Device {
+    deviceId   String  @id @default(cuid()) @map("Device_ID")
+    serial     String  @unique @map("Serial")
+    tbDeviceId String  @unique @map("TB_Device_ID")
+    deviceName String? @map("Device_name")
+    status     DeviceStatus? @map("Status")
+    deviceType DeviceType? @map("Device_type")
+    locationId String? @map("Device_LocationID")
+
+    location Location? @relation(fields: [locationId], references: [locationId])
+
+    // owning side
+    notifications Notification[]
+    requests      Request[]
+
+    // subclass relations (1-1)
+    actuator Actuator?
+    sensor   Sensor?
+
+    @@index([locationId])
+    @@index([serial])
+    @@map("DEVICE")
+}
+
+// ─── ACTUATOR (subclass of DEVICE) ────────────────────────────────────────────
+
+model Actuator {
+    deviceId   String  @id @map("Device_ID")
+    customerId String? @map("Actuator_CustomerID")
+
+    // superclass
+    device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
+    // controlled by Customer
+    customer Customer? @relation(fields: [customerId], references: [userId])
+
+    schedules Schedule[]
+
+    @@index([customerId])
+    @@map("ACTUATOR")
+}
+
+// ─── SENSOR (subclass of DEVICE) ──────────────────────────────────────────────
+
+model Sensor {
+    deviceId  String  @id @map("Device_ID")
+    unit      String? @map("Unit")
+    threshold Float? @map("Threshold")
+
+    // superclass
+    device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
+    data        Data[]
+    summaryData SummaryData[]
+
+    @@map("SENSOR")
+}
+
+// ─── DATA (weak entity) ───────────────────────────────────────────────────────
+
+model Data {
+    timestamp DateTime @map("Time_stamp")
+    sensorId  String   @map("Sensor_ID")
+    dataType  DataType   @map("Data_type")
+    value     Float?  @map("Value")
+
+    sensor Sensor @relation(fields: [sensorId], references: [deviceId], onDelete: Cascade)
+
+    @@id([timestamp, sensorId, dataType])
+    @@index([sensorId, timestamp]) // query range theo sensor + thời gian
+    @@map("DATA")
+}
+
+// ─── NOTIFICATION ─────────────────────────────────────────────────────────────
+
+model Notification {
+    notiId    String   @id @default(cuid()) @map("Noti_ID")
+    title     String?  @map("Title")
+    content   String?  @map("Content")
+    isRead    Boolean  @default(false) @map("Is_read")
+    createdAt DateTime @default(now()) @map("Created_at")
+    userId    String   @map("Noti_UserID")
+    deviceId  String?  @map("Noti_DeviceID")
+
+    user   User    @relation(fields: [userId], references: [userId], onDelete: Cascade)
+    device Device? @relation(fields: [deviceId], references: [deviceId])
+
+    @@index([userId]) // query: thông báo của user
+    @@index([deviceId]) // query: thông báo theo thiết bị
+    @@index([userId, isRead]) // query: thông báo chưa đọc của user
+    @@map("NOTIFICATION")
+}
+
+// ─── REQUEST ──────────────────────────────────────────────────────────────────
+
+model Request {
+    requestId   String   @id @default(cuid()) @map("Request_ID")
+    content     String?  @map("Content")
+    requestType RequestType?    @map("Request_type")
+    status      RequestStatus?  @map("Status")
+    createdAt   DateTime @default(now()) @map("Created_at")
+    note        String?  @map("Note")
+    serial      String?  @map("Serial")
+    deviceId    String?  @map("Request_DeviceID")
+    customerId  String?  @map("Request_UserID") // optional: request có thể từ system
+    adminId     String?  @map("Request_AdminID") // optional: chưa assign admin
+
+    device   Device?   @relation(fields: [deviceId], references: [deviceId])
+    customer Customer? @relation("CustomerRequests", fields: [customerId], references: [userId])
+    admin    Admin?    @relation("AdminHandlesRequest", fields: [adminId], references: [userId])
+
+    @@index([customerId]) // query: request của customer
+    @@index([adminId]) // query: request admin đang xử lý
+    @@index([deviceId]) // query: request liên quan thiết bị
+    @@index([status, createdAt]) // query: lọc theo status + sort thời gian
+    @@map("REQUEST")
+}
+
+// ─── SCHEDULE ─────────────────────────────────────────────────────────────────
+
+model Schedule {
+    scheduleId String    @id @default(cuid()) @map("Schedule_ID")
+    duration   Int?      @map("Duration")
+    action     String?   @map("Action")
+    frequency  Frequency?   @map("Frequency")
+    startTime  DateTime? @map("Start_time")
+    customerId String    @map("Sched_UserID")
+    actuatorId String    @map("Sched_DeviceID")
+
+    customer Customer @relation(fields: [customerId], references: [userId])
+    actuator Actuator @relation(fields: [actuatorId], references: [deviceId])
+
+    @@index([customerId]) // query: lịch của customer
+    @@index([actuatorId]) // query: lịch của thiết bị
+    @@map("SCHEDULE")
+}
+
+// ─── REPORT ───────────────────────────────────────────────────────────────────
+
+model Report {
+    reportId   String    @id @default(cuid()) @map("Report_ID")
+    reportType ReportType?   @map("Report_type")
+    createdAt  DateTime  @default(now()) @map("Created_at")
+    startTime  DateTime? @map("Start_time")
+    endTime    DateTime? @map("End_time")
+    customerId String    @map("Report_UserID")
+
+    customer    Customer      @relation(fields: [customerId], references: [userId])
+    summaryData SummaryData[]
+
+    @@index([customerId]) // query: report của customer
+    @@map("REPORT")
+}
+
+// ─── SUMMARY_DATA (weak entity, PK = metricName + reportId) ──────────────────
+
+model SummaryData {
+    metricName String  @map("Metric_name")
+    reportId   String  @map("Report_ID")
+    sensorId   String  @map("Sensor_ID")
+    value      Float? @map("Value")
+
+    report Report @relation(fields: [reportId], references: [reportId], onDelete: Cascade)
+    sensor Sensor @relation(fields: [sensorId], references: [deviceId])
+
+    @@id([metricName, reportId])
+    @@index([sensorId]) // query: summary theo sensor
+    @@index([reportId]) // query: tất cả metrics của 1 report
+    @@map("SUMMARY_DATA")
+}
+
+// ─── REFRESH_TOKEN ───────────────────────────────────────────────────────────────────
+model RefreshToken {
+    id String @id @default(cuid()) @map("ID")
+    token String @unique @map("Token")
+    userId String @map("User_ID")
+    createdAt DateTime @default(now()) @map("Created_at")
+    expiresAt DateTime @map("Expires_at")
+    revoked Boolean @default(false) @map("Revoked")
+
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+
+    @@index([userId])
+    @@index([token])
+    @@map("REFRESH_TOKEN")
 }

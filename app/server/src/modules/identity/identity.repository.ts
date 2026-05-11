@@ -52,7 +52,12 @@ export class IdentityRepository {
     lastName: string;
   }): Promise<UserResponse> {
     return prisma.user.create({
-      data,
+      data: {
+        ...data,
+        customer: {
+          create: {} // Tự động tạo bản ghi trong bảng CUSTOMER
+        }
+      },
       select: {
         userId: true,
         email: true,

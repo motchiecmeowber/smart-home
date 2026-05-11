@@ -4,6 +4,8 @@ import { actuatorService } from "./actuator.service";
 import { createDeviceDto, updateDeviceDto, controlActuatorDto } from "./hardware.dto";
 import { requestService } from "../request/request.service";
 import { sendSuccess, HttpError } from "../../common/app-error";
+import { sensorService } from "./sensor.service";
+import { DeviceType } from "@prisma/client";
 
 export class HardwareController {
   async addDevice(req: Request, res: Response, next: NextFunction) {
@@ -19,11 +21,14 @@ export class HardwareController {
   async getDevices(req: Request, res: Response, next: NextFunction) {
     try {
       const { locationId, deviceType } = req.query;
+      const userId = (req as any).userId;
+      const role = (req as any).role;
+
       const filters: any = {};
       if (locationId) filters.locationId = String(locationId);
       if (deviceType) filters.deviceType = String(deviceType);
 
-      const devices = await deviceService.getDevices(filters);
+      const devices = await deviceService.getDevices(filters, userId, role);
       return sendSuccess(res, 200, devices);
     } catch (error) {
       next(error);
@@ -97,10 +102,10 @@ export class HardwareController {
         `Location ID: ${locationId || "N/A"}`
       ];
 
-      if (deviceType === "SENSOR") {
+      if (deviceType === DeviceType.SENSOR) {
         if (unit) infoParts.push(`Unit: ${unit}`);
         if (threshold !== undefined) infoParts.push(`Threshold: ${threshold}`);
-      } else if (deviceType === "ACTUATOR") {
+      } else if (deviceType === DeviceType.ACTUATOR) {
         // Có thể thêm các thông tin riêng cho Actuator ở đây nếu cần
         infoParts.push("Role: Actuator Control");
       }
@@ -146,6 +151,16 @@ export class HardwareController {
     }
   }
 
+  async syncDevices(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).userId;
+      const result = await deviceService.syncDevicesFromThingsBoard(userId);
+      return sendSuccess(res, 200, result, `Successfully synced ${result.createdCount} devices from ThingsBoard`);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async controlActuator(req: Request, res: Response, next: NextFunction) {
     try {
       const id = req.params.id as string;
@@ -157,6 +172,18 @@ export class HardwareController {
       return sendSuccess(res, 200, result, result.message);
     } catch (error) {
       next(error);
+    }
+  }
+
+  async syncSensorTelemetry(req: any, res: Response, next: NextFunction) {
+    try {
+      const deviceId = req.params.id;
+      const hours = req.query.hours;
+      const result = await sensorService.syncTelemetry(deviceId, [], hours ? parseInt(hours as string) : 24);
+
+      return sendSuccess(res, 200, result, "Telemetry synced successfully");
+    } catch (error) {
+      next(error)
     }
   }
 }

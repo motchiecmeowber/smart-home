@@ -1,15 +1,17 @@
-import { analyticsRepo } from "./analytics.repository";
-import { DataType } from "@prisma/client";
+// import { analyticsRepo } from "./analytics.repository";
+// import { ReportType } from "@prisma/client";
 
-export class AnalyticsService {
-  async recordSensorData(deviceId: string, type: DataType, value: number, timestamp: Date = new Date()) {
-    return analyticsRepo.createSensorData({
-      timestamp,
-      dataType: type,
-      value: value,
-      sensor: { connect: { deviceId } }
-    });
-  }
-}
+// export class AnalyticsService {
+//   async generateReport(customerId: string, reportType: ReportType, startTime: Date, endTime: Date) {
+//     // Lấy danh sách các sensor liên quan (có thể lọc theo customer)   
+//     // Logic tính toán thống kê cho từng loại sensor...
+    
+//     return { message: "Report generation logic to be implemented here" };
+//   }
 
-export const analyticsService = new AnalyticsService();
+//   async getCustomerReports(customerId: string) {
+//     return analyticsRepo.getReportsByCustomer(customerId);
+//   }
+// }
+
+// export const analyticsService = new AnalyticsService();

@@ -1,6 +1,5 @@
-import { includes } from "zod";
 import { prisma } from "../../config/prisma";
-import { Frequency, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export class AutomationRepository {
   async createSchedule(data: Prisma.ScheduleCreateInput) {

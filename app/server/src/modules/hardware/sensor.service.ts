@@ -1,39 +1,52 @@
 import { hardwareRepo } from "./hardware.repository";
-import { DataType } from "@prisma/client";
-import { interactionService } from "../interaction/interaction.service";
-import { analyticsService } from "../analytics/analytics.service";
+import { getDeviceTelemetry, getDeviceTelemetryKeys } from "../../config/tb-api";
+import { DataType, DeviceType } from "@prisma/client";
 
 export class SensorService {
-  async saveTelemetry(serial: string, data: Record<string, any>) {
-    const device = await hardwareRepo.getDeviceBySerial(serial);
-    if (!device || device.deviceType !== "SENSOR") {
-      console.warn(`Ignored telemetry for unknown or non-sensor serial: ${serial}`);
-      return;
+  async syncTelemetry(deviceId: string, keys?: string[], hours = 24) {
+    const device = await hardwareRepo.getDeviceById(deviceId);
+    if (!device || !device.tbDeviceId || device.deviceType !== DeviceType.SENSOR) return { count: 0 };
+
+    let targetKeys = keys || [];
+    if (targetKeys.length === 0) {
+      targetKeys = await getDeviceTelemetryKeys(device.tbDeviceId);
     }
 
-    const timestamp = new Date();
+    if (targetKeys.length === 0) return { count: 0 };
 
-    const metrics: { type: DataType; value: number }[] = [];
+    const endTs = Date.now();
+    const startTs = endTs - hours * 60 * 60 * 1000;
 
-    if (data.temperature !== undefined) {
-      metrics.push({ type: "TEMPERATURE", value: Number(data.temperature) });
+    const tbTelemetry = await getDeviceTelemetry(device.tbDeviceId, targetKeys, startTs, endTs);
+    
+    const dataToCreate: any[] = [];
+    for (const [key, values] of Object.entries(tbTelemetry)) {
+      const dataType = this.mapTbKeyToDataType(key);
+      if (!dataType) continue;
+
+      for (const item of values) {
+        dataToCreate.push({
+          timestamp: new Date(item.ts),
+          sensorId: deviceId,
+          dataType: dataType,
+          value: parseFloat(item.value.toString()),
+        });
+      }
     }
-    if (data.humidity !== undefined) {
-      metrics.push({ type: "HUMIDITY", value: Number(data.humidity) });
-    }
-    if (data.gas_value !== undefined) {
-      metrics.push({ type: "GAS", value: Number(data.gas_value) });
+
+    if (dataToCreate.length > 0) {
+      await hardwareRepo.createManySensorData(dataToCreate);
     }
 
-    await Promise.all(
-      metrics.map(async (metric) => {
-        await analyticsService.recordSensorData(device.deviceId, metric.type, metric.value, timestamp);
+    return { count: dataToCreate.length };
+  }
 
-        if (device.sensor?.threshold !== null && device.sensor?.threshold !== undefined) 
-          await interactionService.checkThresholdAndAlert(device.deviceId, metric.type, metric.value, device.sensor.threshold);
-        
-      })
-    )
+  private mapTbKeyToDataType(key: string): DataType | null {
+    const k = key.toLowerCase();
+    if (k.includes("temperature")) return DataType.TEMPERATURE;
+    if (k.includes("humidity")) return DataType.HUMIDITY;
+    if (k.includes("gas")) return DataType.GAS;
+    return null;
   }
 }
 

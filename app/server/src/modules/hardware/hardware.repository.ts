@@ -6,9 +6,17 @@ export class HardwareRepository {
     return prisma.device.create({ data });
   }
 
-  async getDevices(filters?: { locationId?: string; deviceType?: DeviceType }) {
+  async getDevices(filters?: { locationId?: string; deviceType?: DeviceType }, userId?: string, role?: string) {
+    const where: any = { ...filters };
+
+    // Nếu là CUSTOMER, chỉ lấy những thiết bị mà họ sở hữu
+    // (Hiện tại chỉ có Actuator là có customerId)
+    if (role === "CUSTOMER" && userId) {
+      where.actuator = { customerId: userId };
+    }
+
     return prisma.device.findMany({
-      where: filters,
+      where,
       include: {
         sensor: true,
         actuator: true,
@@ -24,6 +32,12 @@ export class HardwareRepository {
         sensor: true,
         actuator: true,
       },
+    });
+  }
+
+  async getDeviceByTbId(tbDeviceId: string) {
+    return prisma.device.findMany({
+      where: { tbDeviceId },
     });
   }
 
@@ -47,6 +61,17 @@ export class HardwareRepository {
   async deleteDevice(deviceId: string) {
     return prisma.device.delete({
       where: { deviceId },
+    });
+  }
+
+  async createSensorData(data: Prisma.DataCreateInput) {
+    return prisma.data.create({ data });
+  }
+
+  async createManySensorData(data: Prisma.DataCreateManyInput[]) {
+    return prisma.data.createMany({
+      data,
+      skipDuplicates: true,
     });
   }
 }

@@ -1,6 +1,6 @@
 # Smart Home Backend API
 
-Đây là RESTful API phục vụ cho hệ thống Smart Home, chịu trách nhiệm quản lý người dùng, thiết bị, quy trình tự động hóa và giao tiếp trực tiếp với ThingsBoard thông qua giao thức MQTT.
+Đây là RESTful API phục vụ cho hệ thống Smart Home, chịu trách nhiệm quản lý người dùng, thiết bị, quy trình tự động hóa và giao tiếp trực tiếp với ThingsBoard thông qua REST API.
 
 ## Công nghệ sử dụng
 - **Framework:** Express.js (Node.js)
@@ -23,7 +23,7 @@ server/
 │   ├── config/
 │   │   ├── env.ts                          # Validate biến môi trường bằng Zod
 │   │   ├── prisma.ts                       # Khởi tạo instance kết nối Prisma Client
-│   │   └── thingsboard.ts                  # Cấu hình kết nối MQTT tới broker ThingsBoard
+│   │   └── tb-api.ts                       # Cấu hình giao tiếp REST API tới ThingsBoard
 │   ├── docs/
 │   │   └── openapi.ts                      # Tự động sinh tài liệu Swagger UI (zod-to-openapi)
 │   ├── middlewares/
@@ -44,7 +44,7 @@ server/
 │   │   │   ├── automation.routes.ts
 │   │   │   └── automation.service.ts
 │   │   ├── hardware/                       # Quản lý thiết bị IoT (Device, Sensor, Actuator)
-│   │   │   ├── actuator.service.ts         # Điều khiển thiết bị chấp hành qua MQTT RPC
+│   │   │   ├── actuator.service.ts         # Điều khiển thiết bị chấp hành qua ThingsBoard RPC
 │   │   │   ├── device.service.ts           # CRUD logic cho Device
 │   │   │   ├── hardware.controller.ts
 │   │   │   ├── hardware.dto.ts

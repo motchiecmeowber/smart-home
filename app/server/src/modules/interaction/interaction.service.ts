@@ -2,6 +2,7 @@ import { interactionRepo } from "./interaction.repository";
 import { hardwareRepo } from "../hardware/hardware.repository";
 import { sendRpcCommand } from "../../config/tb-api";
 import { HttpError } from "@/common/app-error";
+import { DeviceType } from "@prisma/client";
 
 export class InteractionService {
   async checkThresholdAndAlert(deviceId: string, dataType: string, value: number, threshold: number) {
@@ -14,7 +15,7 @@ export class InteractionService {
         // Find an actuator in the same location that acts as a buzzer/alarm
         const devicesInLocation = await hardwareRepo.getDevices({
           locationId: triggeringDevice.locationId,
-          deviceType: "ACTUATOR"
+          deviceType: DeviceType.ACTUATOR
         });
 
         const buzzer = devicesInLocation.find(d =>
@@ -41,7 +42,7 @@ export class InteractionService {
         // If sensor has no direct owner, find the owner of any actuator in the same location
         const actuatorsInLocation = await hardwareRepo.getDevices({
           locationId: triggeringDevice.locationId,
-          deviceType: "ACTUATOR"
+          deviceType: DeviceType.ACTUATOR
         });
         targetUserId = actuatorsInLocation.find(a => a.actuator?.customerId)?.actuator?.customerId;
       }

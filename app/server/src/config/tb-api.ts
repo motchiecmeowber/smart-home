@@ -1,55 +1,149 @@
 import { env } from "./env";
+import { DeviceStatus } from "@prisma/client";
+import { redisClient } from "./redis";
+import { REDIS_KEYS } from "./redis.keys";
 
-// HELPERS
-function tbHeader() {
-  const token = env.THINGSBOARD_API_TOKEN;
-  if (!token)
-    throw new Error("Missing THINGSBOARD_API_TOKEN in.env");
+// HELPER: Get Dynamic Token
+async function getTbToken(): Promise<string> {
+  const cached = await redisClient.get(REDIS_KEYS.tbToken);
+  if (cached) return cached;
 
+  console.log("Logging into ThingsBoard to get new token...");
+  const res = await fetch(`https://${env.THINGSBOARD_HOST}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: env.THINGSBOARD_USERNAME,
+      password: env.THINGSBOARD_PASSWORD,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`ThingsBoard Login Failed -> ${res.status}: ${errorText}`);
+  }
+
+  const data = await res.json();
+  const token = data.token;
+
+  // Cache for 90 minutes
+  await redisClient.set(REDIS_KEYS.tbToken, token, { EX: 5400 });
+
+  return token;
+}
+
+async function tbHeader(): Promise<Record<string, string>> {
+  const token = await getTbToken();
   return {
     "Content-Type": "application/json",
-    "X-Authorization": `Bearer ${token}`
-  }
+    "X-Authorization": `Bearer ${token}`,
+  };
 }
 
 function tbUrl(path: string) {
   return `https://${env.THINGSBOARD_HOST}${path}`;
 }
 
-// RPC
-export async function sendRpcCommand(deviceId: string, method: string, params: any, timeout = 5000) {
-  const response = await fetch(tbUrl(`/api/rpc/twoway/${deviceId}`), {
-    method: "POST",
-    headers: tbHeader(),
-    body: JSON.stringify({
-      method: method,
-      params: params,
-      timeout,
-    })
+async function tbFetch<T = void>(path: string, options: RequestInit): Promise<T> {
+  const headers = await tbHeader();
+  const res = await fetch(tbUrl(path), {
+    ...options,
+    headers: { ...headers, ...(options.headers ?? {}) },
   });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ThingsBoard RPC (twoway) failed: ${response.status} - ${errorText}`);
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    throw new Error(`ThingsBoard ${options.method ?? "GET"} ${path} -> ${res.status}: ${errorText}`);
   }
 
-  return await response.json();
+  const text = await res.text();
+  if (!text) return undefined as unknown as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as unknown as T;
+  }
 }
 
-export async function sendRpcCommandOneWay(deviceId: string, method: string, params: any) {
-  const response = await fetch(tbUrl(`/api/rpc/oneway/${deviceId}`), {
+// RPC
+/*
+Two-way RPC: wait for device response within timeout
+For: read back value from device
+*/
+export async function sendRpcRequest<T = any>(deviceId: string, method: string, params: Record<string, any>, timeout = 5000)
+  : Promise<T> {
+  return tbFetch<T>(`/api/rpc/twoway/${deviceId}?timeout=${timeout}`, {
     method: "POST",
-    headers: tbHeader(),
-    body: JSON.stringify({
-      method: method,
-      params: params
-    })
+    body: JSON.stringify({ method: method, params: params })
   });
+}
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`ThingsBoard RPC (oneway) failed: ${response.status} - ${errorText}`);
+/*
+One-way RPC: BE sends command ----> TB --> DEVICE
+Not wait for device response
+For: LED control, buzzer trigger
+*/
+export async function sendRpcCommand(tbDeviceId: string, method: string, params: any) {
+  await tbFetch(`/api/rpc/oneway/${tbDeviceId}`, {
+    method: "POST",
+    body: JSON.stringify({ method, params })
+  });
+}
+
+// CLIENT ATTRIBUTES
+export async function getClientAttributes(
+  tbDeviceId: string,
+  keys: string[] = ["tempLed", "humiLed"]
+): Promise<Record<string, any>> {
+  const raw = await tbFetch<{ key: string; value: any }[]>(
+    `/api/plugins/telemetry/DEVICE/${tbDeviceId}/values/attributes/CLIENT_SCOPE?keys=${keys.join(",")}`,
+    { method: "GET" }
+  );
+  return Object.fromEntries((raw ?? []).map((a) => [a.key, a.value]));
+}
+
+// DEVICES
+export async function getDeviceStatus(tbDeviceId: string): Promise<DeviceStatus> {
+  try {
+    const raw = await tbFetch<{ key: string; value: any }[]>(
+      `/api/plugins/telemetry/DEVICE/${tbDeviceId}/values/attributes/SERVER_SCOPE?keys=active`,
+      { method: "GET" }
+    );
+    const activeAttr = raw?.find(a => a.key === "active");
+    return activeAttr?.value === true ? "ONLINE" : "OFFLINE";
+  } catch {
+    return "OFFLINE";
   }
+}
 
-  return await response.json();
+export async function getTenantDevices(pageSize = 20, page = 0): Promise<any> {
+  return tbFetch<any>(`/api/tenant/devices?pageSize=${pageSize}&page=${page}`, {
+    method: "GET",
+  });
+}
+
+// export async function getCustomerDevices(customerId: string, pageSize = 100, page = 0): Promise<any> {
+//   return tbFetch<any>(`/api/customer/${customerId}/devices?pageSize=${pageSize}&page=${page}`, {
+//     method: "GET",
+//   });
+// }
+
+// TELEMETRY
+export async function getDeviceTelemetry(
+  tbDeviceId: string,
+  keys: string[],
+  startTs: number,
+  endTs: number,
+  limit = 1000
+): Promise<Record<string, { ts: number; value: any }[]>> {
+  const keysStr = keys.join(",");
+  const url = `/api/plugins/telemetry/DEVICE/${tbDeviceId}/values/timeseries?keys=${keysStr}&startTs=${startTs}&endTs=${endTs}&limit=${limit}`;
+  
+  return tbFetch<Record<string, { ts: number; value: any }[]>>(url, {
+    method: "GET",
+  });
+}
+
+export async function getDeviceTelemetryKeys(tbDeviceId: string): Promise<string[]> {
+  return tbFetch<string[]>(`/api/plugins/telemetry/DEVICE/${tbDeviceId}/keys/timeseries`, { method: "GET" });
 }
