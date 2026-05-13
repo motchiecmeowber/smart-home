@@ -83,6 +83,8 @@ model User {
     admin         Admin?
     refreshTokens  RefreshToken[]
 
+    @@index([username])
+    @@index([email])
     @@map("USER")
 }
 
@@ -100,6 +102,7 @@ model Customer {
 
     // owning side
     actuators Actuator[]
+    sensors   Sensor[]
     schedules Schedule[]
     reports   Report[]
     requests  Request[]  @relation("CustomerRequests")
@@ -128,7 +131,7 @@ model Admin {
 model Device {
     deviceId   String  @id @default(cuid()) @map("Device_ID")
     serial     String  @unique @map("Serial")
-    tbDeviceId String  @unique @map("TB_Device_ID")
+    tbDeviceId String  @map("TB_Device_ID")
     deviceName String? @map("Device_name")
     status     DeviceStatus? @map("Status")
     deviceType DeviceType? @map("Device_type")
@@ -171,11 +174,15 @@ model Actuator {
 
 model Sensor {
     deviceId  String  @id @map("Device_ID")
+    customerId String? @map("Sensor_CustomerID")
     unit      String? @map("Unit")
     threshold Float? @map("Threshold")
 
     // superclass
     device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
+    // possessed by Customer
+    customer Customer? @relation(fields: [customerId], references: [userId])
 
     data        Data[]
     summaryData SummaryData[]

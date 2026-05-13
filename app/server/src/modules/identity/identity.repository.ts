@@ -44,19 +44,28 @@ export class IdentityRepository {
     });
   }
 
-  async createUser(data: {
+  async createCustomer(data: {
     email: string;
     username: string;
     password: string;
     firstName: string;
     lastName: string;
   }): Promise<UserResponse> {
+    const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+
+    if (!admin) {
+      throw new Error("No admin user found. Please create an admin user first.");
+    }
+
     return prisma.user.create({
       data: {
         ...data,
+        role: "CUSTOMER",
         customer: {
-          create: {} // Tự động tạo bản ghi trong bảng CUSTOMER
-        }
+          create: {
+            adminId: admin.userId,
+          },
+        },
       },
       select: {
         userId: true,

@@ -1,0 +1,38 @@
+-- DropIndex
+DROP INDEX "DEVICE_TB_Device_ID_key";
+
+-- AlterTable
+ALTER TABLE "SENSOR" ADD COLUMN     "Sensor_CustomerID" TEXT;
+
+-- CreateTable
+CREATE TABLE "REFRESH_TOKEN" (
+    "ID" TEXT NOT NULL,
+    "Token" TEXT NOT NULL,
+    "User_ID" TEXT NOT NULL,
+    "Created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "Expires_at" TIMESTAMP(3) NOT NULL,
+    "Revoked" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "REFRESH_TOKEN_pkey" PRIMARY KEY ("ID")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "REFRESH_TOKEN_Token_key" ON "REFRESH_TOKEN"("Token");
+
+-- CreateIndex
+CREATE INDEX "REFRESH_TOKEN_User_ID_idx" ON "REFRESH_TOKEN"("User_ID");
+
+-- CreateIndex
+CREATE INDEX "REFRESH_TOKEN_Token_idx" ON "REFRESH_TOKEN"("Token");
+
+-- CreateIndex
+CREATE INDEX "USER_Username_idx" ON "USER"("Username");
+
+-- CreateIndex
+CREATE INDEX "USER_Email_idx" ON "USER"("Email");
+
+-- AddForeignKey
+ALTER TABLE "SENSOR" ADD CONSTRAINT "SENSOR_Sensor_CustomerID_fkey" FOREIGN KEY ("Sensor_CustomerID") REFERENCES "CUSTOMER"("User_ID") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "REFRESH_TOKEN" ADD CONSTRAINT "REFRESH_TOKEN_User_ID_fkey" FOREIGN KEY ("User_ID") REFERENCES "USER"("User_ID") ON DELETE CASCADE ON UPDATE CASCADE;

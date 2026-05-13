@@ -39,7 +39,7 @@ export class IdentityService {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
-    const user = await this.repository.createUser({
+    const user = await this.repository.createCustomer({
       email: data.email,
       username: data.userName,
       password: hashedPassword,
