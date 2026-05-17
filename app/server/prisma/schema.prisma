@@ -52,6 +52,7 @@ enum ReportType {
     DAILY
     WEEKLY
     MONTHLY
+    CUSTOM
 }
 
 // ─── LOCATION ─────────────────────────────────────────────────────────────────
@@ -277,6 +278,7 @@ model Report {
     createdAt  DateTime  @default(now()) @map("Created_at")
     startTime  DateTime? @map("Start_time")
     endTime    DateTime? @map("End_time")
+    targetDate DateTime? @map("Target_time")
     customerId String    @map("Report_UserID")
 
     customer    Customer      @relation(fields: [customerId], references: [userId])

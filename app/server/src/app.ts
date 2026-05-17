@@ -16,6 +16,7 @@ import { automationRouter } from "./modules/automation/automation.routes";
 import { interactionRouter } from "./modules/interaction/interaction.routes";
 import { locationRouter } from "./modules/location/location.routes";
 import { requestRouter } from "./modules/request/request.routes";
+import { analyticsRouter } from "./modules/analytics/analytics.routes";
 import { automationService } from "./modules/automation/automation.service";
 
 const app = express();
@@ -51,6 +52,7 @@ app.use("/api", automationRouter);
 app.use("/api", interactionRouter);
 app.use("/api", locationRouter);
 app.use("/api", requestRouter);
+app.use("/api", analyticsRouter);
 app.use("/api/auth", identityRouter);
 
 app.use(notFoundHandler);

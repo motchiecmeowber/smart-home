@@ -1,5 +1,6 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
+import { apiError, apiSuccess } from "@/common/api-response";
 
 import { createScheduleDto, updateScheduleDto } from "@/modules/automation/automation.dto";
 
@@ -21,7 +22,14 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
             content: { "application/json": { schema: createScheduleDto } }
             }
         },
-        responses: { 201: { description: "Created successfully" } }
+        responses: {
+            201: {
+                description: "Created successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            400: { description: "Bad Request", content: { "application/json": { schema: apiError } } },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -30,7 +38,13 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
         summary: "[CUSTOMER] Get schedules for current user",
         tags: ["Automation"],
         security: [{ bearerAuth: [] }],
-        responses: { 200: { description: "Success" } }
+        responses: {
+            200: {
+                description: "Success",
+                content: { "application/json": { schema: apiSuccess(z.array(z.any())) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -42,7 +56,14 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
         request: {
             params: z.object({ id: z.string().openapi({ description: "Schedule ID" }) })
         },
-        responses: { 200: { description: "Success" } }
+        responses: {
+            200: {
+                description: "Success",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            404: { description: "Schedule not found", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -57,7 +78,15 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
             content: { "application/json": { schema: updateScheduleDto } }
             }
         },
-        responses: { 200: { description: "Updated successfully" } }
+        responses: {
+            200: {
+                description: "Updated successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            400: { description: "Bad Request", content: { "application/json": { schema: apiError } } },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            404: { description: "Schedule not found", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -67,6 +96,13 @@ export function registerAutomationDocs(registry: OpenAPIRegistry){
         tags: ["Automation"],
         security: [{ bearerAuth: [] }],
         request: { params: z.object({ id: z.string().openapi({ description: "Schedule ID" }) }) },
-        responses: { 200: { description: "Deleted successfully" } }
+        responses: {
+            200: {
+                description: "Deleted successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            404: { description: "Schedule not found", content: { "application/json": { schema: apiError } } }
+        }
     });
 }

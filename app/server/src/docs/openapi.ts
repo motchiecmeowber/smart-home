@@ -7,6 +7,7 @@ import { registerHardwareDocs } from "./hardware.docs";
 import { registerInteractionDocs } from "./interaction.docs";
 import { registerRequestDocs } from "./request.docs";
 import { registerLocationDocs } from "./location.docs";
+import { registerAnalyticsDocs } from "./analytics.docs";
 
 const registry = new OpenAPIRegistry();
 
@@ -30,6 +31,7 @@ registerHardwareDocs(registry);
 registerInteractionDocs(registry);
 registerRequestDocs(registry);
 registerLocationDocs(registry);
+registerAnalyticsDocs(registry);
 
 export const openApiDocument = new OpenApiGeneratorV3(registry.definitions).generateDocument({
     openapi: "3.0.3",

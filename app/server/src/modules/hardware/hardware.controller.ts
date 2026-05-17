@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { deviceService } from "./device.service";
 import { actuatorService } from "./actuator.service";
-import { createDeviceDto, updateDeviceDto, controlActuatorDto } from "./hardware.dto";
+import { createDeviceDto, updateDeviceDto, controlActuatorDto, updateThresholdDto } from "./hardware.dto";
 import { requestService } from "../request/request.service";
 import { sendSuccess, HttpError } from "../../common/app-error";
 import { sensorService } from "./sensor.service";
@@ -153,8 +153,7 @@ export class HardwareController {
 
   async syncDevices(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = (req as any).userId;
-      const result = await deviceService.syncDevicesFromThingsBoard(userId);
+      const result = await deviceService.syncDevicesFromThingsBoard();
       return sendSuccess(res, 200, result, `Successfully synced ${result.createdCount} devices from ThingsBoard`);
     } catch (error) {
       next(error);
@@ -179,11 +178,35 @@ export class HardwareController {
     try {
       const deviceId = req.params.id;
       const hours = req.query.hours;
-      const result = await sensorService.syncTelemetry(deviceId, [], hours ? parseInt(hours as string) : 24);
+      const { userId, role } = req as any;
+      const result = await sensorService.syncTelemetry(deviceId, [], hours ? parseInt(hours as string) : 24, { userId, role });
 
       return sendSuccess(res, 200, result, "Telemetry synced successfully");
     } catch (error) {
       next(error)
+    }
+  }
+
+  async updateThreshold(req: any, res: Response, next: NextFunction) {
+    try {
+      const sensorId = req.params.id;
+      const { threshold } = updateThresholdDto.parse(req.body);
+      const customerId = (req as any).userId;
+      const device = await deviceService.getDeviceById(sensorId);
+
+      if (!device || device.deviceType !== DeviceType.SENSOR) {
+        throw new HttpError(404, "Sensor not found");
+      }
+
+      if (device.sensor?.customerId !== customerId) {
+        throw new HttpError(403, "Forbidden: You do not own this sensor");
+      }
+
+      const updated = await deviceService.updateDevice(sensorId, { threshold });
+
+      return sendSuccess(res, 200, updated, "Sensor threshold updated successfully");
+    } catch (error) {
+      next(error);
     }
   }
 }

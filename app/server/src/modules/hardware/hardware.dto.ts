@@ -26,3 +26,7 @@ export const updateDeviceDto = createDeviceDto
 export const controlActuatorDto = z.object({
   action: z.enum(["ON", "OFF"]),
 }).openapi("ControlActuator");
+
+export const updateThresholdDto = z.object({
+  threshold: z.number().min(0, "Threshold must be greater than or equal to 0")
+}).openapi("UpdateThreshold");

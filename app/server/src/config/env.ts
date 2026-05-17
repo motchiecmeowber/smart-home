@@ -27,6 +27,12 @@ const envSchema = z.object({
   TB_RPC_SET_HUMI_LED: z.string().default("setHumiLed"),
   TB_RPC_GET_TEMP_LED: z.string().default("getTempLed"),
   TB_RPC_GET_HUMI_LED: z.string().default("getHumiLed"),
+
+  // SMTP Gmail
+  SMTP_HOST: z.string().default("smtp.gmail.com"),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_USER: z.email({ message: "SMTP_USER must be a valid email" }).optional(),
+  SMTP_PASS: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

@@ -1,6 +1,8 @@
 import { interactionRepo } from "./interaction.repository";
+import { notificationService } from "./notification.service";
 import { hardwareRepo } from "../hardware/hardware.repository";
 import { sendRpcCommand } from "../../config/tb-api";
+import { prisma } from "../../config/prisma";
 import { HttpError } from "@/common/app-error";
 import { DeviceType } from "@prisma/client";
 
@@ -36,7 +38,7 @@ export class InteractionService {
       }
 
       // 2. Create Notification in DB
-      let targetUserId = triggeringDevice?.actuator?.customerId;
+      let targetUserId = triggeringDevice?.sensor?.customerId;
 
       if (!targetUserId && triggeringDevice?.locationId) {
         // If sensor has no direct owner, find the owner of any actuator in the same location
@@ -59,6 +61,27 @@ export class InteractionService {
           console.log(`Saved notification to database for user ${targetUserId}.`);
         } catch (err) {
           console.error("Failed to save notification:", err);
+        }
+
+        try {
+          const user = await prisma.user.findUnique({
+            where: { userId: targetUserId },
+            select: { email: true }
+          });
+
+          if (user?.email) {
+            const subject = `[Smart Home] Cảnh báo an toàn - ${dataType}`;
+            const htmlContent = `
+              <h3>Hệ thống Smart Home cảnh báo</h3>
+              <p>Thiết bị <b>${triggeringDevice?.deviceName ?? "cảm biến"}</b> (Serial: <b>${triggeringDevice?.serial ?? "N/A"}</b>) phát hiện chỉ số <b>${dataType}</b> đạt mức <b>${value}</b>.</p>
+              <p>Ngưỡng an toàn thiết lập: <b>${threshold}</b>.</p>
+              <p>Vui lòng kiểm tra thiết bị của bạn ngay lập tức!</p>
+            `;
+            await notificationService.sendEmailAlert(user.email, subject, htmlContent);
+            console.log(`[EMAIL] Sent to user ${targetUserId}: Cảnh báo ${dataType} vượt ngưỡng!`);
+          }
+        } catch (err) {
+          console.error("Failed to send email notification:", err);
         }
 
         // 3. Push Notification
