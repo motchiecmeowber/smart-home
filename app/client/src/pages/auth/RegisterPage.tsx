@@ -1,15 +1,47 @@
-import { Button, Card, Form, Input, Typography } from 'antd'
+import { useState } from 'react'
+import { Alert, Button, Card, Form, Input, Typography } from 'antd'
 import heroArtwork from '../../assets/hero.png'
 import type { RegisterFormValues } from '../../types/auth'
+import { apiRegister } from '../../lib/authApi'
 import './AuthPage.css'
 
 const { Text, Title } = Typography
 
 type RegisterPageProps = {
   onNavigateLogin: () => void
+  onRegisterSuccess?: () => void
 }
 
-export function RegisterPage({ onNavigateLogin }: RegisterPageProps) {
+export function RegisterPage({ onNavigateLogin, onRegisterSuccess }: RegisterPageProps) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+
+  const handleSubmit = async (values: RegisterFormValues) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      await apiRegister({
+        email: values.email,
+        userName: values.userName,
+        password: values.password,
+        firstName: values.firstName,
+        lastName: values.lastName,
+      })
+
+      setSuccess(true)
+      onRegisterSuccess?.()
+
+      // Auto-redirect to login after 1.5s
+      setTimeout(() => onNavigateLogin(), 1500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Đăng ký thất bại')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <main className="login-page">
       <header className="login-header">
@@ -30,7 +62,7 @@ export function RegisterPage({ onNavigateLogin }: RegisterPageProps) {
           <Form<RegisterFormValues>
             className="login-panel"
             layout="vertical"
-            onFinish={() => undefined}
+            onFinish={handleSubmit}
           >
             <div className="login-panel-heading">
               <Text className="login-kicker">Tạo tài khoản</Text>
@@ -39,23 +71,61 @@ export function RegisterPage({ onNavigateLogin }: RegisterPageProps) {
               </Title>
             </div>
 
+            {error && (
+              <Alert
+                closable
+                description={error}
+                showIcon
+                type="error"
+                onClose={() => setError(null)}
+              />
+            )}
+
+            {success && (
+              <Alert
+                description="Đăng ký thành công! Đang chuyển về trang đăng nhập..."
+                showIcon
+                type="success"
+              />
+            )}
+
             <div className="login-fields">
-              <Form.Item
-                label="Họ và tên"
-                name="fullName"
-                rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
-              >
-                <Input
-                  autoComplete="name"
-                  placeholder="Nhập họ và tên"
-                  size="large"
-                />
-              </Form.Item>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <Form.Item
+                  label="Họ"
+                  name="lastName"
+                  rules={[{ required: true, message: 'Vui lòng nhập họ' }]}
+                  style={{ marginBottom: 0 }}
+                >
+                  <Input
+                    autoComplete="family-name"
+                    placeholder="Nguyễn"
+                    size="large"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  label="Tên"
+                  name="firstName"
+                  rules={[{ required: true, message: 'Vui lòng nhập tên' }]}
+                  style={{ marginBottom: 0 }}
+                >
+                  <Input
+                    autoComplete="given-name"
+                    placeholder="Văn A"
+                    size="large"
+                  />
+                </Form.Item>
+              </div>
 
               <Form.Item
                 label="Tên đăng nhập"
-                name="username"
-                rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}
+                name="userName"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập tên đăng nhập' },
+                  { min: 2, message: 'Tối thiểu 2 ký tự' },
+                  { pattern: /^[a-zA-Z0-9_]+$/, message: 'Chỉ được chứa chữ cái, số và dấu _' },
+                ]}
               >
                 <Input
                   autoComplete="username"
@@ -82,7 +152,10 @@ export function RegisterPage({ onNavigateLogin }: RegisterPageProps) {
               <Form.Item
                 label="Mật khẩu"
                 name="password"
-                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
+                rules={[
+                  { required: true, message: 'Vui lòng nhập mật khẩu' },
+                  { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+                ]}
               >
                 <Input.Password
                   autoComplete="new-password"
@@ -102,7 +175,6 @@ export function RegisterPage({ onNavigateLogin }: RegisterPageProps) {
                       if (!value || getFieldValue('password') === value) {
                         return Promise.resolve()
                       }
-
                       return Promise.reject(new Error('Mật khẩu xác nhận không khớp'))
                     },
                   }),
@@ -117,12 +189,19 @@ export function RegisterPage({ onNavigateLogin }: RegisterPageProps) {
             </div>
 
             <div className="login-actions">
-              <Button block htmlType="submit" size="large" type="primary">
+              <Button
+                block
+                htmlType="submit"
+                loading={loading}
+                size="large"
+                type="primary"
+              >
                 Đăng ký
               </Button>
               <Button
                 block
                 className="auth-secondary-button"
+                disabled={loading}
                 size="large"
                 onClick={onNavigateLogin}
               >
