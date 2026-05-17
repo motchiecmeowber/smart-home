@@ -1,6 +1,9 @@
-import { Button, Card, Checkbox, Form, Input, Typography } from 'antd'
+import { useState } from 'react'
+import { Alert, Button, Card, Checkbox, Form, Input, Typography } from 'antd'
 import heroArtwork from '../../assets/hero.png'
 import type { LoginFormValues } from '../../types/auth'
+import { apiLogin } from '../../lib/authApi'
+import { authStore } from '../../lib/authStore'
 import './AuthPage.css'
 
 const { Text, Title } = Typography
@@ -10,12 +13,33 @@ type LoginPageProps = {
   onLoginSuccess: () => void
 }
 
-export function LoginPage({
-  onNavigateRegister,
-  onLoginSuccess,
-}: LoginPageProps) {
-  const handleSubmit = () => {
-    onLoginSuccess()
+export function LoginPage({ onNavigateRegister, onLoginSuccess }: LoginPageProps) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (values: LoginFormValues) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await apiLogin({
+        identifier: values.identifier,
+        password: values.password,
+      })
+
+      // ← Lưu token vào store (persist nếu "ghi nhớ đăng nhập")
+      authStore.saveSession(
+        res.data.accessToken,
+        res.data.user,
+        values.rememberSession,
+      )
+
+      onLoginSuccess()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Đăng nhập thất bại')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -48,15 +72,25 @@ export function LoginPage({
               </Title>
             </div>
 
+            {error && (
+              <Alert
+                closable
+                description={error}
+                showIcon
+                type="error"
+                onClose={() => setError(null)}
+              />
+            )}
+
             <div className="login-fields">
               <Form.Item
-                label="Tên đăng nhập"
-                name="username"
-                rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}
+                label="Tên đăng nhập hoặc Email"
+                name="identifier"
+                rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập hoặc email' }]}
               >
                 <Input
                   autoComplete="username"
-                  placeholder="Nhập tên đăng nhập"
+                  placeholder="Nhập tên đăng nhập hoặc email"
                   size="large"
                 />
               </Form.Item>
@@ -79,12 +113,19 @@ export function LoginPage({
             </Form.Item>
 
             <div className="login-actions">
-              <Button block htmlType="submit" size="large" type="primary">
+              <Button
+                block
+                htmlType="submit"
+                loading={loading}
+                size="large"
+                type="primary"
+              >
                 Đăng nhập
               </Button>
               <Button
                 block
                 className="auth-secondary-button"
+                disabled={loading}
                 size="large"
                 onClick={onNavigateRegister}
               >
