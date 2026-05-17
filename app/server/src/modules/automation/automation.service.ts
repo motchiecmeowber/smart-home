@@ -84,9 +84,9 @@ export class AutomationService {
 
   private async offSchedule(schedule: any) {
     const nextAction = schedule.action === "ON" ? "OFF" : "ON";
-    const scheduledTime = new Date(Date.now() + schedule.duration * 60 * 1000);
+    const scheduledTime = new Date(new Date(schedule.startTime).getTime() + schedule.duration * 60 * 1000);
 
-    await this.createSchedule(schedule.id, {
+    await this.createSchedule(schedule.customerId, {
       actuatorId: schedule.actuatorId,
       action: nextAction,
       startTime: scheduledTime.toISOString(),

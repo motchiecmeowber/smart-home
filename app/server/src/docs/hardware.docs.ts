@@ -1,35 +1,10 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
+import { apiError, apiSuccess } from "@/common/api-response";
 
-import { controlActuatorDto, createDeviceDto, updateDeviceDto } from "@/modules/hardware/hardware.dto";
+import { controlActuatorDto, updateDeviceDto, updateThresholdDto } from "@/modules/hardware/hardware.dto";
 
 export function registerHardwareDocs(registry: OpenAPIRegistry){
-    // sửa dụng sync device từ tb thay cho nhập thủ công
-    // registry.registerPath({
-    //     method: "post",
-    //     path: "/api/devices",
-    //     summary: "[ADMIN] Add a new device",
-    //     description: `Admin trực tiếp thêm thiết bị vào hệ thống.
-    //     \n- **SENSOR**: Cần có 'unit' và 'threshold'.
-    //     \n- **ACTUATOR**: Cần có 'customerId' để gắn quyền điều khiển.`,
-    //     tags: ["Hardware"],
-    //     security: [{ bearerAuth: [] }],
-    //     request: {
-    //         body: {
-    //         content: {
-    //             "application/json": {
-    //             schema: createDeviceDto
-    //             }
-    //         }
-    //         }
-    //     },
-    //     responses: {
-    //         201: {
-    //         description: "Created successfully"
-    //         }
-    //     }
-    // });
-
     registry.registerPath({
         method: "get",
         path: "/api/devices",
@@ -43,27 +18,29 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
             deviceType: z.enum(["SENSOR", "ACTUATOR"]).optional().openapi({ description: "Filter by Device Type" })
             })
         },
-        responses: { 200: { description: "Success" } }
+        responses: {
+            200: {
+                description: "Success",
+                content: { "application/json": { schema: apiSuccess(z.array(z.any())) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
         method: "post",
         path: "/api/devices/sync",
-        summary: "Sync devices from ThingsBoard",
-        description: "Đồng bộ danh sách thiết bị từ ThingsBoard. Một thiết bị trên TB có thể được tách thành 2 bản ghi (Sensor và Actuator).",
+        summary: "[ADMIN] Sync devices from ThingsBoard",
+        description: "Đồng bộ danh sách thiết bị từ ThingsBoard.",
         tags: ["Hardware"],
         security: [{ bearerAuth: [] }],
         responses: {
             200: {
                 description: "Sync success",
-                content: {
-                    "application/json": {
-                        schema: z.object({
-                            createdCount: z.number().openapi({ example: 2 })
-                        })
-                    }
-                }
-            }
+                content: { "application/json": { schema: apiSuccess(z.object({ createdCount: z.number() })) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            403: { description: "Forbidden", content: { "application/json": { schema: apiError } } }
         }
     });
 
@@ -76,7 +53,14 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
         request: {
             params: z.object({ id: z.string().openapi({ description: "Device ID" }) })
         },
-        responses: { 200: { description: "Success" } }
+        responses: {
+            200: {
+                description: "Success",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            404: { description: "Device not found", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -98,7 +82,15 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
             }
             }
         },
-        responses: { 200: { description: "Updated successfully" } }
+        responses: {
+            200: {
+                description: "Updated successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            400: { description: "Bad Request", content: { "application/json": { schema: apiError } } },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            403: { description: "Forbidden", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -110,7 +102,14 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
         request: {
             params: z.object({ id: z.string().openapi({ description: "Device ID" }) })
         },
-        responses: { 200: { description: "Deleted successfully" } }
+        responses: {
+            200: {
+                description: "Deleted successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            403: { description: "Forbidden", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -122,7 +121,14 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
         request: {
             params: z.object({ id: z.string().openapi({ description: "Device ID" }) })
         },
-        responses: { 201: { description: "Delete request submitted" } }
+        responses: {
+            201: {
+                description: "Delete request submitted",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            404: { description: "Device not found", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -146,7 +152,14 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
                 }
             }
         },
-        responses: { 201: { description: "Update request submitted" } }
+        responses: {
+            201: {
+                description: "Update request submitted",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            404: { description: "Device not found", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     const addDeviceRequestSchema = registry.register("AddDeviceRequest", z.object({
@@ -178,7 +191,13 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
                 }
             }
         },
-        responses: { 201: { description: "Add request submitted" } }
+        responses: {
+            201: {
+                description: "Add request submitted",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -197,7 +216,14 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
             }
             }
         },
-        responses: { 200: { description: "Command sent" } }
+        responses: {
+            200: {
+                description: "Command sent",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            400: { description: "Bad Request", content: { "application/json": { schema: apiError } } },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
+        }
     });
 
     registry.registerPath({
@@ -221,14 +247,36 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
         responses: {
             200: {
                 description: "Telemetry synced successfully",
+                content: { "application/json": { schema: apiSuccess(z.object({ count: z.number() })) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
+        }
+    });
+
+    registry.registerPath({
+        method: "patch",
+        path: "/api/sensors/{id}/threshold",
+        summary: "[CUSTOMER] Update sensor threshold",
+        tags: ["Hardware"],
+        security: [{ bearerAuth: [] }],
+        request: {
+            params: z.object({ id: z.string().openapi({ description: "Sensor Device ID" }) }),
+            body: {
                 content: {
                     "application/json": {
-                        schema: z.object({
-                            count: z.number().openapi({ description: "Số lượng bản ghi dữ liệu đã được lưu", example: 150 })
-                        })
+                        schema: updateThresholdDto
                     }
                 }
             }
+        },
+        responses: {
+            200: {
+                description: "Threshold updated successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            400: { description: "Bad Request", content: { "application/json": { schema: apiError } } },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            403: { description: "Forbidden", content: { "application/json": { schema: apiError } } }
         }
     });
 }

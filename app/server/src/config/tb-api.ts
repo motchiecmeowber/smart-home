@@ -110,9 +110,9 @@ export async function getDeviceStatus(tbDeviceId: string): Promise<DeviceStatus>
       { method: "GET" }
     );
     const activeAttr = raw?.find(a => a.key === "active");
-    return activeAttr?.value === true ? "ONLINE" : "OFFLINE";
+    return activeAttr?.value === true ? DeviceStatus.ONLINE : DeviceStatus.DISCONNECTED;
   } catch {
-    return "OFFLINE";
+    return DeviceStatus.DISCONNECTED;
   }
 }
 

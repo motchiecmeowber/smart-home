@@ -10,9 +10,11 @@ export class HardwareRepository {
     const where: any = { ...filters };
 
     // Nếu là CUSTOMER, chỉ lấy những thiết bị mà họ sở hữu
-    // (Hiện tại chỉ có Actuator là có customerId)
     if (role === "CUSTOMER" && userId) {
-      where.actuator = { customerId: userId };
+      where.OR = [
+        { actuator: { customerId: userId }},
+        { sensor: { customerId: userId }}
+      ];
     }
 
     return prisma.device.findMany({
@@ -72,6 +74,23 @@ export class HardwareRepository {
     return prisma.data.createMany({
       data,
       skipDuplicates: true,
+    });
+  }
+
+  async getSensorDataInRange(sensorIds: string[], startTime: string, endTime: string) {
+    return prisma.data.findMany({
+      where: {
+        sensorId: {
+          in: sensorIds
+        },
+        timestamp: {
+          gte: new Date(startTime),
+          lte: new Date(endTime)
+        }
+      },
+      orderBy: {
+        timestamp: "asc"
+      }
     });
   }
 }

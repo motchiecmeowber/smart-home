@@ -2,7 +2,6 @@ import { hardwareRepo } from "./hardware.repository";
 import { HttpError } from "../../common/app-error";
 import { Prisma, DeviceType, DeviceStatus } from "@prisma/client";
 import { getTenantDevices, getClientAttributes, getDeviceStatus } from "../../config/tb-api";
-import { prisma } from "../../config/prisma";
 
 export class DeviceService {
   async addDevice(data: {
@@ -38,6 +37,7 @@ export class DeviceService {
         create: {
           unit: data.unit,
           threshold: data.threshold,
+          customerId: data.customerId,
         },
       };
     } else if (data.deviceType === DeviceType.ACTUATOR) {
@@ -74,11 +74,12 @@ export class DeviceService {
       updateData.location = { connect: { locationId: data.locationId } };
     }
 
-    if (existing.deviceType === DeviceType.SENSOR && (data.unit !== undefined || data.threshold !== undefined)) {
+    if (existing.deviceType === DeviceType.SENSOR && (data.unit !== undefined || data.threshold !== undefined || data.customerId !== undefined)) {
       updateData.sensor = {
         update: {
           unit: data.unit,
           threshold: data.threshold,
+          customerId: data.customerId
         },
       };
     } else if (existing.deviceType === DeviceType.ACTUATOR && data.customerId !== undefined) {
@@ -100,13 +101,7 @@ export class DeviceService {
     return hardwareRepo.deleteDevice(deviceId);
   }
 
-  async syncDevicesFromThingsBoard(userId: string) {
-    await prisma.customer.upsert({
-      where: { userId },
-      create: { userId },
-      update: {}
-    });
-
+  async syncDevicesFromThingsBoard() {
     const tbData = await getTenantDevices();
     const tbDevices = tbData.data || [];
 
@@ -120,40 +115,79 @@ export class DeviceService {
         getDeviceStatus(tbId)
       ]);
 
+      const isNetworkConnected = status === DeviceStatus.ONLINE;
+      const sensorStatus = isNetworkConnected ? DeviceStatus.ONLINE : DeviceStatus.DISCONNECTED;
+
       // Xử lý SENSORS
-      const sensorSerial = `SN-${tbId}-S`;
-      const existingSensor = await hardwareRepo.getDeviceBySerial(sensorSerial);
-      if (!existingSensor) {
+      const tempSerial = `SN-${tbId}-TS`;
+      const existingTempSensor = await hardwareRepo.getDeviceBySerial(tempSerial);
+      if (!existingTempSensor) {
         await this.addDevice({
-          serial: sensorSerial,
+          serial: tempSerial,
           tbDeviceId: tbId,
-          deviceName: `${tbName} - Sensors`,
+          deviceName: `${tbName} - Temperature`,
           deviceType: DeviceType.SENSOR,
-          status: status,
-          unit: "value",
-          customerId: userId
+          status: sensorStatus,
+          unit: "°C"
         });
         createdCount++;
       } else {
-        await this.updateDevice(existingSensor.deviceId, { status });
+        await this.updateDevice(existingTempSensor.deviceId, { status: sensorStatus });
+      }
+
+      const humiSerial = `SN-${tbId}-HS`;
+      const existingHumiSensor = await hardwareRepo.getDeviceBySerial(humiSerial);
+      if (!existingHumiSensor) {
+        await this.addDevice({
+          serial: humiSerial,
+          tbDeviceId: tbId,
+          deviceName: `${tbName} - Humidity`,
+          deviceType: DeviceType.SENSOR,
+          status: sensorStatus,
+          unit: "%"
+        });
+        createdCount++;
+      } else {
+        await this.updateDevice(existingHumiSensor.deviceId, { status: sensorStatus });
+      }
+
+      const gasSerial = `SN-${tbId}-GS`;
+      const existingGasSensor = await hardwareRepo.getDeviceBySerial(gasSerial);
+      if (!existingGasSensor) {
+        await this.addDevice({
+          serial: gasSerial,
+          tbDeviceId: tbId,
+          deviceName: `${tbName} - Gas`,
+          deviceType: DeviceType.SENSOR,
+          status: sensorStatus,
+          unit: "%"
+        });
+        createdCount++;
+      } else {
+        await this.updateDevice(existingGasSensor.deviceId, { status: sensorStatus });
       }
 
       // Xử lý TempLED
       if (attrs.tempLed !== undefined) {
         const tempLedSerial = `SN-${tbId}-TL`;
         const existingTempLed = await hardwareRepo.getDeviceBySerial(tempLedSerial);
+
+        let tempLedStatus: DeviceStatus = DeviceStatus.DISCONNECTED;
+        if (isNetworkConnected) {
+          tempLedStatus = String(attrs.tempLed) === "true" ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;  
+        }
+
         if (!existingTempLed) {
           await this.addDevice({
             serial: tempLedSerial,
             tbDeviceId: tbId,
             deviceName: `${tbName} - Temp LED`,
             deviceType: DeviceType.ACTUATOR,
-            status: status,
-            customerId: userId
+            status: tempLedStatus
           });
           createdCount++;
         } else {
-          await this.updateDevice(existingTempLed.deviceId, { status });
+          await this.updateDevice(existingTempLed.deviceId, { status: tempLedStatus });
         }
       }
 
@@ -161,18 +195,23 @@ export class DeviceService {
       if (attrs.humiLed !== undefined) {
         const humiLedSerial = `SN-${tbId}-HL`;
         const existingHumiLed = await hardwareRepo.getDeviceBySerial(humiLedSerial);
+
+        let humiLedStatus : DeviceStatus = DeviceStatus.DISCONNECTED;
+        if (isNetworkConnected) {
+          humiLedStatus = String(attrs.humiLed) === "true" ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
+        }
+
         if (!existingHumiLed) {
           await this.addDevice({
             serial: humiLedSerial,
             tbDeviceId: tbId,
             deviceName: `${tbName} - Humi LED`,
             deviceType: DeviceType.ACTUATOR,
-            status: status,
-            customerId: userId
+            status: humiLedStatus
           });
           createdCount++;
         } else {
-          await this.updateDevice(existingHumiLed.deviceId, { status });
+          await this.updateDevice(existingHumiLed.deviceId, { status: humiLedStatus });
         }
       }
     }

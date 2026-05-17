@@ -5,12 +5,11 @@ import { roleMiddleware } from "@/middlewares/role.middleware";
 
 const hardwareRouter = Router();
 
-hardwareRouter.post("/devices/sync", authMiddleware, hardwareController.syncDevices);
 hardwareRouter.get("/devices", authMiddleware, hardwareController.getDevices);
 hardwareRouter.get("/devices/:id", authMiddleware, hardwareController.getDeviceById);
 
 // Admin
-// hardwareRouter.post("/devices", authMiddleware, roleMiddleware("ADMIN"), hardwareController.addDevice);
+hardwareRouter.post("/devices/sync", authMiddleware, roleMiddleware("ADMIN"), hardwareController.syncDevices);
 hardwareRouter.delete("/devices/:id", authMiddleware, roleMiddleware("ADMIN"), hardwareController.deleteDevice);
 hardwareRouter.patch("/devices/:id", authMiddleware, roleMiddleware("ADMIN"), hardwareController.updateDevice);
 
@@ -20,5 +19,6 @@ hardwareRouter.post("/devices/:id/request-update", authMiddleware, roleMiddlewar
 hardwareRouter.post("/devices/request-add", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.requestAddDevice);
 hardwareRouter.post("/actuators/:id/control", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.controlActuator);
 hardwareRouter.post("/sensors/:id/sync-telemetry", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.syncSensorTelemetry);
+hardwareRouter.patch("/sensors/:id/threshold", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.updateThreshold);
 
 export { hardwareRouter };
