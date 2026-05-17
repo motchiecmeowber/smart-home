@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { apiError, apiSuccess } from "@/common/api-response";
 
-import { controlActuatorDto, createDeviceDto, updateDeviceDto } from "@/modules/hardware/hardware.dto";
+import { controlActuatorDto, updateDeviceDto, updateThresholdDto } from "@/modules/hardware/hardware.dto";
 
 export function registerHardwareDocs(registry: OpenAPIRegistry){
     registry.registerPath({
@@ -264,7 +264,7 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
             body: {
                 content: {
                     "application/json": {
-                        schema: z.object({ threshold: z.number().nullable() })
+                        schema: updateThresholdDto
                     }
                 }
             }

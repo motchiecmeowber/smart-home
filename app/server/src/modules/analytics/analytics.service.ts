@@ -29,7 +29,8 @@ export class AnalyticsService {
         throw new HttpError(400, "CUSTOM report range cannot exceed 31 days");
       }
     } else {
-      const referenceDate = targetTime ? new Date(targetTime) : now;
+      // Sử dụng new Date(now) để tạo bản sao độc lập, tránh đột biến (mutation) đối tượng "now" gốc
+      const referenceDate = targetTime ? new Date(targetTime) : new Date(now.getTime());
 
       if (reportType === ReportType.DAILY) {
         actualStartTime = new Date(referenceDate.setUTCHours(0, 0, 0, 0));

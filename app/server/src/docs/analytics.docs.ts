@@ -8,6 +8,12 @@ export function registerAnalyticsDocs(registry: OpenAPIRegistry) {
         method: "post",
         path: "/api/generate-report",
         summary: "[CUSTOMER] Generate report",
+        description: "Tạo báo cáo thống kê chỉ số cho khách hàng (Nhiệt độ, Độ ẩm, Gas).\n\n" +
+            "**Tham số Body:**\n" +
+            "- `reportType`: Kiểu báo cáo: `DAILY` (Hàng ngày), `WEEKLY` (Hàng tuần), `MONTHLY` (Hàng tháng), hoặc `CUSTOM` (Tùy chọn khoảng thời gian).\n" +
+            "- `targetTime` (ISO 8601, Tùy chọn): Mốc thời gian để sinh báo cáo định kỳ. Ví dụ: nhập ngày 17/05/2026 thì báo cáo DAILY sẽ tính trọn ngày hôm đó.\n" +
+            "- `startTime` (ISO 8601, Bắt buộc nếu CUSTOM): Thời điểm bắt đầu khoảng tự chọn.\n" +
+            "- `endTime` (ISO 8601, Bắt buộc nếu CUSTOM): Thời điểm kết thúc khoảng tự chọn (Không cách `startTime` quá 31 ngày).",
         tags: ["Analytics"],
         request: {
             body: {
@@ -75,8 +81,8 @@ export function registerAnalyticsDocs(registry: OpenAPIRegistry) {
         request: {
             query: z.object({
                 sensorId: z.string().openapi({ description: "Sensor ID" }),
-                startTime: z.iso.datetime().optional().openapi({ description: "Start time (ISO 8601)" }),
-                endTime: z.iso.datetime().optional().openapi({ description: "End time (ISO 8601)" }),
+                startTime: z.iso.datetime().openapi({ description: "Start time (ISO 8601)" }),
+                endTime: z.iso.datetime().openapi({ description: "End time (ISO 8601)" }),
                 bucketTimes: z.number().optional().openapi({ description: "Number of buckets" })
             })
         },

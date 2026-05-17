@@ -9,7 +9,24 @@ import { DeviceType } from "@prisma/client";
 export class InteractionService {
   async checkThresholdAndAlert(deviceId: string, dataType: string, value: number, threshold: number) {
     if (value > threshold) {
+      // 0. Cooldown for 15 minutes prevent alert spam
       console.warn(`[ALERT] Threshold exceeded for device ${deviceId}! ${dataType} value: ${value} > ${threshold}`);
+
+      const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000);
+      const existingAlert = await prisma.notification.findFirst({
+        where: {
+          deviceId: deviceId,
+          title: `Cảnh báo an toàn - ${dataType}`,
+          createdAt: {
+            gte: fifteenMinAgo
+          }
+        }
+      });
+
+      if (existingAlert) {
+        console.log(`[COOLDOWN] Notification exists, skipped`);
+        return;
+      }
 
       // 1. Trigger Buzzer via RPC (Real Device Control)
       const triggeringDevice = await interactionRepo.getDeviceOwner(deviceId);
@@ -70,7 +87,9 @@ export class InteractionService {
           });
 
           if (user?.email) {
-            const subject = `[Smart Home] Cảnh báo an toàn - ${dataType}`;
+            const timeString = new Date().toLocaleTimeString("vi-VN");
+            const subject = `[Smart Home] Cảnh báo an toàn - ${dataType} [${timeString}]`;
+
             const htmlContent = `
               <h3>Hệ thống Smart Home cảnh báo</h3>
               <p>Thiết bị <b>${triggeringDevice?.deviceName ?? "cảm biến"}</b> (Serial: <b>${triggeringDevice?.serial ?? "N/A"}</b>) phát hiện chỉ số <b>${dataType}</b> đạt mức <b>${value}</b>.</p>

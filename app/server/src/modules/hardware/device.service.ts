@@ -174,7 +174,7 @@ export class DeviceService {
 
         let tempLedStatus: DeviceStatus = DeviceStatus.DISCONNECTED;
         if (isNetworkConnected) {
-          tempLedStatus = attrs.tempLed === "true" ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;  
+          tempLedStatus = String(attrs.tempLed) === "true" ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;  
         }
 
         if (!existingTempLed) {
@@ -198,7 +198,7 @@ export class DeviceService {
 
         let humiLedStatus : DeviceStatus = DeviceStatus.DISCONNECTED;
         if (isNetworkConnected) {
-          humiLedStatus = attrs.humiLed === "true" ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
+          humiLedStatus = String(attrs.humiLed) === "true" ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
         }
 
         if (!existingHumiLed) {
