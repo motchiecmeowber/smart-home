@@ -4,4 +4,5 @@ export const REDIS_KEYS = {
   refreshToken: (token: string) => `refreshToken:${token}`,
 
   loginAttempts: (identifier: string) => `loginAttempts:${identifier}`,
+  tbToken: "tb:token",
 };

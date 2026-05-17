@@ -1,8 +1,12 @@
 import { OpenAPIRegistry, OpenApiGeneratorV3 } from "@asteasolutions/zod-to-openapi";
-import { z } from "zod";
 import { env } from "../config/env";
 
 import { registerIdentityDocs } from "./identity.docs";
+import { registerAutomationDocs } from "./automation.docs";
+import { registerHardwareDocs } from "./hardware.docs";
+import { registerInteractionDocs } from "./interaction.docs";
+import { registerRequestDocs } from "./request.docs";
+import { registerLocationDocs } from "./location.docs";
 
 const registry = new OpenAPIRegistry();
 
@@ -21,6 +25,11 @@ registry.registerComponent("securitySchemes", "cookieAuth", {
 });
 
 registerIdentityDocs(registry);
+registerAutomationDocs(registry);
+registerHardwareDocs(registry);
+registerInteractionDocs(registry);
+registerRequestDocs(registry);
+registerLocationDocs(registry);
 
 export const openApiDocument = new OpenApiGeneratorV3(registry.definitions).generateDocument({
     openapi: "3.0.3",
@@ -30,4 +39,5 @@ export const openApiDocument = new OpenApiGeneratorV3(registry.definitions).gene
         description: "API quản lý hệ thống nhà thông minh sử dụng Express, Prisma ORM và Zod"
     },
     servers: [{ url: `http://localhost:${env.PORT || 3000}` }],
+    security: [{ bearerAuth: [] }]
 });

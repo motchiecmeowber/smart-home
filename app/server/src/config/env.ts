@@ -8,16 +8,15 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   DATABASE_URL: z.url({ message: "DATABASE_URL phải là một URL hợp lệ" }),
-
-  REDIS_URL: z.url({ message: "REDIS_URL phải là một URL hợp lệ" }),
+  REDIS_URL: z.url({ message: "REDIS_URL phải là một URL hợp lệ" }).default("redis://localhost:6379"),
   REDIS_PASSWORD: z.string().optional(),
 
   JWT_ACCESS_SECRET: z.string().min(10, { message: "JWT_ACCESS_SECRET phải có ít nhất 10 ký tự" }),
   JWT_REFRESH_SECRET: z.string().min(10, { message: "JWT_REFRESH_SECRET phải có ít nhất 10 ký tự" }),
 
-  THINGSBOARD_HOST: z.string().default("demo.thingsboard.io"),
-  THINGSBOARD_PORT: z.string().default("1883"),
-  THINGSBOARD_ACCESS_TOKEN: z.string().min(1, { message: "Thiếu ThingsBoard Access Token" }).optional(),
+  THINGSBOARD_HOST: z.string().default("thingsboard.cloud"),
+  THINGSBOARD_USERNAME: z.email({ message: "THINGSBOARD_USERNAME must be a valid email" }),
+  THINGSBOARD_PASSWORD: z.string().min(1, { message: "THINGSBOARD_PASSWORD is required" }),
   THINGSBOARD_API_TOKEN: z.string().optional(),
 
   TB_TELEMETRY_TEMPERATURE: z.string().default("temperature"),
@@ -39,3 +38,4 @@ if (!_env.success) {
 }
 
 export const env = _env.data;
+export type Env = z.infer<typeof envSchema>;
