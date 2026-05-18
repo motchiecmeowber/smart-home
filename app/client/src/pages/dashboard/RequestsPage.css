@@ -1,0 +1,249 @@
+.requests-page {
+  display: grid;
+  gap: 22px;
+}
+
+.requests-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.requests-heading .breadcrumb {
+  margin-bottom: 8px;
+}
+
+.requests-heading .ant-breadcrumb-link,
+.requests-heading .ant-breadcrumb-separator {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.requests-heading .ant-typography {
+  margin: 0;
+  color: #122d3a;
+  font-size: 38px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.requests-heading .ant-btn {
+  min-width: 156px;
+  min-height: 44px;
+  font-weight: 800;
+}
+
+.request-summary-card.ant-card,
+.request-status-card.ant-card {
+  border-color: #d4dde3;
+  box-shadow: 0 8px 20px rgba(30, 50, 62, 0.08);
+}
+
+.request-summary-card .ant-card-body {
+  padding: 18px 20px;
+}
+
+.request-summary-card .ant-typography {
+  margin: 0;
+}
+
+.request-summary-card span.ant-typography {
+  color: #5c707c;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.request-summary-card h2.ant-typography {
+  margin-top: 8px;
+  color: #0b5f95;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.request-status-list {
+  display: grid;
+  gap: 20px;
+}
+
+.request-status-card.ant-card {
+  overflow: hidden;
+}
+
+.request-status-card > .ant-card-head {
+  min-height: 68px;
+  border-bottom-color: #d4dde3;
+}
+
+.request-status-card.pending > .ant-card-head {
+  background: #fff4cc;
+}
+
+.request-status-card.approved > .ant-card-head {
+  background: #e7f6ed;
+}
+
+.request-status-card.rejected > .ant-card-head {
+  background: #fff0f0;
+}
+
+.request-status-card > .ant-card-head .ant-card-extra .ant-tag {
+  margin-inline-end: 0;
+  border: 0;
+  color: #17323f;
+  background: #ffffff;
+  font-weight: 800;
+}
+
+.request-status-card .ant-card-body {
+  padding: 22px 26px 26px;
+}
+
+.request-status-title {
+  color: #132f3e;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.request-status-icon {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #c6d6df;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 20px;
+}
+
+.pending .request-status-icon {
+  color: #9a6800;
+}
+
+.approved .request-status-icon {
+  color: #167a4a;
+}
+
+.rejected .request-status-icon {
+  color: #c13232;
+}
+
+.request-count-box {
+  height: 100%;
+  min-height: 126px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 18px;
+  border: 1px solid #e1e9ee;
+  border-radius: 8px;
+  background: #f8fbfc;
+}
+
+.request-count-box .ant-typography {
+  margin: 0;
+}
+
+.request-count-box span.ant-typography {
+  color: #526772;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.request-count-box h3.ant-typography {
+  margin: 8px 0;
+  color: #0b5f95;
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.request-latest-card {
+  height: 100%;
+  min-height: 126px;
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #e1e9ee;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.request-latest-label.ant-typography {
+  color: #17323f;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.request-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+}
+
+.request-detail-grid span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #445b67;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.request-detail-grid .anticon {
+  color: #0b5f95;
+}
+
+.request-latest-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.request-latest-footer .ant-typography {
+  color: #72838d;
+  font-weight: 700;
+}
+
+.request-latest-footer .ant-btn {
+  font-weight: 800;
+}
+
+@media (max-width: 680px) {
+  .requests-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .requests-heading .ant-typography {
+    font-size: 31px;
+  }
+
+  .requests-heading .ant-btn {
+    width: 100%;
+  }
+
+  .request-status-card .ant-card-body {
+    padding: 18px;
+  }
+
+  .request-status-title {
+    font-size: 18px;
+  }
+
+  .request-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .request-latest-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

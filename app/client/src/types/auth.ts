@@ -31,5 +31,7 @@ export type AppRoute =
   | 'login'
   | 'register'
   | 'dashboard-devices'
+  | 'dashboard-notifications'
+  | 'dashboard-requests'
   | 'dashboard-settings'
   | 'dashboard-profile'
