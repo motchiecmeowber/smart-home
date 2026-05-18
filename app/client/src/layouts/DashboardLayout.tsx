@@ -23,6 +23,8 @@ type DashboardLayoutProps = {
   children: ReactNode
   activeRoute: DashboardRoute
   onNavigateDevices: () => void
+  onNavigateNotifications: () => void
+  onNavigateRequests: () => void
   onNavigateRealtime: () => void
   onNavigateSettings: () => void
   onNavigateProfile: () => void
@@ -35,8 +37,8 @@ const mainNavItems: DashboardNavItem[] = [
   { label: 'Thời gian thực', route: 'dashboard-realtime', icon: <ThunderboltOutlined /> },
   { label: 'Báo cáo thống kê', icon: <BarChartOutlined /> },
   { label: 'Lịch trình', icon: <CalendarOutlined /> },
-  { label: 'Thông báo', icon: <BellOutlined /> },
-  { label: 'Yêu cầu của tôi', icon: <MailOutlined /> },
+  { label: 'Thông báo', route: 'dashboard-notifications', icon: <BellOutlined /> },
+  { label: 'Yêu cầu của tôi', route: 'dashboard-requests', icon: <MailOutlined /> },
 ]
 
 const accountNavItems: DashboardNavItem[] = [
@@ -56,6 +58,8 @@ export function DashboardLayout({
   children,
   activeRoute,
   onNavigateDevices,
+  onNavigateNotifications,
+  onNavigateRequests,
   onNavigateRealtime,
   onNavigateSettings,
   onNavigateProfile,
@@ -64,6 +68,19 @@ export function DashboardLayout({
   const handleMainMenuClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'dashboard-devices') {
       onNavigateDevices()
+      return
+    }
+
+    if (key === 'dashboard-notifications') {
+      onNavigateNotifications()
+      return
+    }
+
+    if (key === 'dashboard-requests') {
+      onNavigateRequests()
+    }
+    if (key === 'dashboard-realtime') {
+      onNavigateRealtime()
     }
     if (key === 'dashboard-realtime') {
       onNavigateRealtime()

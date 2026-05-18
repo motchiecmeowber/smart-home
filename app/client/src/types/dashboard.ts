@@ -3,6 +3,8 @@ import type { ReactNode } from 'react'
 export type DashboardRoute =
   | 'dashboard-devices'
   | 'dashboard-realtime'
+  | 'dashboard-notifications'
+  | 'dashboard-requests'
   | 'dashboard-settings'
   | 'dashboard-profile'
 
