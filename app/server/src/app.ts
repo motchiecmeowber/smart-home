@@ -1,14 +1,17 @@
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import cors from "cors";
-import  cookieParser  from "cookie-parser";
+import cookieParser from "cookie-parser";
 import "@/config/zod.extend";
+import { createServer } from "node:http";
 
 import { env } from "./config/env";
 import { prisma } from "./config/prisma";
 import { openApiDocument } from "./docs/openapi";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 import { connectRedis } from "@/config/redis";
+import { tbWsClient } from "@/lib/ws/tb-ws";
+import { clientWsManager } from "@/lib/ws/client-ws";
 import identityRouter from "./modules/identity/identity.routes";
 
 import { hardwareRouter } from "./modules/hardware/hardware.routes";
@@ -20,6 +23,7 @@ import { analyticsRouter } from "./modules/analytics/analytics.routes";
 import { automationService } from "./modules/automation/automation.service";
 
 const app = express();
+const server = createServer(app);
 
 app.use(express.json());
 app.use(
@@ -65,9 +69,15 @@ async function bootstrap() {
     await automationService.init();
     console.log("Automation scheduler started");
 
-    app.listen(env.PORT, () => {
+    await clientWsManager.init(server);
+
+    server.listen(env.PORT, async () => {
         console.log(`Server is running at http://localhost:${env.PORT}`);
         console.log(`API Docs are available at http://localhost:${env.PORT}/api-docs`);
+        console.log(`WebSocket server ready at ws://localhost:${env.PORT}/ws`);
+
+        await tbWsClient.connect();
+        console.log("ThingsBoard WebSocket listener started");
     });
 }
 
