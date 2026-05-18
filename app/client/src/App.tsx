@@ -4,6 +4,7 @@ import { DashboardLayout } from './layouts/DashboardLayout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { DevicesPage } from './pages/dashboard/DevicesPage'
+import { RealtimePage } from './pages/dashboard/RealtimePage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { SettingsPage } from './pages/dashboard/SettingsPage'
 import type { AppRoute } from './types/auth'
@@ -15,12 +16,14 @@ const routePaths: Record<AppRoute, string> = {
   login: '/login',
   register: '/register',
   'dashboard-devices': '/dashboard/devices',
+  'dashboard-realtime': '/dashboard/realtime',
   'dashboard-settings': '/dashboard/settings',
   'dashboard-profile': '/dashboard/profile',
 }
 
 const DASHBOARD_ROUTES: AppRoute[] = [
   'dashboard-devices',
+  'dashboard-realtime',
   'dashboard-settings',
   'dashboard-profile',
 ]
@@ -30,6 +33,7 @@ function getAppRouteFromLocation(): AppRoute {
 
   if (path === routePaths.register) return 'register'
   if (path === routePaths['dashboard-devices']) return 'dashboard-devices'
+  if (path === routePaths['dashboard-realtime']) return 'dashboard-realtime'
   if (path === routePaths['dashboard-settings']) return 'dashboard-settings'
   if (path === routePaths['dashboard-profile']) return 'dashboard-profile'
 
@@ -88,6 +92,7 @@ function App() {
   const layoutProps = {
     onLogout: handleLogout,
     onNavigateDevices: () => navigateToAppRoute('dashboard-devices'),
+    onNavigateRealtime: () => navigateToAppRoute('dashboard-realtime'),
     onNavigateSettings: () => navigateToAppRoute('dashboard-settings'),
     onNavigateProfile: () => navigateToAppRoute('dashboard-profile'),
   }
@@ -129,6 +134,12 @@ function App() {
         {appRoute === 'dashboard-devices' && auth.accessToken && (
           <DashboardLayout activeRoute="dashboard-devices" {...layoutProps}>
             <DevicesPage />
+          </DashboardLayout>
+        )}
+
+        {appRoute === 'dashboard-realtime' && auth.accessToken && (
+          <DashboardLayout activeRoute="dashboard-realtime" {...layoutProps}>
+            <RealtimePage />
           </DashboardLayout>
         )}
 

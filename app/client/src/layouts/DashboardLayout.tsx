@@ -10,6 +10,7 @@ import {
   LogoutOutlined,
   MailOutlined,
   SettingOutlined,
+  ThunderboltOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import type { DashboardNavItem, DashboardRoute } from '../types/dashboard'
@@ -22,6 +23,7 @@ type DashboardLayoutProps = {
   children: ReactNode
   activeRoute: DashboardRoute
   onNavigateDevices: () => void
+  onNavigateRealtime: () => void
   onNavigateSettings: () => void
   onNavigateProfile: () => void
   onLogout: () => void
@@ -30,6 +32,7 @@ type DashboardLayoutProps = {
 const mainNavItems: DashboardNavItem[] = [
   { label: 'Dashboard', icon: <DashboardOutlined /> },
   { label: 'Thiết bị', route: 'dashboard-devices', icon: <DesktopOutlined /> },
+  { label: 'Thời gian thực', route: 'dashboard-realtime', icon: <ThunderboltOutlined /> },
   { label: 'Báo cáo thống kê', icon: <BarChartOutlined /> },
   { label: 'Lịch trình', icon: <CalendarOutlined /> },
   { label: 'Thông báo', icon: <BellOutlined /> },
@@ -53,6 +56,7 @@ export function DashboardLayout({
   children,
   activeRoute,
   onNavigateDevices,
+  onNavigateRealtime,
   onNavigateSettings,
   onNavigateProfile,
   onLogout,
@@ -60,6 +64,9 @@ export function DashboardLayout({
   const handleMainMenuClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'dashboard-devices') {
       onNavigateDevices()
+    }
+    if (key === 'dashboard-realtime') {
+      onNavigateRealtime()
     }
   }
 
