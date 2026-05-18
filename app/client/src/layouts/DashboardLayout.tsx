@@ -10,6 +10,7 @@ import {
   LogoutOutlined,
   MailOutlined,
   SettingOutlined,
+  ThunderboltOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import type { DashboardNavItem, DashboardRoute } from '../types/dashboard'
@@ -24,6 +25,7 @@ type DashboardLayoutProps = {
   onNavigateDevices: () => void
   onNavigateNotifications: () => void
   onNavigateRequests: () => void
+  onNavigateRealtime: () => void
   onNavigateSettings: () => void
   onNavigateProfile: () => void
   onLogout: () => void
@@ -32,6 +34,7 @@ type DashboardLayoutProps = {
 const mainNavItems: DashboardNavItem[] = [
   { label: 'Dashboard', icon: <DashboardOutlined /> },
   { label: 'Thiết bị', route: 'dashboard-devices', icon: <DesktopOutlined /> },
+  { label: 'Thời gian thực', route: 'dashboard-realtime', icon: <ThunderboltOutlined /> },
   { label: 'Báo cáo thống kê', icon: <BarChartOutlined /> },
   { label: 'Lịch trình', icon: <CalendarOutlined /> },
   { label: 'Thông báo', route: 'dashboard-notifications', icon: <BellOutlined /> },
@@ -57,6 +60,7 @@ export function DashboardLayout({
   onNavigateDevices,
   onNavigateNotifications,
   onNavigateRequests,
+  onNavigateRealtime,
   onNavigateSettings,
   onNavigateProfile,
   onLogout,
@@ -74,6 +78,12 @@ export function DashboardLayout({
 
     if (key === 'dashboard-requests') {
       onNavigateRequests()
+    }
+    if (key === 'dashboard-realtime') {
+      onNavigateRealtime()
+    }
+    if (key === 'dashboard-realtime') {
+      onNavigateRealtime()
     }
   }
 

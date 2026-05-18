@@ -9,11 +9,10 @@ export class HardwareRepository {
   async getDevices(filters?: { locationId?: string; deviceType?: DeviceType }, userId?: string, role?: string) {
     const where: any = { ...filters };
 
-    // Nếu là CUSTOMER, chỉ lấy những thiết bị mà họ sở hữu
     if (role === "CUSTOMER" && userId) {
       where.OR = [
-        { actuator: { customerId: userId }},
-        { sensor: { customerId: userId }}
+        { actuator: { customerId: userId } },
+        { sensor: { customerId: userId } },
       ];
     }
 
