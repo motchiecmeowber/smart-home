@@ -34,3 +34,4 @@ export type AppRoute =
   | 'dashboard-settings'
   | 'dashboard-profile'
   | 'dashboard-home'
+  | 'dashboard-schedule'

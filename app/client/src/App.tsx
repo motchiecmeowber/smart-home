@@ -7,6 +7,7 @@ import { DevicesPage } from './pages/dashboard/DevicesPage'
 import { DashboardPage } from './pages/dashboard/Home'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { SettingsPage } from './pages/dashboard/SettingsPage'
+import { SchedulePage } from './pages/dashboard/SchedulePage'
 import type { AppRoute } from './types/auth'
 import { authStore } from './lib/authStore'
 import { useAuth } from './hooks/useAuth'
@@ -19,6 +20,7 @@ const routePaths: Record<AppRoute, string> = {
   'dashboard-settings': '/dashboard/settings',
   'dashboard-profile': '/dashboard/profile',
   'dashboard-home': '/dashboard/home',
+  'dashboard-schedule': '/dashboard/schedule',
 }
 
 const DASHBOARD_ROUTES: AppRoute[] = [
@@ -26,6 +28,7 @@ const DASHBOARD_ROUTES: AppRoute[] = [
   'dashboard-settings',
   'dashboard-profile',
   'dashboard-home',
+  'dashboard-schedule',
 ]
 
 function getAppRouteFromLocation(): AppRoute {
@@ -36,6 +39,7 @@ function getAppRouteFromLocation(): AppRoute {
   if (path === routePaths['dashboard-settings']) return 'dashboard-settings'
   if (path === routePaths['dashboard-profile']) return 'dashboard-profile'
   if (path === routePaths['dashboard-home']) return 'dashboard-home'
+  if (path === routePaths['dashboard-schedule']) return 'dashboard-schedule'
 
   return 'login'
 }
@@ -95,6 +99,7 @@ function App() {
     onNavigateSettings: () => navigateToAppRoute('dashboard-settings'),
     onNavigateProfile: () => navigateToAppRoute('dashboard-profile'),
     onNavigateDashboard: () => navigateToAppRoute('dashboard-home'),
+    onNavigateSchedule: () => navigateToAppRoute('dashboard-schedule'),
   }
 
   return (
@@ -154,7 +159,12 @@ function App() {
             <ProfilePage />
           </DashboardLayout>
         )}
-        
+
+        {appRoute === 'dashboard-schedule' && auth.accessToken && (
+          <DashboardLayout activeRoute="dashboard-schedule" {...layoutProps}>
+            <SchedulePage />
+          </DashboardLayout>
+        )}
       </div>
     </ConfigProvider>
   )

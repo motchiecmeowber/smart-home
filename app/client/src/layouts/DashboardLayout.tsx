@@ -25,6 +25,7 @@ type DashboardLayoutProps = {
   onNavigateSettings: () => void
   onNavigateProfile: () => void
   onNavigateDashboard: () => void
+  onNavigateSchedule: () => void
   onLogout: () => void
 }
 
@@ -32,7 +33,7 @@ const mainNavItems: DashboardNavItem[] = [
   { label: 'Dashboard', route: 'dashboard-home', icon: <DashboardOutlined /> },
   { label: 'Thiết bị', route: 'dashboard-devices', icon: <DesktopOutlined /> },
   { label: 'Báo cáo thống kê', icon: <BarChartOutlined /> },
-  { label: 'Lịch trình', icon: <CalendarOutlined /> },
+  { label: 'Lịch trình', route: 'dashboard-schedule', icon: <CalendarOutlined /> },
   { label: 'Thông báo', icon: <BellOutlined /> },
   { label: 'Yêu cầu của tôi', icon: <MailOutlined /> },
 ]
@@ -58,15 +59,20 @@ export function DashboardLayout({
   onNavigateProfile,
   onLogout,
   onNavigateDashboard,
+  onNavigateSchedule,
 }: DashboardLayoutProps) {
   const handleMainMenuClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'dashboard-devices') {
       onNavigateDevices()
     }
     if (key === 'dashboard-home') {
-    onNavigateDashboard()
-    return
-  }
+      onNavigateDashboard()
+      return
+    }
+    if (key === 'dashboard-schedule') {
+      onNavigateSchedule()
+      return
+    }
 
   }
 

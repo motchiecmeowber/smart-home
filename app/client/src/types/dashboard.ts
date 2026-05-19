@@ -5,6 +5,7 @@ export type DashboardRoute =
   | 'dashboard-settings'
   | 'dashboard-profile'
   | 'dashboard-home'
+  | 'dashboard-schedule'
 
 export type DashboardNavItem = {
   label: string
