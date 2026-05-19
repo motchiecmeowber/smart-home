@@ -33,3 +33,4 @@ export type AppRoute =
   | 'dashboard-devices'
   | 'dashboard-settings'
   | 'dashboard-profile'
+  | 'dashboard-home'

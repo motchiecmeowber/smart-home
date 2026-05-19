@@ -1,0 +1,95 @@
+.dashboard-page {
+  padding: 24px;
+  background: #eef2f5;
+  min-height: 100vh;
+}
+
+.top-section {
+  display: flex;
+  gap: 20px;
+}
+
+.chart-card {
+  flex: 3;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+.recharts-default-legend {
+  font-size: 14px;
+  color: #222;
+}
+
+.chart-legend,
+.pie-legend {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.temp {
+  background: red;
+}
+
+.humidity {
+  background: #00a2ff;
+}
+
+.gas {
+  background: orange;
+}
+
+.approved {
+  background: #0b5f95;
+}
+
+.waiting {
+  background: #4f8db7;
+}
+
+.rejected {
+  background: #b6d0e2;
+}
+
+.pie-card {
+  flex: 1;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.activity-card {
+  margin-top: 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.activity-card table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.activity-card th,
+.activity-card td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}

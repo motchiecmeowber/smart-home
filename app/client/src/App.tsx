@@ -4,6 +4,7 @@ import { DashboardLayout } from './layouts/DashboardLayout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { DevicesPage } from './pages/dashboard/DevicesPage'
+import { DashboardPage } from './pages/dashboard/Home'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { SettingsPage } from './pages/dashboard/SettingsPage'
 import type { AppRoute } from './types/auth'
@@ -17,12 +18,14 @@ const routePaths: Record<AppRoute, string> = {
   'dashboard-devices': '/dashboard/devices',
   'dashboard-settings': '/dashboard/settings',
   'dashboard-profile': '/dashboard/profile',
+  'dashboard-home': '/dashboard/home',
 }
 
 const DASHBOARD_ROUTES: AppRoute[] = [
   'dashboard-devices',
   'dashboard-settings',
   'dashboard-profile',
+  'dashboard-home',
 ]
 
 function getAppRouteFromLocation(): AppRoute {
@@ -32,6 +35,7 @@ function getAppRouteFromLocation(): AppRoute {
   if (path === routePaths['dashboard-devices']) return 'dashboard-devices'
   if (path === routePaths['dashboard-settings']) return 'dashboard-settings'
   if (path === routePaths['dashboard-profile']) return 'dashboard-profile'
+  if (path === routePaths['dashboard-home']) return 'dashboard-home'
 
   return 'login'
 }
@@ -80,7 +84,7 @@ function App() {
         justifyContent: 'center',
         background: '#eef3f6',
       }}>
-        <Spin size="large" tip="Đang khôi phục phiên..." />
+        <Spin size="large" description="Đang khôi phục phiên..." />
       </div>
     )
   }
@@ -90,6 +94,7 @@ function App() {
     onNavigateDevices: () => navigateToAppRoute('dashboard-devices'),
     onNavigateSettings: () => navigateToAppRoute('dashboard-settings'),
     onNavigateProfile: () => navigateToAppRoute('dashboard-profile'),
+    onNavigateDashboard: () => navigateToAppRoute('dashboard-home'),
   }
 
   return (
@@ -110,7 +115,7 @@ function App() {
       <div className="app-shell">
         {appRoute === 'login' && (
           <LoginPage
-            onLoginSuccess={() => navigateToAppRoute('dashboard-devices')}
+            onLoginSuccess={() => navigateToAppRoute('dashboard-home')}
             onNavigateRegister={() => navigateToAppRoute('register')}
           />
         )}
@@ -132,6 +137,12 @@ function App() {
           </DashboardLayout>
         )}
 
+        {appRoute === 'dashboard-home' && auth.accessToken && (
+          <DashboardLayout activeRoute="dashboard-home" {...layoutProps}>
+            <DashboardPage />
+          </DashboardLayout>
+        )}
+
         {appRoute === 'dashboard-settings' && auth.accessToken && (
           <DashboardLayout activeRoute="dashboard-settings" {...layoutProps}>
             <SettingsPage />
@@ -143,6 +154,7 @@ function App() {
             <ProfilePage />
           </DashboardLayout>
         )}
+        
       </div>
     </ConfigProvider>
   )
