@@ -6,7 +6,9 @@ import {
     RegisterRequestSchema, 
     ChangePasswordRequestSchema, 
     UserResponseSchema, 
-    AuthResponseSchema 
+    AuthResponseSchema ,
+    UpdateProfileRequestSchema,
+    UserDetailResponseSchema
 } from "@/modules/identity/identity.dto";
 
 export function registerIdentityDocs(registry: OpenAPIRegistry) {
@@ -16,6 +18,8 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
     registry.register("ChangePasswordRequest", ChangePasswordRequestSchema);
     registry.register("UserResponse", UserResponseSchema);
     registry.register("AuthResponse", AuthResponseSchema);
+    registry.register("UpdateProfileRequest", UpdateProfileRequestSchema);
+    registry.register("UserDetailResponseSchema", UserDetailResponseSchema);
 
     // Register api endpoints
     // Post /api/auth/register
@@ -156,6 +160,143 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
             },
             400: {
                 description: "Yêu cầu không hợp lệ (ví dụ: mật khẩu cũ không đúng)"
+            }
+        }
+    });
+
+    // GET /api/profile
+    registry.registerPath({
+        method: "get",
+        path: "/api/profile",
+        tags: ["Identity"],
+        summary: "Lấy thông tin hồ sơ cá nhân",
+        description: "Người dùng đang đăng nhập lấy thông tin chi tiết của chính mình.",
+        security: [{ bearerAuth: [] }],
+        responses: {
+            200: {
+                description: "Thành công",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            message: z.string(),
+                            data: UserDetailResponseSchema
+                        })
+                    }
+                }
+            },
+            404: { description: "Không tìm thấy người dùng" }
+        }
+    });
+
+    // PATCH /api/profile
+    registry.registerPath({
+        method: "patch",
+        path: "/api/profile",
+        tags: ["Identity"],
+        summary: "Cập nhật hồ sơ cá nhân",
+        description: "Cho phép người dùng tự sửa họ và tên của mình.",
+        security: [{ bearerAuth: [] }],
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: UpdateProfileRequestSchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: "Cập nhật thành công",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            message: z.string(),
+                            data: UserResponseSchema
+                        })
+                    }
+                }
+            },
+            400: { description: "Dữ liệu gửi lên không hợp lệ" }
+        }
+    });
+
+    // GET /api/users
+    registry.registerPath({
+        method: "get",
+        path: "/api/users",
+        tags: ["Identity"],
+        summary: "[ADMIN] Lấy danh sách tất cả người dùng",
+        description: "Lấy danh sách tất cả người dùng trong hệ thống (Yêu cầu quyền ADMIN).",
+        security: [{ bearerAuth: [] }],
+        responses: {
+            200: {
+                description: "Thành công",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            message: z.string(),
+                            data: z.array(UserDetailResponseSchema)
+                        })
+                    }
+                }
+            },
+            403: { description: "Không có quyền truy cập (Không phải Admin)" }
+        }
+    });
+
+    // GET /api/users/{userId}
+    registry.registerPath({
+        method: "get",
+        path: "/api/users/{userId}",
+        tags: ["Identity"],
+        summary: "[ADMIN] Xem chi tiết một người dùng",
+        description: "Admin xem thông tin chi tiết của một người dùng bất kỳ qua ID.",
+        security: [{ bearerAuth: [] }],
+        request: {
+            params: z.object({
+                userId: z.string().openapi({ description: "ID của người dùng cần xem" })
+            })
+        },
+        responses: {
+            200: {
+                description: "Thành công",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            message: z.string(),
+                            data: UserDetailResponseSchema
+                        })
+                    }
+                }
+            },
+            404: { description: "Không tìm thấy người dùng" }
+        }
+    });
+
+    // DELETE /api/users/{userId}
+    registry.registerPath({
+        method: "delete",
+        path: "/api/users/{userId}",
+        tags: ["Identity"],
+        summary: "[ADMIN] Xóa người dùng",
+        description: "Admin xóa vĩnh viễn một người dùng khỏi hệ thống.",
+        security: [{ bearerAuth: [] }],
+        request: {
+            params: z.object({
+                userId: z.string().openapi({ description: "ID của người dùng cần xóa" })
+            })
+        },
+        responses: {
+            200: {
+                description: "Xóa thành công",
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            message: z.string()
+                        })
+                    }
+                }
             }
         }
     });

@@ -1,5 +1,5 @@
 import { prisma } from "@/config/prisma";
-import { UserResponse } from "./identity.dto";
+import { UserDetailResponse, UserResponse } from "./identity.dto";
 
 export class IdentityRepository {
   async findUserByEmail(email: string): Promise<any | null> {
@@ -100,5 +100,35 @@ export class IdentityRepository {
 
   async deleteUser(userId: string): Promise<void> {
     await prisma.user.delete({ where: { userId } });
+  }
+
+  async getUsers(): Promise<UserDetailResponse[]> {
+    return prisma.user.findMany({
+      select: {
+        userId: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        role: true
+      },
+      orderBy: { createdAt: "asc" }
+    });
+  }
+
+  async getUserById(userId: string): Promise<UserDetailResponse | null> {
+    return prisma.user.findUnique({ 
+      where: { userId },
+      select: {
+        userId: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        role: true
+      }
+    });
   }
 }

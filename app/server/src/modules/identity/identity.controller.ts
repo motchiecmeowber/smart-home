@@ -3,6 +3,7 @@ import {
   LoginRequestSchema,
   RegisterRequestSchema,
   ChangePasswordRequestSchema,
+  UpdateProfileRequestSchema
 } from "./identity.dto";
 import { IdentityService } from "./identity.service";
 import z from "zod";
@@ -133,6 +134,87 @@ export class IdentityController {
       return this.handleError(error, res);
     }
   };
+
+  updateProfile = async (req: Request, res: Response) => {
+    const parsed = UpdateProfileRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: "Dữ liệu không hợp lệ",
+        errors: z.prettifyError(parsed.error),
+      });
+    }
+
+    const userId = (req as any).userId as string;
+
+    try {
+      const update = await this.identityService.updateProfile(userId, parsed.data);
+      return res.status(200).json({
+        message: "Cập nhật thông tin thành công",
+        data: update
+      });
+    } catch (error) {
+      return this.handleError(error, res);
+    }
+  }
+
+  getUsers = async (req: Request, res: Response) => {
+    try {
+      const users = await this.identityService.getUsers();
+      return res.status(200).json({
+        message: "Lấy danh sách người dùng thành công",
+        data: users
+      });
+    } catch (error) {
+      return this.handleError(error, res);
+    }
+  }
+
+  getUserById = async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.userId as string;
+      const user = await this.identityService.getUserById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ message: "User không tồn tại"})
+      }
+
+      return res.status(200).json({
+        message: `Lấy thông tin người dùng ${userId} thành công`,
+        data: user
+      });
+    } catch (error) {
+      return this.handleError(error, res);
+    }
+  }
+
+  getProfile = async (req: Request, res: Response) => {
+    try {
+      const userId = (req as any).userId as string;
+      const user = await this.identityService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User không tồn tại"})
+      }
+
+      return res.status(200).json({
+        message: `Lấy thông tin hồ sơ thành công`,
+        data: user
+      });
+    } catch (error) {
+      return this.handleError(error, res);
+    }
+  }
+
+  deleteUser = async (req: Request, res: Response) => {
+    try {
+      const userId = req.params.userId as string;
+      await this.identityService.deleteUser(userId);
+
+      return res.status(200).json({ message: "Xóa người dùng thành công" });
+    } catch (error) {
+      return this.handleError(error, res);
+    }
+  }
 
   private handleError(error: unknown, res: Response) {
     const message = error instanceof Error ? error.message : "Lỗi không xác định";

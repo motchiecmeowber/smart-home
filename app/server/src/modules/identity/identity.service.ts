@@ -6,6 +6,8 @@ import {
   RegisterRequest,
   AuthResponse,
   UserResponse,
+  UserDetailResponse,
+  UpdateProfileRequest,
 } from "./identity.dto";
 import { IdentityRepository } from "./identity.repository";
 import { RefreshTokenRepository } from "./refreshToken.repository";
@@ -214,5 +216,31 @@ export class IdentityService {
       expiresIn: "7d",
     });
     return { accessToken, refreshToken };
+  }
+
+  async updateProfile(userId: string, data: UpdateProfileRequest): Promise<UserResponse> {
+    const user = await this.repository.findUserById(userId);
+    if (!user) {
+      throw new Error("User không tồn tại");
+    }
+
+    return this.repository.updateUser(userId, data);
+  }
+
+  async getUsers(): Promise<UserDetailResponse[]> {
+    return this.repository.getUsers();
+  }
+
+  async getUserById(userId: string): Promise<UserDetailResponse | null> {
+    return this.repository.getUserById(userId);
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    const user = await this.repository.findUserById(userId);
+    if (!user) {
+      throw new Error("User không tồn tại");
+    }
+
+    await this.repository.deleteUser(userId);
   }
 }

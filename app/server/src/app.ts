@@ -21,6 +21,7 @@ import { locationRouter } from "./modules/location/location.routes";
 import { requestRouter } from "./modules/request/request.routes";
 import { analyticsRouter } from "./modules/analytics/analytics.routes";
 import { automationService } from "./modules/automation/automation.service";
+import { userRouter } from "./modules/identity/identity.routes";
 
 const app = express();
 const server = createServer(app);
@@ -57,6 +58,7 @@ app.use("/api", interactionRouter);
 app.use("/api", locationRouter);
 app.use("/api", requestRouter);
 app.use("/api", analyticsRouter);
+app.use("/api", userRouter);
 app.use("/api/auth", identityRouter);
 
 app.use(notFoundHandler);
