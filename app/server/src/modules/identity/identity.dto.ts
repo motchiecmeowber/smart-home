@@ -32,6 +32,16 @@ export const ChangePasswordRequestSchema = z.object({
   newPassword: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
 }).openapi("ChangePasswordRequest");
 
+export const UpdateProfileRequestSchema = z.object({
+  firstName: z.string().min(1, "Tên phải có ít nhất 1 ký tự").optional(),
+  lastName: z.string().min(1, "Họ phải có ít nhất 1 ký tự").optional(),
+}).refine(
+  (data) => data.firstName !== undefined || data.lastName !== undefined,
+  {
+    message: "Phải cung cấp ít nhất một trong hai trường firstName hoặc lastName",
+  }
+).openapi("UpdateProfileRequest");
+
 // Response DTOs
 export const UserResponseSchema = z.object({
   userId: z.string(),
@@ -47,8 +57,15 @@ export const AuthResponseSchema = z.object({
   user: UserResponseSchema,
 });
 
+export const UserDetailResponseSchema = UserResponseSchema.extend({
+  firstName: z.string().nullable(),
+  lastName: z.string().nullable()
+});
+
 // Type Exports
 export type LoginRequest = z.infer<typeof LoginRequestSchema>;
 export type RegisterRequest = z.infer<typeof RegisterRequestSchema>;
+export type UpdateProfileRequest = z.infer<typeof UpdateProfileRequestSchema>;
 export type UserResponse = z.infer<typeof UserResponseSchema>;
 export type AuthResponse = z.infer<typeof AuthResponseSchema>;
+export type UserDetailResponse = z.infer<typeof UserDetailResponseSchema>;

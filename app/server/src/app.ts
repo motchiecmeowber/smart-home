@@ -12,7 +12,7 @@ import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 import { connectRedis } from "@/config/redis";
 import { tbWsClient } from "@/lib/ws/tb-ws";
 import { clientWsManager } from "@/lib/ws/client-ws";
-import identityRouter from "./modules/identity/identity.routes";
+import identityRouter, { userRouter } from "./modules/identity/identity.routes";
 
 import { hardwareRouter } from "./modules/hardware/hardware.routes";
 import { automationRouter } from "./modules/automation/automation.routes";
@@ -57,6 +57,7 @@ app.use("/api", interactionRouter);
 app.use("/api", locationRouter);
 app.use("/api", requestRouter);
 app.use("/api", analyticsRouter);
+app.use("/api", userRouter);
 app.use("/api/auth", identityRouter);
 
 app.use(notFoundHandler);
