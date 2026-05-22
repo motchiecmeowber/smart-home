@@ -18,7 +18,6 @@ hardwareRouter.post("/devices/:id/request-delete", authMiddleware, roleMiddlewar
 hardwareRouter.post("/devices/:id/request-update", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.requestUpdateDevice);
 hardwareRouter.post("/devices/request-add", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.requestAddDevice);
 hardwareRouter.post("/actuators/:id/control", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.controlActuator);
-hardwareRouter.post("/sensors/:id/sync-telemetry", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.syncSensorTelemetry);
 hardwareRouter.patch("/sensors/:id/threshold", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.updateThreshold);
 
 export { hardwareRouter };

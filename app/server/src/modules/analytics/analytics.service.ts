@@ -2,6 +2,7 @@ import { HttpError } from "@/common/app-error";
 import { analyticsRepo } from "./analytics.repository";
 import { DataType, DeviceType, ReportType, Role } from "@prisma/client";
 import { hardwareRepo } from "../hardware/hardware.repository";
+import { sensorService } from "../hardware/sensor.service";
 
 interface GroupedData {
   values: any[],
@@ -67,6 +68,10 @@ export class AnalyticsService {
 
     if (sensorIds.length === 0) {
       return { message: "No sensors found for this customer, no report generated" };
+    }
+
+    for (const id of sensorIds) {
+      await sensorService.syncTelemetry(id);
     }
 
     const rawData = await hardwareRepo.getSensorDataInRange(sensorIds, actualStartTime.toISOString(), actualEndTime.toISOString());
@@ -159,6 +164,8 @@ export class AnalyticsService {
       }
     }
     
+    await sensorService.syncTelemetry(sensorId as string);
+
     const rawData = await hardwareRepo.getSensorDataInRange([sensorId], startTime, endTime);
     if (!rawData) return null;
     if (rawData.length === 0) return { sensorId, points: [], metricName: null };
@@ -193,10 +200,10 @@ export class AnalyticsService {
 
     // compute chart points
     const chartPoints = buckets.filter(b => b.count > 0)
-                               .map(b => ({
-                                timestamp: b.timestamp,
-                                value: Math.round(( b.sum / b.count ) * 100) / 100
-                               }));
+      .map(b => ({
+        timestamp: b.timestamp,
+        value: Math.round((b.sum / b.count) * 100) / 100
+      }));
 
     return {
       sensorId,

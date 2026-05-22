@@ -111,7 +111,7 @@ export class DeviceService {
       const tbName = tbDevice.name;
 
       const [attrs, status] = await Promise.all([
-        getClientAttributes(tbId, ["tempLed", "humiLed"]),
+        getClientAttributes(tbId, ["tempLed", "humiLed", "buzzer"]),
         getDeviceStatus(tbId)
       ]);
 
@@ -212,6 +212,30 @@ export class DeviceService {
           createdCount++;
         } else {
           await this.updateDevice(existingHumiLed.deviceId, { status: humiLedStatus });
+        }
+      }
+
+      // Xử lý Buzzer
+      if (attrs.buzzer !== undefined) {
+        const buzzerSerial = `SN-${tbId}-B`;
+        const existingBuzzer = await hardwareRepo.getDeviceBySerial(buzzerSerial);
+
+        let buzzerStatus : DeviceStatus = DeviceStatus.DISCONNECTED;
+        if (isNetworkConnected) {
+          buzzerStatus = String(attrs.buzzer) === "true" ? DeviceStatus.ONLINE : DeviceStatus.OFFLINE;
+        }
+
+        if (!existingBuzzer) {
+          await this.addDevice({
+            serial: buzzerSerial,
+            tbDeviceId: tbId,
+            deviceName: `${tbName} - Buzzer`,
+            deviceType: DeviceType.ACTUATOR,
+            status: buzzerStatus
+          });
+          createdCount++;
+        } else {
+          await this.updateDevice(existingBuzzer.deviceId, { status: buzzerStatus });
         }
       }
     }
