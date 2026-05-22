@@ -19,7 +19,7 @@ export function registerIdentityDocs(registry: OpenAPIRegistry) {
     registry.register("UserResponse", UserResponseSchema);
     registry.register("AuthResponse", AuthResponseSchema);
     registry.register("UpdateProfileRequest", UpdateProfileRequestSchema);
-    registry.register("UserDetailResponseSchema", UserDetailResponseSchema);
+    registry.register("UserDetailResponse", UserDetailResponseSchema);
 
     // Register api endpoints
     // Post /api/auth/register

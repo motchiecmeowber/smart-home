@@ -224,7 +224,15 @@ export class IdentityService {
       throw new Error("User không tồn tại");
     }
 
-    return this.repository.updateUser(userId, data);
+    const update = await this.repository.updateUser(userId, data);
+    
+    return {
+      userId: update.userId,
+      email: update.email,
+      username: update.username,
+      createdAt: update.createdAt,
+      role: update.role
+    };
   }
 
   async getUsers(): Promise<UserDetailResponse[]> {

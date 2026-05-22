@@ -35,7 +35,12 @@ export const ChangePasswordRequestSchema = z.object({
 export const UpdateProfileRequestSchema = z.object({
   firstName: z.string().min(1, "Tên phải có ít nhất 1 ký tự").optional(),
   lastName: z.string().min(1, "Họ phải có ít nhất 1 ký tự").optional(),
-}).openapi("UpdateProfileRequest");
+}).refine(
+  (data) => data.firstName !== undefined || data.lastName !== undefined,
+  {
+    message: "Phải cung cấp ít nhất một trong hai trường firstName hoặc lastName",
+  }
+).openapi("UpdateProfileRequest");
 
 // Response DTOs
 export const UserResponseSchema = z.object({
