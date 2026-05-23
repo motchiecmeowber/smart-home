@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Layout, Menu } from 'antd'
 import type { MenuProps } from 'antd'
 import {
@@ -65,6 +65,8 @@ export function DashboardLayout({
   onNavigateProfile,
   onLogout,
 }: DashboardLayoutProps) {
+  const [collapsed, setCollapsed] = useState(false)
+
   const handleMainMenuClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'dashboard-devices') {
       onNavigateDevices()
@@ -78,9 +80,6 @@ export function DashboardLayout({
 
     if (key === 'dashboard-requests') {
       onNavigateRequests()
-    }
-    if (key === 'dashboard-realtime') {
-      onNavigateRealtime()
     }
     if (key === 'dashboard-realtime') {
       onNavigateRealtime()
@@ -105,10 +104,25 @@ export function DashboardLayout({
 
   return (
     <Layout className="dashboard-shell">
-      <Sider className="dashboard-sidebar" width={240}>
-        <div className="dashboard-brand">
-          <span className="dashboard-brand-mark">S</span>
-          <span>Smart Home</span>
+      <Sider 
+        className="dashboard-sidebar" 
+        width={255}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        breakpoint="lg"
+        collapsedWidth={80}
+        trigger={null}
+      >
+        <div 
+          className="dashboard-brand" 
+          style={{ justifyContent: collapsed ? 'center' : 'flex-start', cursor: 'pointer', padding: collapsed ? '0 0 20px 0' : '0 8px 20px' }}
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          <span className="dashboard-brand-mark" style={{ fontSize: 20 }}>S</span>
+          {!collapsed && (
+            <span style={{ fontSize: 22, fontWeight: 800 }}>Smart Home</span>
+          )}
         </div>
 
         <Menu

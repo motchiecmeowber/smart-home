@@ -25,11 +25,10 @@ export interface RawLocation {
 
 export interface RawDevice {
   deviceId: string
-  serial: string
   tbDeviceId: string | null
   deviceName: string | null
   deviceType: 'SENSOR' | 'ACTUATOR'
-  status: 'ONLINE' | 'OFFLINE'
+  status: 'ONLINE' | 'OFFLINE' | 'DISCONNECTED'
   sensor: RawSensor | null
   actuator: RawActuator | null
   location: RawLocation | null
@@ -40,24 +39,36 @@ export interface GetDevicesResponse {
 }
 
 export type SensorFunction = 'temperature' | 'humidity' | 'gas' | 'combined'
-export type ActuatorFunction = 'tempLed' | 'humiLed'
+export type ActuatorFunction = 'tempLed' | 'humiLed' | 'buzzer'
 
 export interface DeviceInfo {
   deviceId: string
   tbDeviceId: string
   deviceName: string
   deviceType: 'SENSOR' | 'ACTUATOR'
-  serial: string
-  serialSuffix: string
   sensorFunction: SensorFunction | null
   actuatorFunction: ActuatorFunction | null
-  status: 'ONLINE' | 'OFFLINE'
+  status: 'ONLINE' | 'OFFLINE' | 'DISCONNECTED'
   location: string | null
+  hasOwner: boolean
+  ownerId: string | null
 }
 
-export function parseSerialSuffix(serial: string): string {
-  const parts = serial.split('-')
-  return parts[parts.length - 1].toUpperCase()
+export function parseSuffixFromDeviceName(name: string | null): string {
+  if (!name) return ''
+
+  const parts = name.split('-')
+  const lastPart = parts[parts.length - 1].trim().toUpperCase();
+
+  if (lastPart.includes('TEMPERATURE') || lastPart === 'TS') return 'TS'
+  if (lastPart.includes('HUMIDITY') || lastPart === 'HS') return 'HS'
+  if (lastPart.includes('GAS') || lastPart === 'GS') return 'GS'
+  if (lastPart.includes('COMBINED') || lastPart === 'S') return 'S'
+  if (lastPart.includes('TEMP LED') || lastPart === 'TL') return 'TL'
+  if (lastPart.includes('HUMI LED') || lastPart === 'HL') return 'HL'
+  if (lastPart.includes('BUZZER') || lastPart === 'B') return 'B'
+  
+  return ''
 }
 
 export function resolveSensorFunction(suffix: string): SensorFunction | null {
@@ -74,6 +85,7 @@ export function resolveActuatorFunction(suffix: string): ActuatorFunction | null
   switch (suffix) {
     case 'TL': return 'tempLed'
     case 'HL': return 'humiLed'
+    case 'B': return 'buzzer'
     default: return null
   }
 }
@@ -101,18 +113,42 @@ export async function apiGetDevices(): Promise<DeviceInfo[]> {
   return raw
     .filter((d) => Boolean(d.tbDeviceId))
     .map((d): DeviceInfo => {
-      const suffix = parseSerialSuffix(d.serial)
+      const suffix = parseSuffixFromDeviceName(d.deviceName)
+      const currentOwnerId = d.deviceType === 'SENSOR' ? d.sensor?.customerId : d.actuator?.customerId
+
       return {
         deviceId: d.deviceId,
         tbDeviceId: d.tbDeviceId!,
-        deviceName: d.deviceName ?? d.serial,
+        deviceName: d.deviceName ?? 'Thiết bị không tên',
         deviceType: d.deviceType,
-        serial: d.serial,
-        serialSuffix: suffix,
         sensorFunction: d.deviceType === 'SENSOR' ? resolveSensorFunction(suffix) : null,
         actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
         status: d.status,
         location: d.location?.locationName ?? null,
+        hasOwner: Boolean(currentOwnerId),
+        ownerId: currentOwnerId ?? null
       }
     })
+}
+
+export async function apiSyncDevices(): Promise<{ createdCount: number }> {
+  const token = authStore.getToken()
+  if (!token) {
+    throw new Error('Yêu cầu xác thực tài khoản')
+  }
+
+  const res = await fetch(`${BASE}/devices/sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(json.message ?? `Lỗi đồng bộ hệ thống (HTTP ${res.status})`)
+  }
+
+  return json.data || { createdCount: 0 }
 }

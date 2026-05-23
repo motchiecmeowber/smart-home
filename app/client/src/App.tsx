@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ConfigProvider, Spin } from 'antd'
 import { DashboardLayout } from './layouts/DashboardLayout'
+import { AdminDashboardLayout } from './layouts/AdminLayout'
+import * as Admin from './pages/admin/index';
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { DevicesPage } from './pages/dashboard/DevicesPage'
@@ -23,6 +25,12 @@ const routePaths: Record<AppRoute, string> = {
   'dashboard-realtime': '/dashboard/realtime',
   'dashboard-settings': '/dashboard/settings',
   'dashboard-profile': '/dashboard/profile',
+  'admin-dashboard': '/admin/dashboard',
+  'admin-devices': '/admin/devices',
+  'admin-users': '/admin/users',
+  'admin-requests': '/admin/requests',
+  'admin-settings': '/admin/settings',
+  'admin-profile': '/admin/profile'
 }
 
 const DASHBOARD_ROUTES: AppRoute[] = [
@@ -34,36 +42,52 @@ const DASHBOARD_ROUTES: AppRoute[] = [
   'dashboard-profile',
 ]
 
+const ADMIN_ROUTES: AppRoute[] = [
+  'admin-dashboard',
+  'admin-devices',
+  'admin-users',
+  'admin-requests',
+  'admin-settings',
+  'admin-profile',
+]
+
 function getAppRouteFromLocation(): AppRoute {
   const path = window.location.pathname
-
-  if (path === routePaths.register) return 'register'
-  if (path === routePaths['dashboard-devices']) return 'dashboard-devices'
-  if (path === routePaths['dashboard-notifications']) return 'dashboard-notifications'
-  if (path === routePaths['dashboard-requests']) return 'dashboard-requests'
-  if (path === routePaths['dashboard-realtime']) return 'dashboard-realtime'
-  if (path === routePaths['dashboard-settings']) return 'dashboard-settings'
-  if (path === routePaths['dashboard-profile']) return 'dashboard-profile'
-
-  return 'login'
+  const found = Object.entries(routePaths).find(([, value]) => value === path)
+  return (found?.[0] as AppRoute) ?? 'login'
 }
 
 function App() {
   const auth = useAuth()
   const [appRoute, setAppRoute] = useState<AppRoute>(getAppRouteFromLocation)
 
+  // Restore session once on app startup
   useEffect(() => {
-    authStore.tryRestore().then((authenticated) => {
-      // If the user landed on a protected route but has no session, redirect
-      if (!authenticated && DASHBOARD_ROUTES.includes(getAppRouteFromLocation())) {
-        navigateToAppRoute('login')
-      }
-      // If already authenticated and on login/register, go to dashboard
-      if (authenticated && (appRoute === 'login' || appRoute === 'register')) {
+    authStore.tryRestore()
+  }, [])
+
+  // Route guard + role-based redirects
+  useEffect(() => {
+    if (auth.restoring) return
+
+    const currentRoute = getAppRouteFromLocation();
+    const isProtected = [...DASHBOARD_ROUTES, ...ADMIN_ROUTES].includes(currentRoute)
+    
+    // If the user landed on a protected route but has no session, redirect
+    if (!auth.accessToken && isProtected) {
+      navigateToAppRoute('login')
+      return
+    }
+  
+    // If already authenticated and on login/register, go to dashboard
+    if (auth.accessToken && (appRoute === 'login' || appRoute === 'register')) {
+      if (auth.user?.role === 'ADMIN') {
+        navigateToAppRoute('admin-dashboard')
+      } else {
         navigateToAppRoute('dashboard-devices')
       }
-    })
-  }, [])
+    }
+  }, [auth.restoring, auth.accessToken, auth.user?.role, appRoute])
 
   useEffect(() => {
     const syncRoute = () => setAppRoute(getAppRouteFromLocation())
@@ -125,7 +149,14 @@ function App() {
       <div className="app-shell">
         {appRoute === 'login' && (
           <LoginPage
-            onLoginSuccess={() => navigateToAppRoute('dashboard-devices')}
+            onLoginSuccess={() => {
+              // check role to navigate
+              if (authStore.getState().user?.role === 'ADMIN') {
+                navigateToAppRoute('admin-dashboard')
+              } else {
+                navigateToAppRoute('dashboard-devices')
+              }
+            }}
             onNavigateRegister={() => navigateToAppRoute('register')}
           />
         )}
@@ -134,57 +165,61 @@ function App() {
           <RegisterPage onNavigateLogin={() => navigateToAppRoute('login')} />
         )}
 
-        {DASHBOARD_ROUTES.includes(appRoute) && !auth.accessToken && (
-          <LoginPage
-            onLoginSuccess={() => navigateToAppRoute('dashboard-devices')}
-            onNavigateRegister={() => navigateToAppRoute('register')}
-          />
+        {auth.user?.role === 'CUSTOMER' && auth.accessToken && (
+          <>
+            {appRoute === 'dashboard-devices' && (
+              // {appRoute === 'dashboard-devices' && auth.accessToken && (
+              <DashboardLayout activeRoute="dashboard-devices" {...layoutProps}>
+                <DevicesPage />
+              </DashboardLayout>
+            )}
+
+            {appRoute === 'dashboard-realtime' && auth.accessToken && (
+              <DashboardLayout activeRoute="dashboard-realtime" {...layoutProps}>
+                <RealtimePage />
+              </DashboardLayout>
+            )}
+
+            {appRoute === 'dashboard-notifications' && (
+              // {appRoute === 'dashboard-notifications' && auth.accessToken && (
+              <DashboardLayout activeRoute="dashboard-notifications" {...layoutProps}>
+                <NotificationsPage />
+              </DashboardLayout>
+            )}
+
+            {appRoute === 'dashboard-requests' && (
+              // {appRoute === 'dashboard-requests' && auth.accessToken && (
+              <DashboardLayout activeRoute="dashboard-requests" {...layoutProps}>
+                <RequestsPage />
+              </DashboardLayout>
+            )}
+
+            {appRoute === 'dashboard-settings' && auth.accessToken && (
+              <DashboardLayout activeRoute="dashboard-settings" {...layoutProps}>
+                <SettingsPage />
+              </DashboardLayout>
+            )}
+
+            {appRoute === 'dashboard-profile' && (
+              // {appRoute === 'dashboard-profile' && auth.accessToken && (
+              <DashboardLayout activeRoute="dashboard-profile" {...layoutProps}>
+                <ProfilePage />
+              </DashboardLayout>
+            )}
+          </>
         )}
 
-        {appRoute === 'dashboard-devices' && (
-          // {appRoute === 'dashboard-devices' && auth.accessToken && (
-          <DashboardLayout activeRoute="dashboard-devices" {...layoutProps}>
-            <DevicesPage />
-          </DashboardLayout>
-        )}
+        {/* Admin UI */}
+        {auth.user?.role === 'ADMIN' && auth.accessToken && (
+          <AdminDashboardLayout activeRoute={appRoute} onNavigate={navigateToAppRoute} onLogout={handleLogout}>
+            {appRoute === 'admin-dashboard' && <Admin.AdminDashboardPage />}
+            {appRoute === 'admin-devices' && <Admin.DeviceManagementPage />}
+            {appRoute === 'admin-users' && <Admin.UserManagementPage />}
+            {appRoute === 'admin-requests' && <Admin.RequestManagementPage />}
 
-        {appRoute === 'dashboard-realtime' && auth.accessToken && (
-          <DashboardLayout activeRoute="dashboard-realtime" {...layoutProps}>
-            <RealtimePage />
-          </DashboardLayout>
-        )}
-
-        {appRoute === 'dashboard-realtime' && auth.accessToken && (
-          <DashboardLayout activeRoute="dashboard-realtime" {...layoutProps}>
-            <RealtimePage />
-          </DashboardLayout>
-        )}
-
-        {appRoute === 'dashboard-notifications' && (
-          // {appRoute === 'dashboard-notifications' && auth.accessToken && (
-          <DashboardLayout activeRoute="dashboard-notifications" {...layoutProps}>
-            <NotificationsPage />
-          </DashboardLayout>
-        )}
-
-        {appRoute === 'dashboard-requests' && (
-          // {appRoute === 'dashboard-requests' && auth.accessToken && (
-          <DashboardLayout activeRoute="dashboard-requests" {...layoutProps}>
-            <RequestsPage />
-          </DashboardLayout>
-        )}
-
-        {appRoute === 'dashboard-settings' && auth.accessToken && (
-          <DashboardLayout activeRoute="dashboard-settings" {...layoutProps}>
-            <SettingsPage />
-          </DashboardLayout>
-        )}
-
-        {appRoute === 'dashboard-profile' && (
-          // {appRoute === 'dashboard-profile' && auth.accessToken && (
-          <DashboardLayout activeRoute="dashboard-profile" {...layoutProps}>
-            <ProfilePage />
-          </DashboardLayout>
+            {appRoute === 'admin-settings' && <SettingsPage />}
+            {appRoute === 'admin-profile' && <ProfilePage />}
+          </AdminDashboardLayout>
         )}
       </div>
     </ConfigProvider>

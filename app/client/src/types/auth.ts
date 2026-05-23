@@ -36,3 +36,10 @@ export type AppRoute =
   | 'dashboard-requests'
   | 'dashboard-settings'
   | 'dashboard-profile'
+// admin route
+  | 'admin-dashboard'
+  | 'admin-devices'
+  | 'admin-users'
+  | 'admin-requests'
+  | 'admin-settings'
+  | 'admin-profile'

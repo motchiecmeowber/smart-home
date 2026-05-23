@@ -23,6 +23,9 @@ export class HardwareRepository {
         actuator: true,
         location: true,
       },
+      orderBy: {
+        deviceId: 'asc',
+      },
     });
   }
 
