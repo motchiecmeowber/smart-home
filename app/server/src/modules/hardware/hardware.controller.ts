@@ -73,7 +73,7 @@ export class HardwareController {
     try {
       const deviceId = req.params.id as string;
       const customerId = (req as any).userId;
-      
+
       const existing = await deviceService.getDeviceById(deviceId);
       if (!existing)
         throw new HttpError(404, "Device not found");
@@ -81,7 +81,6 @@ export class HardwareController {
       const request = await requestService.createRequest(customerId, {
         requestType: "DELETE",
         deviceId,
-        serial: existing?.serial,
         content: `Request to delete device: ${existing?.deviceName ?? deviceId}`,
       });
       return sendSuccess(res, 201, request, "Delete request submitted, awaiting admin approval");
@@ -93,7 +92,7 @@ export class HardwareController {
   async requestAddDevice(req: Request, res: Response, next: NextFunction) {
     try {
       const customerId = (req as any).userId;
-      const { serial, deviceName, deviceType, locationId, unit, threshold, note: userNote } = req.body;
+      const { deviceName, deviceType, locationId, unit, threshold, note: userNote } = req.body;
 
       // Phân loại thông tin theo loại thiết bị
       const infoParts = [
@@ -116,8 +115,7 @@ export class HardwareController {
 
       const requestEntity = await requestService.createRequest(customerId, {
         requestType: "ADD",
-        serial,
-        content: `Request to add ${deviceType || "Device"}: ${deviceName || serial}`,
+        content: `Request to add ${deviceType || "Device"}: ${deviceName || "Unnamed"}`,
         note: detailedNote,
       });
 
@@ -141,7 +139,6 @@ export class HardwareController {
         content: content ?? `Request to update device: ${existing.deviceName ?? deviceId}`,
         requestType: "UPDATE",
         deviceId,
-        serial: existing.serial,
         note,
       });
 
@@ -167,23 +164,10 @@ export class HardwareController {
 
       const userId = (req as any).userId;
 
-      const result = await actuatorService.controlActuator(id, data.action, userId);
+      const result = await actuatorService.controlActuator(id, data.action, userId, true);
       return sendSuccess(res, 200, result, result.message);
     } catch (error) {
       next(error);
-    }
-  }
-
-  async syncSensorTelemetry(req: any, res: Response, next: NextFunction) {
-    try {
-      const deviceId = req.params.id;
-      const hours = req.query.hours;
-      const { userId, role } = req as any;
-      const result = await sensorService.syncTelemetry(deviceId, [], hours ? parseInt(hours as string) : 24, { userId, role });
-
-      return sendSuccess(res, 200, result, "Telemetry synced successfully");
-    } catch (error) {
-      next(error)
     }
   }
 

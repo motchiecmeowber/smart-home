@@ -227,33 +227,6 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
     });
 
     registry.registerPath({
-        method: "post",
-        path: "/api/sensors/{id}/sync-telemetry",
-        summary: "[CUSTOMER] Sync historical telemetry data",
-        description: `Đồng bộ dữ liệu cảm biến (nhiệt độ, độ ẩm, gas...) từ ThingsBoard về Database local để vẽ biểu đồ.
-        \n- Hệ thống sẽ tự động khám phá các loại dữ liệu thiết bị đang có.
-        \n- Mặc định lấy dữ liệu trong 24 giờ qua nếu không truyền tham số 'hours'.`,
-        tags: ["Hardware"],
-        security: [{ bearerAuth: [] }],
-        request: {
-            params: z.object({ id: z.string().openapi({ description: "Sensor Device ID" }) }),
-            query: z.object({
-                hours: z.string().optional().openapi({ 
-                    description: "Số giờ muốn lấy dữ liệu ngược về quá khứ",
-                    example: "24" 
-                })
-            })
-        },
-        responses: {
-            200: {
-                description: "Telemetry synced successfully",
-                content: { "application/json": { schema: apiSuccess(z.object({ count: z.number() })) } }
-            },
-            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
-        }
-    });
-
-    registry.registerPath({
         method: "patch",
         path: "/api/sensors/{id}/threshold",
         summary: "[CUSTOMER] Update sensor threshold",

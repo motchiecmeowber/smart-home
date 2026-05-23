@@ -32,7 +32,8 @@ export class InteractionRepository {
       where: { deviceId },
       include: {
         actuator: { include: { customer: true } },
-        sensor: true
+        sensor: true,
+        location: true
       }
     });
 

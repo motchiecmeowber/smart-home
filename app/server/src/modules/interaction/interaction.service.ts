@@ -1,60 +1,90 @@
 import { interactionRepo } from "./interaction.repository";
 import { notificationService } from "./notification.service";
 import { hardwareRepo } from "../hardware/hardware.repository";
-import { sendRpcCommand } from "../../config/tb-api";
 import { prisma } from "../../config/prisma";
 import { HttpError } from "@/common/app-error";
-import { DeviceType } from "@prisma/client";
+import { DeviceStatus, DeviceType } from "@prisma/client";
+import { actuatorService } from "../hardware/actuator.service";
+import { redisClient } from "@/config/redis";
 
 export class InteractionService {
   async checkThresholdAndAlert(deviceId: string, dataType: string, value: number, threshold: number) {
-    if (value > threshold) {
-      // 0. Cooldown for 15 minutes prevent alert spam
-      console.warn(`[ALERT] Threshold exceeded for device ${deviceId}! ${dataType} value: ${value} > ${threshold}`);
-
-      const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000);
-      const existingAlert = await prisma.notification.findFirst({
-        where: {
-          deviceId: deviceId,
-          title: `Cảnh báo an toàn - ${dataType}`,
-          createdAt: {
-            gte: fifteenMinAgo
-          }
-        }
+    // 1. Trigger Buzzer via RPC (Real Device Control)
+    const triggeringDevice = await interactionRepo.getDeviceOwner(deviceId);
+    if (triggeringDevice?.locationId) {
+      // Find an actuator in the same location that acts as a buzzer
+      const devicesInLocation = await hardwareRepo.getDevices({
+        locationId: triggeringDevice.locationId,
+        deviceType: DeviceType.ACTUATOR
       });
 
-      if (existingAlert) {
+      const buzzer = devicesInLocation.find(d => d.deviceName?.toLowerCase().includes("buzzer"));
+      const safeThreshold = threshold * 0.96; // 4% hysteresis margin
+      const locationAlertKey = `location_alerts:${triggeringDevice.locationId}`;
+
+      if (value > threshold) {
+        await redisClient.sAdd(locationAlertKey, deviceId);
+
+        if (buzzer) {
+          // check if buzzer is manual muted
+          try {
+            const isMuted = await redisClient.exists(`mute:${buzzer.deviceId}`);
+            
+            if (isMuted === 1) {
+              console.log(`[ALERT] Buzzer is currently muted by user. Skipping ON command.`);
+            } else if (buzzer.status === DeviceStatus.DISCONNECTED) {
+              console.log(`[ALERT] Buzzer (${buzzer.deviceName}) is disconnected. Skipping ON command.`);
+            } else if (buzzer.status === DeviceStatus.ONLINE) {
+              const customerId = buzzer.actuator?.customerId || "";
+              await actuatorService.controlActuator(buzzer.deviceId, "ON", customerId);
+              console.log(`[RPC] Triggered Buzzer (${buzzer.deviceName}) for alert in location ${triggeringDevice.locationId}`);
+            }
+          } catch (rpcErr: any) {
+            console.error(`[RPC ERROR] Failed to trigger buzzer: ${rpcErr.message}`);
+          }
+        }
+      } else if (value <= safeThreshold) {
+        const remainingAlertsCount = Number(await redisClient.eval(
+          `
+            redis.call('SREM', KEYS[1], ARGV[1])
+            return redis.call('SCARD', KEYS[1])
+          `,
+          {
+            keys: [locationAlertKey],
+            arguments: [deviceId]
+          }
+        ));
+
+        if (remainingAlertsCount === 0) {
+          if (buzzer && buzzer.status === DeviceStatus.ONLINE) {
+            // auto-turn off buzzer
+            try {
+              const customerId = buzzer.actuator?.customerId || "";
+              await actuatorService.controlActuator(buzzer.deviceId, "OFF", customerId);
+              console.log(`[RPC] Auto-turned OFF Buzzer (${buzzer.deviceName}) as environment is safe (value: ${value} <= ${safeThreshold})`);
+            } catch (rpcErr: any) {
+              console.error(`[RPC ERROR] Fail to turn off buzzer: ${rpcErr.message}`);
+            }
+          }
+        } else {
+          console.log(`[ALERT] Sensor ${deviceId} is safe, but ${remainingAlertsCount} other sensor(s) in location ${triggeringDevice.locationId} are still alerting. Buzzer stays ON.`);
+        }
+      }
+    }    
+
+    if (value > threshold) {
+      // 2. Cooldown for 15 minutes prevent alert spam
+      console.warn(`[ALERT] Threshold exceeded for device ${deviceId}! ${dataType} value: ${value} > ${threshold}`);
+
+      const cooldownKey = `cooldown:noti:${deviceId}:${dataType}`;
+      const isCooldown = await redisClient.set(cooldownKey, "1", { NX: true, EX: 900 });
+
+      if (!isCooldown) {
         console.log(`[COOLDOWN] Notification exists, skipped`);
         return;
       }
 
-      // 1. Trigger Buzzer via RPC (Real Device Control)
-      const triggeringDevice = await interactionRepo.getDeviceOwner(deviceId);
-      if (triggeringDevice?.locationId) {
-        // Find an actuator in the same location that acts as a buzzer/alarm
-        const devicesInLocation = await hardwareRepo.getDevices({
-          locationId: triggeringDevice.locationId,
-          deviceType: DeviceType.ACTUATOR
-        });
-
-        const buzzer = devicesInLocation.find(d =>
-          d.deviceName?.toLowerCase().includes("buzzer") ||
-          d.deviceName?.toLowerCase().includes("alarm")
-        );
-
-        if (buzzer) {
-          try {
-            await sendRpcCommand(buzzer.tbDeviceId, "setBuzzer", { action: "ON" });
-            console.log(`[RPC] Triggered Buzzer (${buzzer.deviceName}) for alert in location ${triggeringDevice.locationId}`);
-          } catch (rpcErr: any) {
-            console.error(`[RPC ERROR] Failed to trigger buzzer: ${rpcErr.message}`);
-          }
-        } else {
-          console.log(`[INFO] No buzzer found in location ${triggeringDevice.locationId} to alert.`);
-        }
-      }
-
-      // 2. Create Notification in DB
+      // 3. Create Notification in DB
       let targetUserId = triggeringDevice?.sensor?.customerId;
 
       if (!targetUserId && triggeringDevice?.locationId) {
@@ -92,7 +122,7 @@ export class InteractionService {
 
             const htmlContent = `
               <h3>Hệ thống Smart Home cảnh báo</h3>
-              <p>Thiết bị <b>${triggeringDevice?.deviceName ?? "cảm biến"}</b> (Serial: <b>${triggeringDevice?.serial ?? "N/A"}</b>) phát hiện chỉ số <b>${dataType}</b> đạt mức <b>${value}</b>.</p>
+              <p>Thiết bị <b>${triggeringDevice?.deviceName ?? "cảm biến"}</b> (Vị trí: <b>${triggeringDevice?.location?.locationName ?? "N/A"}</b>) phát hiện chỉ số <b>${dataType}</b> đạt mức <b>${value}</b>.</p>
               <p>Ngưỡng an toàn thiết lập: <b>${threshold}</b>.</p>
               <p>Vui lòng kiểm tra thiết bị của bạn ngay lập tức!</p>
             `;
@@ -103,7 +133,7 @@ export class InteractionService {
           console.error("Failed to send email notification:", err);
         }
 
-        // 3. Push Notification
+        // 4. Push Notification
         console.log(`[PUSH NOTIFICATION] Sent to user ${targetUserId}: Cảnh báo ${dataType} vượt ngưỡng!`);
       } else {
         console.warn(`[WARN] Could not find a target user for notification for device ${deviceId}`);

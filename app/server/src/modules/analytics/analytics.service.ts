@@ -2,6 +2,7 @@ import { HttpError } from "@/common/app-error";
 import { analyticsRepo } from "./analytics.repository";
 import { DataType, DeviceType, ReportType, Role } from "@prisma/client";
 import { hardwareRepo } from "../hardware/hardware.repository";
+import { sensorService } from "../hardware/sensor.service";
 
 interface GroupedData {
   values: any[],
@@ -68,6 +69,9 @@ export class AnalyticsService {
     if (sensorIds.length === 0) {
       return { message: "No sensors found for this customer, no report generated" };
     }
+
+    const durationHours = Math.ceil((actualEndTime.getTime() - actualStartTime.getTime()) / (1000 * 60 * 60));
+    await Promise.all(sensorIds.map(id => sensorService.syncTelemetry(id, undefined, durationHours)));
 
     const rawData = await hardwareRepo.getSensorDataInRange(sensorIds, actualStartTime.toISOString(), actualEndTime.toISOString());
     const groupedData: Record<string, GroupedData> = {};
@@ -159,6 +163,9 @@ export class AnalyticsService {
       }
     }
     
+    const durationHours = Math.ceil((new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60 * 60));
+    await sensorService.syncTelemetry(sensorId as string, undefined, durationHours);
+
     const rawData = await hardwareRepo.getSensorDataInRange([sensorId], startTime, endTime);
     if (!rawData) return null;
     if (rawData.length === 0) return { sensorId, points: [], metricName: null };
@@ -193,10 +200,10 @@ export class AnalyticsService {
 
     // compute chart points
     const chartPoints = buckets.filter(b => b.count > 0)
-                               .map(b => ({
-                                timestamp: b.timestamp,
-                                value: Math.round(( b.sum / b.count ) * 100) / 100
-                               }));
+      .map(b => ({
+        timestamp: b.timestamp,
+        value: Math.round((b.sum / b.count) * 100) / 100
+      }));
 
     return {
       sensorId,
