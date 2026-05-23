@@ -70,9 +70,8 @@ export class AnalyticsService {
       return { message: "No sensors found for this customer, no report generated" };
     }
 
-    for (const id of sensorIds) {
-      await sensorService.syncTelemetry(id);
-    }
+    const durationHours = Math.ceil((actualEndTime.getTime() - actualStartTime.getTime()) / (1000 * 60 * 60));
+    await Promise.all(sensorIds.map(id => sensorService.syncTelemetry(id, undefined, durationHours)));
 
     const rawData = await hardwareRepo.getSensorDataInRange(sensorIds, actualStartTime.toISOString(), actualEndTime.toISOString());
     const groupedData: Record<string, GroupedData> = {};
@@ -164,7 +163,8 @@ export class AnalyticsService {
       }
     }
     
-    await sensorService.syncTelemetry(sensorId as string);
+    const durationHours = Math.ceil((new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60 * 60));
+    await sensorService.syncTelemetry(sensorId as string, undefined, durationHours);
 
     const rawData = await hardwareRepo.getSensorDataInRange([sensorId], startTime, endTime);
     if (!rawData) return null;

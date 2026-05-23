@@ -81,7 +81,6 @@ export class HardwareController {
       const request = await requestService.createRequest(customerId, {
         requestType: "DELETE",
         deviceId,
-        serial: existing?.serial,
         content: `Request to delete device: ${existing?.deviceName ?? deviceId}`,
       });
       return sendSuccess(res, 201, request, "Delete request submitted, awaiting admin approval");
@@ -93,7 +92,7 @@ export class HardwareController {
   async requestAddDevice(req: Request, res: Response, next: NextFunction) {
     try {
       const customerId = (req as any).userId;
-      const { serial, deviceName, deviceType, locationId, unit, threshold, note: userNote } = req.body;
+      const { deviceName, deviceType, locationId, unit, threshold, note: userNote } = req.body;
 
       // Phân loại thông tin theo loại thiết bị
       const infoParts = [
@@ -116,8 +115,7 @@ export class HardwareController {
 
       const requestEntity = await requestService.createRequest(customerId, {
         requestType: "ADD",
-        serial,
-        content: `Request to add ${deviceType || "Device"}: ${deviceName || serial}`,
+        content: `Request to add ${deviceType || "Device"}: ${deviceName || "Unnamed"}`,
         note: detailedNote,
       });
 
@@ -141,7 +139,6 @@ export class HardwareController {
         content: content ?? `Request to update device: ${existing.deviceName ?? deviceId}`,
         requestType: "UPDATE",
         deviceId,
-        serial: existing.serial,
         note,
       });
 

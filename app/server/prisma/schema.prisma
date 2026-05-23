@@ -61,6 +61,9 @@ model Location {
     locationId   String  @id @default(cuid()) @map("Location_ID")
     locationName String? @map("Location_name")
 
+    customerId   String? @map("Location_CustomerID")
+    customer     Customer? @relation(fields: [customerId], references: [userId], onDelete: Cascade)
+
     devices Device[] // owning side
 
     @@map("LOCATION")
@@ -102,6 +105,7 @@ model Customer {
     admin Admin? @relation("AdminManagesCustomer", fields: [adminId], references: [userId])
 
     // owning side
+    locations Location[]
     actuators Actuator[]
     sensors   Sensor[]
     schedules Schedule[]
@@ -235,7 +239,7 @@ model Request {
     status      RequestStatus?  @map("Status")
     createdAt   DateTime @default(now()) @map("Created_at")
     note        String?  @map("Note")
-    serial      String?  @map("Serial")
+
     deviceId    String?  @map("Request_DeviceID")
     customerId  String?  @map("Request_UserID") // optional: request có thể từ system
     adminId     String?  @map("Request_AdminID") // optional: chưa assign admin

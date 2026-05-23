@@ -18,14 +18,14 @@ export class RequestService {
   async createRequest(customerId: string, data: {
     content?: string;
     requestType: RequestType;
-    serial?: string;
+
     deviceId?: string;
     note?: string;
   }) {
     const createData: Prisma.RequestCreateInput = {
       content: data.content,
       requestType: data.requestType,
-      serial: data.serial,
+
       note: data.note,
       status: "PENDING",
       customer: { connect: { userId: customerId } }

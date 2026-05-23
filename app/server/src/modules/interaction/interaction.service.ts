@@ -12,7 +12,7 @@ export class InteractionService {
     // 1. Trigger Buzzer via RPC (Real Device Control)
     const triggeringDevice = await interactionRepo.getDeviceOwner(deviceId);
     if (triggeringDevice?.locationId) {
-      // Find an actuator in the same location that acts as a buzzer/alarm
+      // Find an actuator in the same location that acts as a buzzer
       const devicesInLocation = await hardwareRepo.getDevices({
         locationId: triggeringDevice.locationId,
         deviceType: DeviceType.ACTUATOR
@@ -22,31 +22,40 @@ export class InteractionService {
       const safeThreshold = threshold * 0.96; // 4% hysteresis margin
       const locationAlertKey = `location_alerts:${triggeringDevice.locationId}`;
 
-      if (value > safeThreshold) {
+      if (value > threshold) {
         await redisClient.sAdd(locationAlertKey, deviceId);
 
         if (buzzer) {
           // check if buzzer is manual muted
           try {
-            const isMuted = await redisClient.get(`mute:${buzzer.deviceId}`);
+            const isMuted = await redisClient.exists(`mute:${buzzer.deviceId}`);
             
-            if (!isMuted && buzzer.status !== DeviceStatus.ONLINE) {
+            if (isMuted === 1) {
+              console.log(`[ALERT] Buzzer is currently muted by user. Skipping ON command.`);
+            } else if (buzzer.status === DeviceStatus.DISCONNECTED) {
+              console.log(`[ALERT] Buzzer (${buzzer.deviceName}) is disconnected. Skipping ON command.`);
+            } else if (buzzer.status === DeviceStatus.ONLINE) {
               const customerId = buzzer.actuator?.customerId || "";
               await actuatorService.controlActuator(buzzer.deviceId, "ON", customerId);
               console.log(`[RPC] Triggered Buzzer (${buzzer.deviceName}) for alert in location ${triggeringDevice.locationId}`);
-            } else if (isMuted) {
-              console.log(`[ALERT] Buzzer is currently muted by user. Skipping ON command.`);
             }
           } catch (rpcErr: any) {
             console.error(`[RPC ERROR] Failed to trigger buzzer: ${rpcErr.message}`);
           }
         }
       } else if (value <= safeThreshold) {
-        await redisClient.sRem(locationAlertKey, deviceId);
-        
-        const activeAlertsCount = await redisClient.sCard(locationAlertKey);
+        const remainingAlertsCount = Number(await redisClient.eval(
+          `
+            redis.call('SREM', KEYS[1], ARGV[1])
+            return redis.call('SCARD', KEYS[1])
+          `,
+          {
+            keys: [locationAlertKey],
+            arguments: [deviceId]
+          }
+        ));
 
-        if (activeAlertsCount === 0) {
+        if (remainingAlertsCount === 0) {
           if (buzzer && buzzer.status === DeviceStatus.ONLINE) {
             // auto-turn off buzzer
             try {
@@ -58,7 +67,7 @@ export class InteractionService {
             }
           }
         } else {
-          console.log(`[ALERT] Sensor ${deviceId} is safe, but ${activeAlertsCount} other sensor(s) in location ${triggeringDevice.locationId} are still alerting. Buzzer stays ON.`);
+          console.log(`[ALERT] Sensor ${deviceId} is safe, but ${remainingAlertsCount} other sensor(s) in location ${triggeringDevice.locationId} are still alerting. Buzzer stays ON.`);
         }
       }
     }    
@@ -67,18 +76,10 @@ export class InteractionService {
       // 2. Cooldown for 15 minutes prevent alert spam
       console.warn(`[ALERT] Threshold exceeded for device ${deviceId}! ${dataType} value: ${value} > ${threshold}`);
 
-      const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000);
-      const existingAlert = await prisma.notification.findFirst({
-        where: {
-          deviceId: deviceId,
-          title: `Cảnh báo an toàn - ${dataType}`,
-          createdAt: {
-            gte: fifteenMinAgo
-          }
-        }
-      });
+      const cooldownKey = `cooldown:noti:${deviceId}:${dataType}`;
+      const isCooldown = await redisClient.set(cooldownKey, "1", { NX: true, EX: 900 });
 
-      if (existingAlert) {
+      if (!isCooldown) {
         console.log(`[COOLDOWN] Notification exists, skipped`);
         return;
       }
