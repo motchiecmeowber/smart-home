@@ -15,7 +15,7 @@ export const createDeviceDto = z.object({
   // Specific fields
   unit: z.string().optional(),        // Sensor
   threshold: z.number().optional(),   // Sensor
-  customerId: z.string().optional(),  // Actuator
+  customerId: z.string().nullable().optional(),  // Sensor & Actuator
 }).openapi("CreateDevice");
 
 export const updateDeviceDto = createDeviceDto

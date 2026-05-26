@@ -25,6 +25,7 @@ export interface RawLocation {
 
 export interface RawDevice {
   deviceId: string
+  serial: string
   tbDeviceId: string | null
   deviceName: string | null
   deviceType: 'SENSOR' | 'ACTUATOR'
@@ -44,6 +45,7 @@ export type ActuatorFunction = 'tempLed' | 'humiLed' | 'buzzer'
 
 export interface DeviceInfo {
   deviceId: string
+  serial: string
   tbDeviceId: string
   deviceName: string
   deviceType: 'SENSOR' | 'ACTUATOR'
@@ -121,6 +123,7 @@ export async function apiGetDevices(): Promise<DeviceInfo[]> {
 
       return {
         deviceId: d.deviceId,
+        serial: d.serial,
         tbDeviceId: d.tbDeviceId!,
         deviceName: d.deviceName ?? 'Thiết bị không tên',
         deviceType: d.deviceType,
@@ -134,6 +137,28 @@ export async function apiGetDevices(): Promise<DeviceInfo[]> {
         ownerId: currentOwnerId ?? null
       }
     })
+}
+
+export async function apiGetDeviceById(deviceId: string): Promise<DeviceInfo> {
+  const res = await authedFetch<{ data: RawDevice }>(`/devices/${deviceId}`)
+  const d = res.data ?? (res as unknown as RawDevice)
+
+  const suffix = parseSuffixFromDeviceName(d.deviceName)
+  const currentOwnerId = d.deviceType === 'SENSOR' ? d.sensor?.customerId : d.actuator?.customerId
+
+  return {
+    deviceId: d.deviceId,
+    serial: d.serial,
+    tbDeviceId: d.tbDeviceId ?? '',
+    deviceName: d.deviceName ?? 'Thiết bị không tên',
+    deviceType: d.deviceType,
+    sensorFunction: d.deviceType === 'SENSOR' ? resolveSensorFunction(suffix) : null,
+    actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
+    status: d.status,
+    location: d.location?.locationName ?? null,
+    hasOwner: Boolean(currentOwnerId),
+    ownerId: currentOwnerId ?? null
+  }
 }
 
 export async function apiSyncDevices(): Promise<{ createdCount: number }> {
@@ -156,4 +181,51 @@ export async function apiSyncDevices(): Promise<{ createdCount: number }> {
   }
 
   return json.data || { createdCount: 0 }
+}
+
+export interface UpdateDevicePayload {
+  deviceName?: string
+  status?: 'ONLINE' | 'OFFLINE' | 'DISCONNECTED'
+  locationId?: string
+  unit?: string
+  threshold?: number
+  customerId?: string | null
+}
+
+export async function apiUpdateDevice(deviceId: string, updates: UpdateDevicePayload): Promise<void> {
+  const token = authStore.getToken()
+  if (!token) {
+    throw new Error('Yêu cầu xác thực tài khoản')
+  }
+
+  const res = await fetch(`${BASE}/devices/${deviceId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(updates)
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(json.message ?? `Lỗi cập nhật thiết bị (${res.status})`)
+  }
+}
+
+export async function apiDeleteDevice(deviceId: string): Promise<void> {
+  const token = authStore.getToken()
+  if (!token) {
+    throw new Error('Yêu cầu xác thực tài khoản')
+  }
+
+  const res = await fetch(`${BASE}/devices/${deviceId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` }
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(json.message ?? `Lỗi xóa thiết bị (${res.status})`)
+  }
 }

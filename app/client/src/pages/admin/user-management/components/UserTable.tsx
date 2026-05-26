@@ -1,4 +1,4 @@
-import { Button, Popconfirm, Space, Table, Tag, Typography } from "antd";
+import { Button, Space, Table, Tag, Typography, Modal } from "antd";
 import type { TableProps } from "antd";
 import type { UserDto } from "../../../../lib/authApi";
 import { DeleteOutlined } from "@ant-design/icons";
@@ -60,28 +60,26 @@ export function UserTable({
             render: (_: any, record: UserDto) => (
                 <Space size={16}>
                     {user?.userId !== record.userId && (
-                        <Popconfirm
-                            title="Xóa người dùng"
-                            description="Bạn có chắc chắn muốn xóa tài khoản này khỏi hệ thống?"
-                            onConfirm={(e) => {
-                                e?.stopPropagation()
-                                onDeleteUser(record.userId)
+                        <Button
+                            type="link"
+                            danger
+                            icon={<DeleteOutlined />}
+                            style={{ fontWeight: 600, padding: 0}}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                Modal.confirm({
+                                    title: 'Xóa người dùng',
+                                    content: 'Bạn có chắc chắn muốn xóa tài khoản này khỏi hệ thống?',
+                                    okText: 'Xóa',
+                                    okType: 'danger',
+                                    cancelText: 'Hủy',
+                                    centered: true,
+                                    onOk: () => onDeleteUser(record.userId),
+                                });
                             }}
-                            onCancel={(e) => e?.stopPropagation()}
-                            okText="Xóa"
-                            cancelText="Hủy"
-                            okButtonProps={{ danger: true }}
                         >
-                            <Button
-                                type="link"
-                                danger
-                                icon={<DeleteOutlined />}
-                                style={{ fontWeight: 600, padding: 0}}
-                                onClick={(e) => e.stopPropagation()}
-                            >
-                                Xóa
-                            </Button>
-                        </Popconfirm>
+                            Xóa
+                        </Button>
                     )}
                 </Space>
             )
