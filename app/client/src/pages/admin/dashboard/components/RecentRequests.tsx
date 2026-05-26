@@ -28,7 +28,7 @@ export function RecentRequests({ requests, onNavigateToRequests, onRowClick }: R
             />
             <Space orientation="vertical" size={0}>
               <Text strong>{text || 'Thiết bị không tên'}</Text>
-              <Text type="secondary" style={{ fontSize: 12 }}>ID: {record.device.deviceId.substring(0, 8).toUpperCase()}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>ID: {record.device?.deviceId?.substring(0, 8).toUpperCase() || '—'}</Text>
             </Space>
           </Space>
         )

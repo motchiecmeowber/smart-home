@@ -7,6 +7,9 @@ export type DashboardRoute =
   | 'dashboard-requests'
   | 'dashboard-settings'
   | 'dashboard-profile'
+  | 'dashboard-statistics'
+  | 'dashboard-schedules'
+  | 'dashboard-overview'
 
 export type DashboardNavItem = {
   label: string

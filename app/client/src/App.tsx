@@ -11,6 +11,9 @@ import { RealtimePage } from './pages/dashboard/RealtimePage'
 import { ProfilePage } from './pages/dashboard/ProfilePage'
 import { RequestsPage } from './pages/dashboard/RequestsPage'
 import { SettingsPage } from './pages/dashboard/SettingsPage'
+import { StatisticsPage } from './pages/dashboard/StatisticsPage'
+import { SchedulesPage } from './pages/dashboard/SchedulesPage'
+import { OverviewPage } from './pages/dashboard/OverviewPage'
 import type { AppRoute } from './types/auth'
 import { authStore } from './lib/authStore'
 import { useAuth } from './hooks/useAuth'
@@ -25,6 +28,9 @@ const routePaths: Record<AppRoute, string> = {
   'dashboard-realtime': '/dashboard/realtime',
   'dashboard-settings': '/dashboard/settings',
   'dashboard-profile': '/dashboard/profile',
+  'dashboard-statistics': '/dashboard/statistics',
+  'dashboard-schedules': '/dashboard/schedules',
+  'dashboard-overview': '/dashboard/overview',
   'admin-dashboard': '/admin/dashboard',
   'admin-devices': '/admin/devices',
   'admin-users': '/admin/users',
@@ -35,11 +41,14 @@ const routePaths: Record<AppRoute, string> = {
 
 const DASHBOARD_ROUTES: AppRoute[] = [
   'dashboard-devices',
+  'dashboard-realtime',
   'dashboard-notifications',
   'dashboard-requests',
-  'dashboard-realtime',
   'dashboard-settings',
   'dashboard-profile',
+  'dashboard-statistics',
+  'dashboard-schedules',
+  'dashboard-overview',
 ]
 
 const ADMIN_ROUTES: AppRoute[] = [
@@ -72,19 +81,19 @@ function App() {
 
     const currentRoute = getAppRouteFromLocation();
     const isProtected = [...DASHBOARD_ROUTES, ...ADMIN_ROUTES].includes(currentRoute)
-    
+
     // If the user landed on a protected route but has no session, redirect
     if (!auth.accessToken && isProtected) {
       navigateToAppRoute('login')
       return
     }
-  
+
     // If already authenticated and on login/register, go to dashboard
     if (auth.accessToken && (appRoute === 'login' || appRoute === 'register')) {
       if (auth.user?.role === 'ADMIN') {
         navigateToAppRoute('admin-dashboard')
       } else {
-        navigateToAppRoute('dashboard-devices')
+        navigateToAppRoute('dashboard-overview')
       }
     }
   }, [auth.restoring, auth.accessToken, auth.user?.role, appRoute])
@@ -127,6 +136,9 @@ function App() {
     onNavigateNotifications: () => navigateToAppRoute('dashboard-notifications'),
     onNavigateRequests: () => navigateToAppRoute('dashboard-requests'),
     onNavigateRealtime: () => navigateToAppRoute('dashboard-realtime'),
+    onNavigateStatistics: () => navigateToAppRoute('dashboard-statistics'),
+    onNavigateSchedules: () => navigateToAppRoute('dashboard-schedules'),
+    onNavigateOverview: () => navigateToAppRoute('dashboard-overview'),
     onNavigateSettings: () => navigateToAppRoute('dashboard-settings'),
     onNavigateProfile: () => navigateToAppRoute('dashboard-profile'),
   }
@@ -154,7 +166,7 @@ function App() {
               if (authStore.getState().user?.role === 'ADMIN') {
                 navigateToAppRoute('admin-dashboard')
               } else {
-                navigateToAppRoute('dashboard-devices')
+                navigateToAppRoute('dashboard-overview')
               }
             }}
             onNavigateRegister={() => navigateToAppRoute('register')}
@@ -206,12 +218,30 @@ function App() {
                 <ProfilePage />
               </DashboardLayout>
             )}
+
+            {appRoute === 'dashboard-statistics' && (
+              <DashboardLayout activeRoute="dashboard-statistics" {...layoutProps}>
+                <StatisticsPage />
+              </DashboardLayout>
+            )}
+
+            {appRoute === 'dashboard-schedules' && (
+              <DashboardLayout activeRoute="dashboard-schedules" {...layoutProps}>
+                <SchedulesPage />
+              </DashboardLayout>
+            )}
+
+            {appRoute === 'dashboard-overview' && (
+              <DashboardLayout activeRoute="dashboard-overview" {...layoutProps}>
+                <OverviewPage />
+              </DashboardLayout>
+            )}
           </>
         )}
 
         {/* Admin UI */}
         {auth.user?.role === 'ADMIN' && auth.accessToken && (
-          <AdminDashboardLayout activeRoute={appRoute} onNavigate={navigateToAppRoute} onLogout={handleLogout}>
+          <AdminDashboardLayout activeRoute={appRoute} onNavigate={(route) => navigateToAppRoute(route as AppRoute)} onLogout={handleLogout}>
             {appRoute === 'admin-dashboard' && <Admin.AdminDashboardPage />}
             {appRoute === 'admin-devices' && <Admin.DeviceManagementPage />}
             {appRoute === 'admin-users' && <Admin.UserManagementPage />}

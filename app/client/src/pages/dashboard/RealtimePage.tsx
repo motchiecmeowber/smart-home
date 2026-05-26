@@ -20,7 +20,7 @@ import { useUserDevices } from '../../hooks/useUserDevices'
 import type { DeviceTelemetryState, TelemetryPoint } from '../../types/telemetry'
 import './RealtimePage.css'
 
-const { Title, Text } = Typography
+const { Title } = Typography
 
 
 interface SuffixMeta {

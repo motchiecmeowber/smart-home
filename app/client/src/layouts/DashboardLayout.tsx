@@ -26,17 +26,20 @@ type DashboardLayoutProps = {
   onNavigateNotifications: () => void
   onNavigateRequests: () => void
   onNavigateRealtime: () => void
+  onNavigateStatistics: () => void
+  onNavigateSchedules: () => void
+  onNavigateOverview: () => void
   onNavigateSettings: () => void
   onNavigateProfile: () => void
   onLogout: () => void
 }
 
 const mainNavItems: DashboardNavItem[] = [
-  { label: 'Dashboard', icon: <DashboardOutlined /> },
+  { label: 'Dashboard', route: 'dashboard-overview', icon: <DashboardOutlined /> },
   { label: 'Thiết bị', route: 'dashboard-devices', icon: <DesktopOutlined /> },
   { label: 'Thời gian thực', route: 'dashboard-realtime', icon: <ThunderboltOutlined /> },
-  { label: 'Báo cáo thống kê', icon: <BarChartOutlined /> },
-  { label: 'Lịch trình', icon: <CalendarOutlined /> },
+  { label: 'Báo cáo thống kê', route: 'dashboard-statistics', icon: <BarChartOutlined /> },
+  { label: 'Lịch trình', route: 'dashboard-schedules', icon: <CalendarOutlined /> },
   { label: 'Thông báo', route: 'dashboard-notifications', icon: <BellOutlined /> },
   { label: 'Yêu cầu của tôi', route: 'dashboard-requests', icon: <MailOutlined /> },
 ]
@@ -61,6 +64,9 @@ export function DashboardLayout({
   onNavigateNotifications,
   onNavigateRequests,
   onNavigateRealtime,
+  onNavigateStatistics,
+  onNavigateSchedules,
+  onNavigateOverview,
   onNavigateSettings,
   onNavigateProfile,
   onLogout,
@@ -80,9 +86,23 @@ export function DashboardLayout({
 
     if (key === 'dashboard-requests') {
       onNavigateRequests()
+      return
     }
     if (key === 'dashboard-realtime') {
       onNavigateRealtime()
+      return
+    }
+    if (key === 'dashboard-statistics') {
+      onNavigateStatistics()
+      return
+    }
+    if (key === 'dashboard-schedules') {
+      onNavigateSchedules()
+      return
+    }
+    if (key === 'dashboard-overview') {
+      onNavigateOverview()
+      return
     }
   }
 
