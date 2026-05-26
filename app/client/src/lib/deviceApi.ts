@@ -28,6 +28,7 @@ export interface RawDevice {
   tbDeviceId: string | null
   deviceName: string | null
   deviceType: 'SENSOR' | 'ACTUATOR'
+  serial: string
   status: 'ONLINE' | 'OFFLINE' | 'DISCONNECTED'
   sensor: RawSensor | null
   actuator: RawActuator | null
@@ -46,6 +47,8 @@ export interface DeviceInfo {
   tbDeviceId: string
   deviceName: string
   deviceType: 'SENSOR' | 'ACTUATOR'
+  serial: string
+  serialSuffix: string
   sensorFunction: SensorFunction | null
   actuatorFunction: ActuatorFunction | null
   status: 'ONLINE' | 'OFFLINE' | 'DISCONNECTED'
@@ -121,6 +124,8 @@ export async function apiGetDevices(): Promise<DeviceInfo[]> {
         tbDeviceId: d.tbDeviceId!,
         deviceName: d.deviceName ?? 'Thiết bị không tên',
         deviceType: d.deviceType,
+        serial: d.serial ?? '',
+        serialSuffix: suffix,
         sensorFunction: d.deviceType === 'SENSOR' ? resolveSensorFunction(suffix) : null,
         actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
         status: d.status,

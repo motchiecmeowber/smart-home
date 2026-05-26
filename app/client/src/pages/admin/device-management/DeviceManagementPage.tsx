@@ -20,7 +20,7 @@ export function DeviceManagementPage() {
 
     // state for detail
     const [selectedDevice, setSelectedDevice] = useState<DeviceInfo | null>(null)
-    const [modalVisible, setModalVisible] = useState<boolean>()
+    const [modalVisible, setModalVisible] = useState<boolean>(false)
 
     // sync-devices
     const fetchDevices = async () => {
