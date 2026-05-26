@@ -1,5 +1,4 @@
 import {
-  Breadcrumb,
   Button,
   Card,
   Col,
@@ -17,6 +16,7 @@ import {
   PlusOutlined,
   ToolOutlined,
 } from '@ant-design/icons'
+import '../CustomerPages.css'
 import './RequestsPage.css'
 
 const { Text, Title } = Typography
@@ -101,14 +101,10 @@ const pendingRequests =
 
 export function RequestsPage() {
   return (
-    <section className="requests-page" aria-labelledby="requests-title">
-      <div className="requests-heading">
-        <div>
-          <Breadcrumb
-            className="breadcrumb"
-            items={[{ title: 'Dashboard' }, { title: 'Yêu cầu của tôi' }]}
-          />
-          <Title id="requests-title" level={1}>
+    <section className="customer-page" aria-labelledby="requests-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="requests-title" level={1} className="customer-title">
             Yêu cầu của tôi
           </Title>
         </div>

@@ -1,19 +1,11 @@
 import { useEffect, useState } from 'react'
-import { ConfigProvider, Spin } from 'antd'
+import { ConfigProvider, Spin, Result, Button } from 'antd'
 import { DashboardLayout } from './layouts/DashboardLayout'
 import { AdminDashboardLayout } from './layouts/AdminLayout'
-import * as Admin from './pages/admin/index';
+import * as Admin from './pages/admin/index'
+import * as Customer from './pages/customer/index'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
-import { DevicesPage } from './pages/dashboard/DevicesPage'
-import { NotificationsPage } from './pages/dashboard/NotificationsPage'
-import { RealtimePage } from './pages/dashboard/RealtimePage'
-import { ProfilePage } from './pages/dashboard/ProfilePage'
-import { RequestsPage } from './pages/dashboard/RequestsPage'
-import { SettingsPage } from './pages/dashboard/SettingsPage'
-import { StatisticsPage } from './pages/dashboard/StatisticsPage'
-import { SchedulesPage } from './pages/dashboard/SchedulesPage'
-import { OverviewPage } from './pages/dashboard/OverviewPage'
 import type { AppRoute } from './types/auth'
 import { authStore } from './lib/authStore'
 import { useAuth } from './hooks/useAuth'
@@ -22,15 +14,15 @@ import './App.css'
 const routePaths: Record<AppRoute, string> = {
   login: '/login',
   register: '/register',
-  'dashboard-devices': '/dashboard/devices',
-  'dashboard-notifications': '/dashboard/notifications',
-  'dashboard-requests': '/dashboard/requests',
-  'dashboard-realtime': '/dashboard/realtime',
-  'dashboard-settings': '/dashboard/settings',
-  'dashboard-profile': '/dashboard/profile',
-  'dashboard-statistics': '/dashboard/statistics',
-  'dashboard-schedules': '/dashboard/schedules',
-  'dashboard-overview': '/dashboard/overview',
+  'dashboard-devices': '/devices',
+  'dashboard-notifications': '/notifications',
+  'dashboard-requests': '/requests',
+  'dashboard-realtime': '/realtime',
+  'dashboard-settings': '/settings',
+  'dashboard-profile': '/profile',
+  'dashboard-statistics': '/statistics',
+  'dashboard-schedules': '/schedules',
+  'dashboard-overview': '/overview',
   'admin-dashboard': '/admin/dashboard',
   'admin-devices': '/admin/devices',
   'admin-users': '/admin/users',
@@ -130,6 +122,34 @@ function App() {
     )
   }
 
+  const isCustomerRoute = DASHBOARD_ROUTES.includes(appRoute)
+  const isAdminRoute = ADMIN_ROUTES.includes(appRoute)
+
+  const isUnauthorized = auth.accessToken && (
+    (auth.user?.role === 'CUSTOMER' && isAdminRoute) ||
+    (auth.user?.role === 'ADMIN' && isCustomerRoute)
+  )
+
+  if (isUnauthorized) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f2f5' }}>
+        <Result
+          status="403"
+          title="403"
+          subTitle="Xin lỗi, bạn không có quyền truy cập vào trang này."
+          extra={
+            <Button
+              type="primary"
+              onClick={() => navigateToAppRoute(auth.user?.role === 'ADMIN' ? 'admin-dashboard' : 'dashboard-overview')}
+            >
+              Về trang chủ
+            </Button>
+          }
+        />
+      </div>
+    )
+  }
+
   const layoutProps = {
     onLogout: handleLogout,
     onNavigateDevices: () => navigateToAppRoute('dashboard-devices'),
@@ -182,58 +202,58 @@ function App() {
             {appRoute === 'dashboard-devices' && (
               // {appRoute === 'dashboard-devices' && auth.accessToken && (
               <DashboardLayout activeRoute="dashboard-devices" {...layoutProps}>
-                <DevicesPage />
+                <Customer.DevicesPage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-realtime' && auth.accessToken && (
               <DashboardLayout activeRoute="dashboard-realtime" {...layoutProps}>
-                <RealtimePage />
+                <Customer.RealtimePage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-notifications' && (
               // {appRoute === 'dashboard-notifications' && auth.accessToken && (
               <DashboardLayout activeRoute="dashboard-notifications" {...layoutProps}>
-                <NotificationsPage />
+                <Customer.NotificationsPage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-requests' && (
               // {appRoute === 'dashboard-requests' && auth.accessToken && (
               <DashboardLayout activeRoute="dashboard-requests" {...layoutProps}>
-                <RequestsPage />
+                <Customer.RequestsPage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-settings' && auth.accessToken && (
               <DashboardLayout activeRoute="dashboard-settings" {...layoutProps}>
-                <SettingsPage />
+                <Customer.SettingsPage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-profile' && (
               // {appRoute === 'dashboard-profile' && auth.accessToken && (
               <DashboardLayout activeRoute="dashboard-profile" {...layoutProps}>
-                <ProfilePage />
+                <Customer.ProfilePage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-statistics' && (
               <DashboardLayout activeRoute="dashboard-statistics" {...layoutProps}>
-                <StatisticsPage />
+                <Customer.StatisticsPage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-schedules' && (
               <DashboardLayout activeRoute="dashboard-schedules" {...layoutProps}>
-                <SchedulesPage />
+                <Customer.SchedulesPage />
               </DashboardLayout>
             )}
 
             {appRoute === 'dashboard-overview' && (
               <DashboardLayout activeRoute="dashboard-overview" {...layoutProps}>
-                <OverviewPage />
+                <Customer.OverviewPage />
               </DashboardLayout>
             )}
           </>
@@ -247,8 +267,8 @@ function App() {
             {appRoute === 'admin-users' && <Admin.UserManagementPage />}
             {appRoute === 'admin-requests' && <Admin.RequestManagementPage />}
 
-            {appRoute === 'admin-settings' && <SettingsPage />}
-            {appRoute === 'admin-profile' && <ProfilePage />}
+            {appRoute === 'admin-settings' && <Customer.SettingsPage />}
+            {appRoute === 'admin-profile' && <Customer.ProfilePage />}
           </AdminDashboardLayout>
         )}
       </div>

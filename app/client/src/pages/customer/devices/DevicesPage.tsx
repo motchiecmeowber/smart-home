@@ -1,5 +1,6 @@
-import { Breadcrumb, Card, Col, Row, Statistic, Typography } from 'antd'
-import type { RoomDeviceSummary } from '../../types/dashboard'
+import { Card, Col, Row, Statistic, Typography } from 'antd'
+import type { RoomDeviceSummary } from '../../../types/dashboard'
+import '../CustomerPages.css'
 import './DevicesPage.css'
 
 const { Text, Title } = Typography
@@ -41,14 +42,10 @@ const totalDevices = roomDeviceSummaries.reduce(
 
 export function DevicesPage() {
   return (
-    <section className="devices-page" aria-labelledby="devices-title">
-      <div className="devices-heading">
-        <div>
-          <Breadcrumb
-            className="breadcrumb"
-            items={[{ title: 'Dashboard' }, { title: 'Thiết bị' }]}
-          />
-          <Title id="devices-title" level={1}>
+    <section className="customer-page" aria-labelledby="devices-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="devices-title" level={1} className="customer-title">
             Quản lý thiết bị
           </Title>
         </div>

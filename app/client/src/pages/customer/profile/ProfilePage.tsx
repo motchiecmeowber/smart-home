@@ -7,6 +7,7 @@ import {
   Typography,
 } from 'antd'
 import { EditOutlined, UserOutlined } from '@ant-design/icons'
+import '../CustomerPages.css'
 import './ProfilePage.css'
 
 const { Text, Title } = Typography
@@ -21,11 +22,13 @@ const profileInfo = {
 
 export function ProfilePage() {
   return (
-    <section className="profile-page" aria-labelledby="profile-title">
-      <div className="profile-heading">
-        <Title id="profile-title" level={1}>
-          Thông tin cá nhân
-        </Title>
+    <section className="customer-page" aria-labelledby="profile-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="profile-title" level={1} className="customer-title">
+            Thông tin cá nhân
+          </Title>
+        </div>
       </div>
 
       <Card className="profile-card">

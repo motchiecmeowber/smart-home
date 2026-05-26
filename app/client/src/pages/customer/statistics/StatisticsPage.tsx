@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Breadcrumb,
   Button,
   Card,
   Col,
@@ -23,6 +22,7 @@ import {
   CheckCircleOutlined,
   FireOutlined,
 } from '@ant-design/icons'
+import '../CustomerPages.css'
 import './StatisticsPage.css'
 
 const { Text, Title } = Typography
@@ -121,14 +121,10 @@ export function StatisticsPage() {
   const maxClimateVal = 100 // Humidity goes up to 100%
 
   return (
-    <section className="statistics-page" aria-labelledby="statistics-title">
-      <div className="statistics-heading">
-        <div>
-          <Breadcrumb
-            className="breadcrumb"
-            items={[{ title: 'Dashboard' }, { title: 'Báo cáo thống kê' }]}
-          />
-          <Title id="statistics-title" level={1}>
+    <section className="customer-page" aria-labelledby="statistics-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="statistics-title" level={1} className="customer-title">
             Báo cáo thống kê
           </Title>
         </div>

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Breadcrumb,
   Card,
   Col,
   Row,
@@ -22,6 +21,7 @@ import {
   BulbOutlined,
   RightOutlined,
 } from '@ant-design/icons'
+import '../CustomerPages.css'
 import './OverviewPage.css'
 
 const { Text, Title } = Typography
@@ -81,14 +81,10 @@ export function OverviewPage() {
   const totalDevicesCount = 6
 
   return (
-    <section className="overview-page" aria-labelledby="overview-title">
-      <div className="overview-heading">
-        <div>
-          <Breadcrumb
-            className="breadcrumb"
-            items={[{ title: 'Dashboard' }, { title: 'Tổng quan' }]}
-          />
-          <Title id="overview-title" level={1}>
+    <section className="customer-page" aria-labelledby="overview-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="overview-title" level={1} className="customer-title">
             Tổng quan hệ thống
           </Title>
         </div>

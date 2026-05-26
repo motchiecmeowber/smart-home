@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import {
-  Breadcrumb,
   Button,
   Card,
   Col,
@@ -24,6 +23,7 @@ import {
   DashboardOutlined,
   FireOutlined,
 } from '@ant-design/icons'
+import '../CustomerPages.css'
 import './SchedulesPage.css'
 
 const { Text, Title } = Typography
@@ -215,14 +215,10 @@ export function SchedulesPage() {
   ]
 
   return (
-    <section className="schedules-page" aria-labelledby="schedules-title">
-      <div className="schedules-heading">
-        <div>
-          <Breadcrumb
-            className="breadcrumb"
-            items={[{ title: 'Dashboard' }, { title: 'Lịch trình' }]}
-          />
-          <Title id="schedules-title" level={1}>
+    <section className="customer-page" aria-labelledby="schedules-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="schedules-title" level={1} className="customer-title">
             Lịch trình thiết bị
           </Title>
         </div>

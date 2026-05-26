@@ -1,25 +1,3 @@
-.schedules-page {
-  padding: 24px;
-  background-color: #f7f9fa;
-  min-height: calc(100vh - 64px);
-}
-
-.schedules-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.schedules-heading h1 {
-  margin: 4px 0 0 0 !important;
-  font-size: 28px !important;
-  font-weight: 700 !important;
-  color: #1f1f1f;
-}
-
 .schedules-summary {
   margin-bottom: 24px;
 }

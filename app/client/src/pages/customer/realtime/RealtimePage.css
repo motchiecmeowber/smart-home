@@ -1,37 +1,4 @@
 /* ─── Realtime Dashboard ─────────────────────────────────────────────────── */
-
-.rt-page {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  padding: 0 2px;
-  min-height: 100%;
-}
-
-/* ── Page heading ──────────────────────────────────────────────────────────── */
-
-.rt-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.rt-heading-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.rt-title {
-  margin: 0 !important;
-  font-size: 1.75rem !important;
-  font-weight: 700 !important;
-  color: #0b2a3a !important;
-  letter-spacing: -0.02em;
-}
-
 .rt-subtitle {
   color: #5c7a8a !important;
   font-size: 0.9rem;

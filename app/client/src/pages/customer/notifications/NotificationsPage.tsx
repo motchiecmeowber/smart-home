@@ -2,7 +2,6 @@ import {
   Alert,
   Avatar,
   Badge,
-  Breadcrumb,
   Button,
   Card,
   Col,
@@ -19,6 +18,7 @@ import {
   SafetyCertificateOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
+import '../CustomerPages.css'
 import './NotificationsPage.css'
 
 const { Text, Title } = Typography
@@ -91,14 +91,10 @@ const warningCount = notifications.filter((item) => item.tone === 'warning').len
 
 export function NotificationsPage() {
   return (
-    <section className="notifications-page" aria-labelledby="notifications-title">
-      <div className="notifications-heading">
-        <div>
-          <Breadcrumb
-            className="breadcrumb"
-            items={[{ title: 'Dashboard' }, { title: 'Thông báo' }]}
-          />
-          <Title id="notifications-title" level={1}>
+    <section className="customer-page" aria-labelledby="notifications-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="notifications-title" level={1} className="customer-title">
             Thông báo
           </Title>
         </div>

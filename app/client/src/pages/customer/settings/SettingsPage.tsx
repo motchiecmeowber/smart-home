@@ -16,7 +16,8 @@ import {
   GlobalOutlined,
   SaveOutlined,
 } from '@ant-design/icons'
-import type { SystemSettings } from '../../types/dashboard'
+import type { SystemSettings } from '../../../types/dashboard'
+import '../CustomerPages.css'
 import './SettingsPage.css'
 
 const { Text, Title } = Typography
@@ -43,11 +44,13 @@ export function SettingsPage() {
   }
 
   return (
-    <section className="settings-page" aria-labelledby="settings-title">
-      <div className="settings-heading">
-        <Title id="settings-title" level={1}>
-          Cài đặt hệ thống
-        </Title>
+    <section className="customer-page" aria-labelledby="settings-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="settings-title" level={1} className="customer-title">
+            Cài đặt hệ thống
+          </Title>
+        </div>
       </div>
 
       <div className="settings-list">

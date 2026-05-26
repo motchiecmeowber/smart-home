@@ -1,29 +1,3 @@
-.profile-page {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  gap: 26px;
-  min-height: calc(100svh - 80px);
-}
-
-.profile-heading .breadcrumb {
-  margin-bottom: 8px;
-}
-
-.profile-heading .ant-breadcrumb-link,
-.profile-heading .ant-breadcrumb-separator {
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.profile-heading .ant-typography {
-  margin: 0;
-  color: #122d3a;
-  font-size: 38px;
-  line-height: 1.15;
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
 .profile-card.ant-card {
   width: 100%;
   min-height: 100%;

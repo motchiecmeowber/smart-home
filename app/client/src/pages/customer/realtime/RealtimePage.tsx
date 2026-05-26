@@ -1,4 +1,4 @@
-import { Breadcrumb, Button, Spin, Typography } from 'antd'
+import { Button, Spin, Typography } from 'antd'
 import {
   ReloadOutlined,
   WifiOutlined,
@@ -15,9 +15,10 @@ import {
   InboxOutlined,
   SignalFilled,
 } from '@ant-design/icons'
-import { useDeviceTelemetry } from '../../hooks/useDeviceTelemetry'
-import { useUserDevices } from '../../hooks/useUserDevices'
-import type { DeviceTelemetryState, TelemetryPoint } from '../../types/telemetry'
+import { useDeviceTelemetry } from '../../../hooks/useDeviceTelemetry'
+import { useUserDevices } from '../../../hooks/useUserDevices'
+import type { DeviceTelemetryState, TelemetryPoint } from '../../../types/telemetry'
+import '../CustomerPages.css'
 import './RealtimePage.css'
 
 const { Title } = Typography
@@ -240,12 +241,10 @@ export function RealtimePage() {
   const deviceList = Object.values(states)
 
   return (
-    <section className="rt-page" aria-labelledby="rt-title">
-
-      <div className="rt-heading">
-        <div className="rt-heading-left">
-          <Breadcrumb items={[{ title: 'Dashboard' }, { title: 'Thời gian thực' }]} />
-          <Title id="rt-title" level={1} className="rt-title">
+    <section className="customer-page" aria-labelledby="rt-title">
+      <div className="customer-heading">
+        <div className="customer-heading-left">
+          <Title id="rt-title" level={1} className="customer-title">
             Dữ liệu thời gian thực
           </Title>
         </div>
