@@ -1,4 +1,4 @@
-import { Modal, Descriptions, Tag, Typography, Button, Popconfirm } from 'antd';
+import { Modal, Descriptions, Tag, Typography, Button } from 'antd';
 import type { RequestItemDto } from '../../../../lib/requestApi';
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 
@@ -9,6 +9,7 @@ type RequestDetailModalProps = {
     request: RequestItemDto | null
     onClose: () => void
     onAction: (id: string, status: 'APPROVED' | 'REJECTED') => void
+    onDelete: (id: string) => void
     actionLoading: boolean
 };
 
@@ -17,6 +18,7 @@ export function RequestDetailModal({
     request,
     onClose,
     onAction,
+    onDelete,
     actionLoading
 }: RequestDetailModalProps) {
     if (!request) return null;
@@ -34,34 +36,69 @@ export function RequestDetailModal({
             onCancel={onClose}
             width={550}
             footer={
-                isPending ? (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, padding: '10px 0 0' }}>
-                        <Popconfirm
-                            title="Từ chối yêu cầu?"
-                            description="Tài khoản này sẽ không thể sử dụng thiết bị."
-                            onConfirm={() => handleConfirm('REJECTED')}
-                            okText="Từ chối"
-                            cancelText="Hủy"
-                            okButtonProps={{ danger: true }}
-                        >
-                            <Button danger icon={<CloseOutlined />} loading={actionLoading}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', padding: '10px 0 0' }}>
+                    <Button
+                        danger
+                        loading={actionLoading}
+                        onClick={() => {
+                            Modal.confirm({
+                                title: 'Xóa yêu cầu?',
+                                content: 'Bạn có chắc chắn muốn xóa yêu cầu này không? Hành động này không thể hoàn tác.',
+                                okText: 'Xóa',
+                                okType: 'danger',
+                                cancelText: 'Hủy',
+                                centered: true,
+                                onOk: () => onDelete(request.requestId)
+                            });
+                        }}
+                    >
+                        Xóa
+                    </Button>
+                    
+                    {isPending ? (
+                        <div style={{ display: 'flex', gap: 12 }}>
+                            <Button 
+                                danger 
+                                icon={<CloseOutlined />} 
+                                loading={actionLoading}
+                                onClick={() => {
+                                    Modal.confirm({
+                                        title: 'Từ chối yêu cầu?',
+                                        content: 'Tài khoản này sẽ không thể sử dụng thiết bị.',
+                                        okText: 'Từ chối',
+                                        okType: 'danger',
+                                        cancelText: 'Hủy',
+                                        centered: true,
+                                        onOk: () => handleConfirm('REJECTED')
+                                    });
+                                }}
+                            >
                                 Từ Chối
                             </Button>
-                        </Popconfirm>
 
-                        <Popconfirm
-                            title="Phê duyệt yêu cầu?"
-                            description="Cấp quyền sở hữu phần cứng cho người dùng ngay."
-                            onConfirm={() => handleConfirm('APPROVED')}
-                            okText="Phê duyệt"
-                            cancelText="Hủy"
-                        >
-                            <Button type="primary" icon={<CheckOutlined />} loading={actionLoading} style={{ background: '#52c41a', borderColor: '#52c41a' }}>
+                            <Button 
+                                type="primary" 
+                                icon={<CheckOutlined />} 
+                                loading={actionLoading} 
+                                style={{ background: '#52c41a', borderColor: '#52c41a' }}
+                                onClick={() => {
+                                    Modal.confirm({
+                                        title: 'Phê duyệt yêu cầu?',
+                                        content: 'Cấp quyền sở hữu phần cứng cho người dùng ngay.',
+                                        okText: 'Phê duyệt',
+                                        cancelText: 'Hủy',
+                                        centered: true,
+                                        onOk: () => handleConfirm('APPROVED')
+                                    });
+                                }}
+                            >
                                 Phê Duyệt
                             </Button>
-                        </Popconfirm>
-                    </div>
-                ) : null
+                        </div>
+                    ) : (
+                        <Button onClick={onClose}>Đóng</Button>
+                    )}
+                </div>
             }
         >
             <Descriptions bordered column={1} size="small" style={{ marginTop: 16 }}>

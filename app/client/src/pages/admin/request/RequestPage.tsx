@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Typography, message } from 'antd'
 import { RequestFilters } from './components/RequestFilters'
 import { RequestTable } from './components/RequestTable'
-import { apiGetRequestDetail, apiGetRequests, apiUpdateRequest, type RequestItemDto } from '../../../lib/requestApi'
+import { apiGetRequestDetail, apiGetRequests, apiUpdateRequest, apiDeleteRequest, type RequestItemDto } from '../../../lib/requestApi'
 import { apiGetUserDetail } from '../../../lib/userApi'
 import { RequestDetailModal } from './components/RequestDetailModel'
 import '../AdminPages.css'
@@ -76,6 +76,23 @@ export function RequestManagementPage() {
         }
     }
 
+    const handleDeleteRequest = async (id: string) => {
+        setBtnLoading(true)
+
+        try {
+            await apiDeleteRequest(id)
+            message.success('Đã xóa yêu cầu thành công')
+            
+            setModalVisible(false)
+            setSelectedRequest(null)
+            fetchRequests()
+        } catch (error) {
+            message.error(error instanceof Error ? error.message : 'Xóa yêu cầu thất bại')
+        } finally {
+            setBtnLoading(false)
+        }
+    }
+
     const handleOpenDetail = async (requestId: string) => {
         setModalVisible(true)
 
@@ -143,6 +160,7 @@ export function RequestManagementPage() {
                 request={selectedRequest}
                 actionLoading={btnLoading}
                 onAction={handleProcessRequest}
+                onDelete={handleDeleteRequest}
                 onClose={() => {
                     setModalVisible(false);
                     setSelectedRequest(null);

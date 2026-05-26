@@ -104,6 +104,7 @@ export function DeviceManagementPage() {
                     setModalVisible(false)
                     setSelectedDevice(null)
                 }}
+                onUpdateSuccess={fetchDevices}
             />
         </section>
     )

@@ -88,3 +88,20 @@ export async function apiUpdateRequest(
         throw new Error(json.message ?? `Cập nhật trạng thái yêu cầu thất bại`)
     }
 }
+
+export async function apiDeleteRequest(requestId: string): Promise<void> {
+    const token = authStore.getToken()
+    if (!token) {
+        throw new Error('Yêu cầu xác thực tài khoản')
+    }
+
+    const res = await fetch(`${BASE}/requests/${requestId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+        throw new Error(json.message ?? `Xóa yêu cầu thất bại`)
+    }
+}
