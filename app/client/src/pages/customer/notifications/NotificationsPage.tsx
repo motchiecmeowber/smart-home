@@ -150,20 +150,24 @@ export function NotificationsPage() {
                     </Badge>
                   }
                   description={
-                    <Space className="notification-meta" orientation="vertical" size={8}>
-                      <Text>{notification.content}</Text>
-                      <Space className="notification-extra" size={8} wrap>
-                        <Tag>Hệ thống</Tag>
-                        <Text type="secondary">
+                    <Space orientation="vertical" size={4} style={{ width: '100%' }}>
+                      <Text style={{ fontSize: 14 }}>{notification.content}</Text>
+                      
+                      <Space size={8} wrap style={{ marginTop: 4 }}>
+                        <Tag color="default" style={{ margin: 0 }}>
+                          Hệ thống
+                        </Tag>
+                        
+                        <Text type="secondary" style={{ fontSize: 13 }}>
                           <ClockCircleOutlined /> {new Date(notification.createdAt).toLocaleString('vi-VN')}
                         </Text>
                       </Space>
                     </Space>
                   }
                   title={
-                    <Space className="notification-title" size={10} wrap>
-                      <Text strong>{notification.title}</Text>
-                      {isUnread && <Tag color="blue">Mới</Tag>}
+                    <Space size={10} wrap align="center">
+                      <Title level={5} style={{ margin: 0, color: '#0b5f95' }}>{notification.title}</Title>
+                      {isUnread && <Tag color="blue" style={{ margin: 0 }}>Mới</Tag>}
                     </Space>
                   }
                 />

@@ -2,7 +2,7 @@ import { authStore } from "./authStore";
 
 const BASE = import.meta.env.VITE_API_URL
 
-interface LocationDTO {
+export interface LocationDTO {
     locationId: string
     locationName: string
     customerId?: string

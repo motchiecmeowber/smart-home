@@ -84,41 +84,6 @@
   background: #e8f1f6;
 }
 
-.notification-title {
-  margin-bottom: 2px;
-}
-
-.notification-title span.ant-typography {
-  color: #162f3d;
-  font-size: 19px;
-  line-height: 1.3;
-  font-weight: 800;
-}
-
-.notification-meta span.ant-typography {
-  color: #4f636f;
-  font-size: 15px;
-  line-height: 1.5;
-  font-weight: 600;
-}
-
-.notification-extra span.ant-typography {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #71818a;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.notification-extra .ant-tag {
-  margin-inline-end: 0;
-  border-color: #cbdde6;
-  color: #0b5f95;
-  background: #eef6fa;
-  font-weight: 700;
-}
-
 @media (max-width: 680px) {
 
   .notifications-card .ant-card-body {
@@ -127,9 +92,5 @@
 
   .notifications-card .ant-list-item.is-unread {
     padding-left: 12px;
-  }
-
-  .notification-title span.ant-typography {
-    font-size: 17px;
   }
 }

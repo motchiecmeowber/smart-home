@@ -1,107 +1,126 @@
-import {
-  Button,
-  Card,
-  Col,
-  Row,
-  Space,
-  Tag,
-  Typography,
-} from 'antd'
-import {
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  CloseCircleOutlined,
-  EnvironmentOutlined,
-  FileTextOutlined,
-  PlusOutlined,
-  ToolOutlined,
-} from '@ant-design/icons'
+import { Button, Card, Col, message, Row, Spin, Typography, Segmented, Table } from 'antd'
+import type { TableProps } from 'antd'
+import { PlusOutlined, ProfileOutlined, CheckCircleOutlined, ClockCircleOutlined, BulbOutlined, LockOutlined, ThunderboltOutlined, AppstoreOutlined } from '@ant-design/icons'
+import { useEffect, useMemo, useState } from 'react'
+import { apiGetRequests, type RequestItemDto } from '../../../lib/requestApi'
+import { AddRequestModal } from './components/AddRequestModal'
+import { RequestDetailModal } from './components/RequestDetailModal'
 import '../CustomerPages.css'
 import './RequestsPage.css'
 
 const { Text, Title } = Typography
 
-type RequestStatus = 'pending' | 'approved' | 'rejected'
-
-type RequestGroup = {
-  status: RequestStatus
-  title: string
-  count: number
-  latest: {
-    id: string
-    room: string
-    action: string
-    quantity: number
-    time: string
-  }
+// Helper to get icon based on device name
+function getDeviceIcon(deviceName: string) {
+  const name = (deviceName || '').toLowerCase()
+  if (name.includes('đèn') || name.includes('light')) return <BulbOutlined />
+  if (name.includes('khóa') || name.includes('lock')) return <LockOutlined />
+  if (name.includes('điều hòa') || name.includes('quạt') || name.includes('fan')) return <ThunderboltOutlined />
+  return <AppstoreOutlined />
 }
-
-const requestGroups: RequestGroup[] = [
-  {
-    status: 'pending',
-    title: 'Yêu cầu đang chờ duyệt',
-    count: 3,
-    latest: {
-      id: 'ID#213',
-      room: 'Phòng khách',
-      action: 'Thêm đèn trần',
-      quantity: 1,
-      time: 'Hôm nay',
-    },
-  },
-  {
-    status: 'approved',
-    title: 'Yêu cầu được chấp thuận',
-    count: 15,
-    latest: {
-      id: 'ID#210',
-      room: 'Phòng ngủ',
-      action: 'Xóa quạt trần',
-      quantity: 1,
-      time: 'Hôm qua',
-    },
-  },
-  {
-    status: 'rejected',
-    title: 'Yêu cầu bị từ chối',
-    count: 1,
-    latest: {
-      id: 'ID#136',
-      room: 'Phòng khách',
-      action: 'Xóa quạt trần',
-      quantity: 3,
-      time: '3 ngày trước',
-    },
-  },
-]
-
-const statusMeta = {
-  pending: {
-    icon: <ClockCircleOutlined />,
-    label: 'Chờ duyệt',
-    note: 'Đang chờ quản trị viên kiểm tra',
-  },
-  approved: {
-    icon: <CheckCircleOutlined />,
-    label: 'Đã duyệt',
-    note: 'Yêu cầu đã được xử lý thành công',
-  },
-  rejected: {
-    icon: <CloseCircleOutlined />,
-    label: 'Từ chối',
-    note: 'Cần xem lại nội dung yêu cầu',
-  },
-}
-
-const totalRequests = requestGroups.reduce((total, group) => total + group.count, 0)
-const approvedRequests =
-  requestGroups.find((group) => group.status === 'approved')?.count ?? 0
-const pendingRequests =
-  requestGroups.find((group) => group.status === 'pending')?.count ?? 0
 
 export function RequestsPage() {
+  const [requests, setRequests] = useState<RequestItemDto[]>([])
+  const [loading, setLoading] = useState(false)
+  const [filter, setFilter] = useState<string>('ALL')
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [selectedRequest, setSelectedRequest] = useState<RequestItemDto | null>(null)
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true)
+      const data = await apiGetRequests()
+      setRequests(data)
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi tải danh sách yêu cầu')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchRequests()
+  }, [])
+
+  const { totalRequests, approvedRequests, pendingRequests } = useMemo(() => {
+    return {
+      totalRequests: requests.length,
+      approvedRequests: requests.filter((r) => r.status === 'APPROVED').length,
+      pendingRequests: requests.filter((r) => r.status === 'PENDING').length,
+    }
+  }, [requests])
+
+  // Filter requests for the table
+  const filteredRequests = useMemo(() => {
+    if (filter === 'PENDING') {
+      return requests.filter(r => r.status === 'PENDING')
+    }
+    if (filter === 'DONE') {
+      return requests.filter(r => r.status === 'APPROVED' || r.status === 'REJECTED')
+    }
+    return requests
+  }, [requests, filter])
+
+  // Table Columns
+  const columns: TableProps<RequestItemDto>['columns'] = [
+    {
+      title: 'THIẾT BỊ & LOẠI YÊU CẦU',
+      key: 'device',
+      width: '45%',
+      render: (_, record) => {
+        const deviceName = record.device?.deviceName || 'Yêu cầu hệ thống'
+        const action = record.requestType === 'ADD' 
+                    ? 'Thêm thiết bị mới' : record.requestType === 'UPDATE' 
+                    ? 'Cập nhật thiết bị' : record.requestType === 'DELETE' 
+                    ? 'Gỡ bỏ thiết bị' : 'Yêu cầu hệ thống'
+        
+        return (
+          <div className="request-device-cell">
+            <div className="request-device-icon">
+              {getDeviceIcon(deviceName)}
+            </div>
+            <div className="request-device-info">
+              <span className="request-device-name">{deviceName}</span>
+              <span className="request-device-action">{action}</span>
+            </div>
+          </div>
+        )
+      }
+    },
+    {
+      title: 'THỜI GIAN',
+      key: 'time',
+      width: '30%',
+      render: (_, record) => {
+        const date = new Date(record.createdAt)
+        return (
+          <span className="request-time-cell">
+            {date.toLocaleDateString('vi-VN')}, {date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )
+      }
+    },
+    {
+      title: 'TRẠNG THÁI',
+      key: 'status',
+      align: 'right',
+      width: '25%',
+      render: (_, record) => {
+        let label = ''
+        if (record.status === 'PENDING') label = 'Đang chờ duyệt'
+        if (record.status === 'APPROVED') label = 'Đã chấp thuận'
+        if (record.status === 'REJECTED') label = 'Bị từ chối'
+        return (
+          <div className={`request-status-badge ${record.status}`}>
+            {label}
+          </div>
+        )
+      }
+    }
+  ]
+
   return (
-    <section className="customer-page" aria-labelledby="requests-title">
+    <section className="customer-page" aria-labelledby="requests-title" style={{ maxWidth: 1000, margin: '0 auto', width: '100%'}}>
       <div className="customer-heading">
         <div className="customer-heading-left">
           <Title id="requests-title" level={1} className="customer-title">
@@ -109,89 +128,106 @@ export function RequestsPage() {
           </Title>
         </div>
 
-        <Button icon={<PlusOutlined />} size="large" type="primary">
+        <Button 
+          icon={<PlusOutlined />} 
+          size="large" 
+          type="primary"
+          onClick={() => setIsAddModalOpen(true)}
+        >
           Thêm yêu cầu
         </Button>
       </div>
 
-      <Row className="requests-summary" gutter={[14, 14]}>
-        <Col lg={8} sm={12} xs={24}>
-          <Card className="request-summary-card" size="small">
-            <Text>Tổng yêu cầu</Text>
-            <Title level={2}>{totalRequests}</Title>
-          </Card>
-        </Col>
-        <Col lg={8} sm={12} xs={24}>
-          <Card className="request-summary-card" size="small">
-            <Text>Đã chấp thuận</Text>
-            <Title level={2}>{approvedRequests}</Title>
-          </Card>
-        </Col>
-        <Col lg={8} sm={24} xs={24}>
-          <Card className="request-summary-card" size="small">
-            <Text>Đang chờ duyệt</Text>
-            <Title level={2}>{pendingRequests}</Title>
-          </Card>
-        </Col>
-      </Row>
-
-      <div className="request-status-list">
-        {requestGroups.map((group) => {
-          const meta = statusMeta[group.status]
-
-          return (
-            <Card
-              className={`request-status-card ${group.status}`}
-              extra={<Tag>{meta.label}</Tag>}
-              key={group.status}
-              title={
-                <Space className="request-status-title" size={12}>
-                  <span className="request-status-icon">{meta.icon}</span>
-                  <span>{group.title}</span>
-                </Space>
-              }
-            >
-              <Row gutter={[22, 18]}>
-                <Col md={7} xs={24}>
-                  <div className="request-count-box">
-                    <Text>Số lượng yêu cầu</Text>
-                    <Title level={3}>{group.count}</Title>
-                    <Text type="secondary">{meta.note}</Text>
-                  </div>
-                </Col>
-
-                <Col md={17} xs={24}>
-                  <div className="request-latest-card">
-                    <Text className="request-latest-label">
-                      Yêu cầu gần nhất
-                    </Text>
-
-                    <div className="request-detail-grid">
-                      <span>
-                        <FileTextOutlined /> {group.latest.id}
-                      </span>
-                      <span>
-                        <EnvironmentOutlined /> {group.latest.room}
-                      </span>
-                      <span>
-                        <ToolOutlined /> {group.latest.action}
-                      </span>
-                      <span>
-                        SL: {group.latest.quantity}
-                      </span>
-                    </div>
-
-                    <div className="request-latest-footer">
-                      <Text type="secondary">{group.latest.time}</Text>
-                      <Button size="small">Xem chi tiết</Button>
-                    </div>
-                  </div>
-                </Col>
-              </Row>
+      <Spin spinning={loading}>
+        <Row className="requests-summary" gutter={[16, 16]}>
+          <Col lg={8} sm={12} xs={24}>
+            <Card className="request-summary-card summary-total" size="small" variant='borderless'>
+              <div className="request-summary-icon">
+                <ProfileOutlined />
+              </div>
+              <div className="request-summary-info">
+                <Text>Tổng yêu cầu</Text>
+                <Title level={2}>{totalRequests === 0 ? totalRequests : totalRequests < 10 ? `0${totalRequests}` : totalRequests}</Title>
+              </div>
             </Card>
-          )
-        })}
+          </Col>
+          <Col lg={8} sm={12} xs={24}>
+            <Card className="request-summary-card summary-approved" size="small" variant='borderless'>
+              <div className="request-summary-icon">
+                <CheckCircleOutlined />
+              </div>
+              <div className="request-summary-info">
+                <Text>Đã chấp thuận</Text>
+                <Title level={2}>{approvedRequests === 0 ? approvedRequests : approvedRequests < 10 ? `0${approvedRequests}` : approvedRequests }</Title>
+              </div>
+            </Card>
+          </Col>
+          <Col lg={8} sm={24} xs={24}>
+            <Card className="request-summary-card summary-pending" size="small" variant='borderless'>
+              <div className="request-summary-icon">
+                <ClockCircleOutlined />
+              </div>
+              <div className="request-summary-info">
+                <Text>Đang xử lý</Text>
+                <Title level={2}>{pendingRequests === 0 ? pendingRequests : pendingRequests < 10 ? `0${pendingRequests}` : pendingRequests}</Title>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      </Spin>
+
+      <div className="request-list-container" style={{ marginTop: 24 }}>
+        <div className="request-list-header">
+          <h3>Danh sách yêu cầu</h3>
+          <div className="request-filter-tabs">
+            <Segmented
+              value={filter}
+              onChange={(val) => setFilter(val as string)}
+              options={[
+                { label: 'Tất cả', value: 'ALL' },
+                { label: 'Đang chờ', value: 'PENDING' },
+                { label: 'Đã xử lý', value: 'DONE' }
+              ]}
+            />
+          </div>
+        </div>
+
+        <Table 
+          className="request-table"
+          columns={columns} 
+          dataSource={filteredRequests}
+          rowKey="requestId"
+          pagination={false}
+          loading={loading}
+          showHeader={true}
+          tableLayout="fixed"
+          onRow={(record) => ({
+            onClick: () => setSelectedRequest(record),
+            style: { cursor: 'pointer' }
+          })}
+        />
+        
+        {filteredRequests.length > 5 && (
+          <div className="request-load-more">
+            <Button type="link">Xem thêm yêu cầu cũ</Button>
+          </div>
+        )}
       </div>
+
+      <AddRequestModal 
+        open={isAddModalOpen}
+        onCancel={() => setIsAddModalOpen(false)}
+        onSuccess={() => {
+          setIsAddModalOpen(false)
+          fetchRequests()
+        }}
+      />
+
+      <RequestDetailModal
+        visible={!!selectedRequest}
+        request={selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+      />
     </section>
   )
 }

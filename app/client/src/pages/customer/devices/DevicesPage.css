@@ -20,66 +20,25 @@
 
 .summary-box .ant-statistic-content {
   color: #0b5f95;
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 600;
 }
 
 .rooms-list {
-  display: grid;
-  gap: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 24px;
 }
 
-.room-card.ant-card {
-  overflow: hidden;
-  border-color: #d4dde3;
-  box-shadow: 0 8px 20px rgba(30, 50, 62, 0.08);
-}
-
-.room-card > .ant-card-head {
-  min-height: 84px;
-  background: #1fa8c5;
-  border-bottom-color: #168ca6;
-}
-
-.room-card > .ant-card-head .ant-card-head-title {
-  padding: 18px 0;
-}
-
-.room-card > .ant-card-head .ant-typography {
-  margin: 0;
-}
-
-.room-card > .ant-card-head h2.ant-typography {
-  color: #071d26;
-  font-size: 25px;
-  line-height: 1.15;
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
-.room-card > .ant-card-head .ant-typography-secondary {
+.room-section {
   display: block;
-  margin-top: 6px;
-  color: #073342;
-  font-size: 14px;
-  font-weight: 700;
 }
 
-.room-count {
-  min-width: 44px;
-  height: 44px;
-  display: inline-flex;
+.room-header {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  color: #0b5f95;
-  background: #ffffff;
-  font-size: 20px;
-  font-weight: 800;
-}
-
-.room-card > .ant-card-body {
-  padding: 22px;
+  justify-content: space-between;
 }
 
 .device-card.ant-card {
@@ -100,8 +59,8 @@
 }
 
 .device-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
@@ -110,8 +69,8 @@
   border-radius: 10px;
   color: #0b5f95;
   background: #ffffff;
-  font-size: 21px;
-  font-weight: 800;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .device-item .ant-typography {
@@ -120,9 +79,9 @@
 
 .device-item h3.ant-typography {
   color: #17323f;
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.2;
-  font-weight: 800;
+  font-weight: 600;
   letter-spacing: 0;
 }
 

@@ -198,65 +198,17 @@ function App() {
         )}
 
         {auth.user?.role === 'CUSTOMER' && auth.accessToken && (
-          <>
-            {appRoute === 'dashboard-devices' && (
-              // {appRoute === 'dashboard-devices' && auth.accessToken && (
-              <DashboardLayout activeRoute="dashboard-devices" {...layoutProps}>
-                <Customer.DevicesPage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-realtime' && auth.accessToken && (
-              <DashboardLayout activeRoute="dashboard-realtime" {...layoutProps}>
-                <Customer.RealtimePage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-notifications' && (
-              // {appRoute === 'dashboard-notifications' && auth.accessToken && (
-              <DashboardLayout activeRoute="dashboard-notifications" {...layoutProps}>
-                <Customer.NotificationsPage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-requests' && (
-              // {appRoute === 'dashboard-requests' && auth.accessToken && (
-              <DashboardLayout activeRoute="dashboard-requests" {...layoutProps}>
-                <Customer.RequestsPage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-settings' && auth.accessToken && (
-              <DashboardLayout activeRoute="dashboard-settings" {...layoutProps}>
-                <Customer.SettingsPage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-profile' && (
-              // {appRoute === 'dashboard-profile' && auth.accessToken && (
-              <DashboardLayout activeRoute="dashboard-profile" {...layoutProps}>
-                <Customer.ProfilePage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-statistics' && (
-              <DashboardLayout activeRoute="dashboard-statistics" {...layoutProps}>
-                <Customer.StatisticsPage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-schedules' && (
-              <DashboardLayout activeRoute="dashboard-schedules" {...layoutProps}>
-                <Customer.SchedulesPage />
-              </DashboardLayout>
-            )}
-
-            {appRoute === 'dashboard-overview' && (
-              <DashboardLayout activeRoute="dashboard-overview" {...layoutProps}>
-                <Customer.OverviewPage />
-              </DashboardLayout>
-            )}
-          </>
+          <DashboardLayout activeRoute={appRoute as any} {...layoutProps}>
+            {appRoute === 'dashboard-devices' && <Customer.DevicesPage />}
+            {appRoute === 'dashboard-realtime' && <Customer.RealtimePage />}
+            {appRoute === 'dashboard-notifications' && <Customer.NotificationsPage />}
+            {appRoute === 'dashboard-requests' && <Customer.RequestsPage />}
+            {appRoute === 'dashboard-settings' && <Customer.SettingsPage />}
+            {appRoute === 'dashboard-profile' && <Customer.ProfilePage />}
+            {appRoute === 'dashboard-statistics' && <Customer.StatisticsPage />}
+            {appRoute === 'dashboard-schedules' && <Customer.SchedulesPage />}
+            {appRoute === 'dashboard-overview' && <Customer.OverviewPage />}
+          </DashboardLayout>
         )}
 
         {/* Admin UI */}

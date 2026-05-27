@@ -3,6 +3,7 @@
  */
 
 import { authStore } from './authStore'
+import type { LocationDTO } from './locationApi'
 
 const BASE = import.meta.env.VITE_API_URL
 
@@ -18,11 +19,6 @@ export interface RawActuator {
   customerId: string | null
 }
 
-export interface RawLocation {
-  locationId: string
-  locationName: string
-}
-
 export interface RawDevice {
   deviceId: string
   serial: string
@@ -32,7 +28,7 @@ export interface RawDevice {
   status: 'ONLINE' | 'OFFLINE' | 'DISCONNECTED'
   sensor: RawSensor | null
   actuator: RawActuator | null
-  location: RawLocation | null
+  location: LocationDTO | null
 }
 
 export interface GetDevicesResponse {
@@ -55,6 +51,8 @@ export interface DeviceInfo {
   location: string | null
   hasOwner: boolean
   ownerId: string | null
+  threshold: number | null
+  unit: string | null
 }
 
 export function parseSuffixFromDeviceName(name: string | null): string {
@@ -70,7 +68,7 @@ export function parseSuffixFromDeviceName(name: string | null): string {
   if (lastPart.includes('TEMP LED') || lastPart === 'TL') return 'TL'
   if (lastPart.includes('HUMI LED') || lastPart === 'HL') return 'HL'
   if (lastPart.includes('BUZZER') || lastPart === 'B') return 'B'
-  
+
   return ''
 }
 
@@ -131,7 +129,9 @@ export async function apiGetDevices(): Promise<DeviceInfo[]> {
         status: d.status,
         location: d.location?.locationName ?? null,
         hasOwner: Boolean(currentOwnerId),
-        ownerId: currentOwnerId ?? null
+        ownerId: currentOwnerId ?? null,
+        threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
+        unit: d.deviceType === 'SENSOR' ? (d.sensor?.unit ?? null) : null
       }
     })
 }
@@ -155,7 +155,9 @@ export async function apiGetDeviceById(deviceId: string): Promise<DeviceInfo> {
     status: d.status,
     location: d.location?.locationName ?? null,
     hasOwner: Boolean(currentOwnerId),
-    ownerId: currentOwnerId ?? null
+    ownerId: currentOwnerId ?? null,
+    threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
+    unit: d.deviceType === 'SENSOR' ? (d.sensor?.unit ?? null) : null
   }
 }
 
@@ -225,5 +227,47 @@ export async function apiDeleteDevice(deviceId: string): Promise<void> {
   const json = await res.json().catch(() => ({}))
   if (!res.ok) {
     throw new Error(json.message ?? `Lỗi xóa thiết bị (${res.status})`)
+  }
+}
+
+export async function apiUpdateThreshold(sensorId: string, threshold: number): Promise<void> {
+  const token = authStore.getToken()
+  if (!token) {
+    throw new Error('Yêu cầu xác thực tài khoản')
+  }
+
+  const res = await fetch(`${BASE}/sensors/${sensorId}/threshold`, {
+    method: 'PATCH',
+    headers: { 
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ threshold })
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(json.message ?? `Lỗi cập nhật ngưỡng (${res.status})`)
+  }
+}
+
+export async function apiControlActuator(deviceId: string, action: string): Promise<void> {
+  const token = authStore.getToken()
+  if (!token) {
+    throw new Error('Yêu cầu xác thực tài khoản')
+  }
+
+  const res = await fetch(`${BASE}/actuators/${deviceId}/control`, {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ action })
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(json.message ?? `Lỗi điều khiển thiết bị (${res.status})`)
   }
 }

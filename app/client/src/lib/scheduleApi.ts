@@ -8,7 +8,7 @@ export interface ScheduleDTO {
     action?: 'ON' | 'OFF'
     frequency?: 'ONCE' | 'DAILY' | 'WEEKLY' | 'CUSTOM'
     startTime?: string
-    customerId: string
+    customerId?: string
     actuatorId: string
 }
 

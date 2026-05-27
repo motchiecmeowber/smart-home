@@ -31,7 +31,7 @@ export function RequestDetailModal({
 
     return (
         <Modal
-            title={<span style={{ fontSize: 18, fontWeight: 800, color: '#122D3A' }}>Chi Tiết Yêu Cầu</span>}
+            title={<span style={{ fontSize: 18, fontWeight: 700, color: '#122D3A' }}>Chi Tiết Yêu Cầu</span>}
             open={visible}
             onCancel={onClose}
             width={550}
@@ -82,12 +82,23 @@ export function RequestDetailModal({
                                 loading={actionLoading} 
                                 style={{ background: '#52c41a', borderColor: '#52c41a' }}
                                 onClick={() => {
+                                    let confirmTitle = 'Phê duyệt yêu cầu?'
+                                    let confirmContent = 'Cấp quyền sở hữu phần cứng cho người dùng ngay.'
+
+                                    if (request.requestType === 'DELETE') {
+                                        confirmTitle = 'Xác nhận gỡ bỏ thiết bị?'
+                                        confirmContent = 'Thiết bị này sẽ bị gỡ khỏi tài khoản người dùng.'
+                                    } else if (request.requestType === 'UPDATE') {
+                                        confirmContent = 'Thông tin của thiết bị sẽ được cập nhật theo yêu cầu.'
+                                    }
+
                                     Modal.confirm({
-                                        title: 'Phê duyệt yêu cầu?',
-                                        content: 'Cấp quyền sở hữu phần cứng cho người dùng ngay.',
+                                        title: confirmTitle,
+                                        content: confirmContent,
                                         okText: 'Phê duyệt',
                                         cancelText: 'Hủy',
                                         centered: true,
+                                        okButtonProps: { style: { background: '#0b5f95', borderColor: '#0b5f95' } },
                                         onOk: () => handleConfirm('APPROVED')
                                     });
                                 }}
@@ -108,10 +119,16 @@ export function RequestDetailModal({
                 
                 <Descriptions.Item label="Mã Thiết Bị">
                     {request.device?.deviceId ? (
-                        <Text copyable style={{ fontFamily: 'monospace' }}>{request.device.deviceId}</Text>
+                        <Text copyable style={{ fontFamily: 'monospace' }}>{request.device.tbDeviceId || request.device.deviceId}</Text>
                     ) : (
                         <Text type="secondary">N/A</Text>
                     )}
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="Loại Yêu Cầu">
+                    <Tag color={request.requestType === 'ADD' ? 'blue' : request.requestType === 'UPDATE' ? 'orange' : 'red'}>
+                        {request.requestType === 'ADD' ? 'THÊM MỚI' : request.requestType === 'UPDATE' ? 'CẬP NHẬT' : request.requestType === 'DELETE' ? 'GỠ BỎ' : 'N/A'}
+                    </Tag>
                 </Descriptions.Item>
                 
                 <Descriptions.Item label="Tên Thiết Bị">

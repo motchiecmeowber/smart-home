@@ -3,7 +3,7 @@ import { message, Typography, Spin, Space } from 'antd'
 import { CalendarOutlined } from '@ant-design/icons'
 import { apiGetUsers } from '../../../lib/userApi'
 import { apiGetDevices } from '../../../lib/deviceApi'
-import { apiGetRequests, apiGetRequestDetail, apiUpdateRequest, type RequestItemDto } from '../../../lib/requestApi'
+import { apiGetRequests, apiGetRequestDetail, apiUpdateRequest, apiDeleteRequest, type RequestItemDto } from '../../../lib/requestApi'
 import { apiGetUserDetail } from '../../../lib/userApi'
 import { StatCards, type DashboardStats } from './components/StatCards'
 import { RecentRequests } from './components/RecentRequests'
@@ -56,8 +56,17 @@ export function AdminDashboardPage() {
                     pendingRequests: pendingReqs.length,
                 })
 
-                // Top 5 recent pending requests
-                setRecentRequests(pendingReqs.slice(0, 5))
+                // Top 5 recent pending requests enriched
+                const top5Pending = pendingReqs.slice(0, 5)
+                const enrichedRecentRequests = top5Pending.map((req: any) => {
+                    const reqUser = users.find(u => u.userId === req.customerId)
+                    return {
+                        ...req,
+                        customer: reqUser ? { username: reqUser.username, email: reqUser.email } : req.customer
+                    }
+                })
+
+                setRecentRequests(enrichedRecentRequests)
             } catch (error) {
                 message.error('Lỗi khi tải dữ liệu')
             } finally {
@@ -152,8 +161,20 @@ export function AdminDashboardPage() {
                 actionLoading={btnLoading}
                 onAction={handleProcessRequest}
                 onClose={() => {
-                    setModalVisible(false);
-                    setSelectedRequest(null);
+                    setModalVisible(false)
+                    setSelectedRequest(null)
+                }}
+                onDelete={async (id) => {
+                    try {
+                        await apiDeleteRequest(id)
+                        message.success('Đã xóa yêu cầu thành công')
+
+                        setRecentRequests(prev => prev.filter(r => r.requestId !== id))
+                        setModalVisible(false)
+                        setSelectedRequest(null)
+                    } catch (error) {
+                        message.error('Xóa yêu cầu thất bại')
+                    }
                 }}
             />
         </section>
