@@ -89,14 +89,14 @@
 .profile-descriptions .ant-descriptions-item-label {
   color: #445763;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .profile-descriptions .ant-descriptions-item-content {
   justify-content: flex-end;
   color: #5f6f7a;
   font-size: 17px;
-  font-weight: 700;
+  font-weight: 500;
   text-align: right;
 }
 
@@ -110,7 +110,8 @@
 .profile-actions .ant-btn {
   min-width: 210px;
   min-height: 44px;
-  font-weight: 800;
+  font-size: 15px;
+  font-weight: 500;
 }
 
 @media (max-width: 680px) {

@@ -1,23 +1,9 @@
-import {
-  Alert,
-  Avatar,
-  Badge,
-  Button,
-  Card,
-  Col,
-  List,
-  Row,
-  Space,
-  Tag,
-  Typography,
+import { Alert, Avatar, Badge, Button, Card, Col,
+  List, message, Row, Space, Spin, Tag, Typography,
 } from 'antd'
-import {
-  BellOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  SafetyCertificateOutlined,
-  WarningOutlined,
-} from '@ant-design/icons'
+import { apiGetNotis, apiReadNoti, type NotiDTO } from '../../../lib/notiApi'
+import { useEffect, useState } from 'react'
+import { BellOutlined, CheckCircleOutlined, ClockCircleOutlined, WarningOutlined } from '@ant-design/icons'
 import '../CustomerPages.css'
 import './NotificationsPage.css'
 
@@ -25,71 +11,71 @@ const { Text, Title } = Typography
 
 type NotificationTone = 'success' | 'warning' | 'info'
 
-type NotificationItem = {
-  id: string
-  title: string
-  description: string
-  time: string
-  area: string
-  unread?: boolean
-  tone: NotificationTone
-}
-
 const notificationIconByTone = {
   success: <CheckCircleOutlined />,
   warning: <WarningOutlined />,
   info: <BellOutlined />,
 }
 
-const notifications: NotificationItem[] = [
-  {
-    id: 'request-approved',
-    title: 'Yêu cầu ID#212 đã được chấp thuận',
-    description: 'Yêu cầu cấp quyền điều khiển thiết bị phòng khách đã được duyệt.',
-    time: '1 phút trước',
-    area: 'Yêu cầu',
-    unread: true,
-    tone: 'success',
-  },
-  {
-    id: 'gas-alert',
-    title: 'Cảnh báo khí gas vượt ngưỡng',
-    description: 'Cảm biến bếp ghi nhận nồng độ gas cao hơn mức an toàn đã đặt.',
-    time: '4 phút trước',
-    area: 'Cảnh báo',
-    unread: true,
-    tone: 'warning',
-  },
-  {
-    id: 'report-exported',
-    title: 'Yêu cầu xuất báo cáo thành công',
-    description: 'Báo cáo thống kê thiết bị trong tháng đã sẵn sàng để xem.',
-    time: '57 phút trước',
-    area: 'Báo cáo',
-    tone: 'success',
-  },
-  {
-    id: 'device-offline',
-    title: 'Thiết bị phòng ngủ mất kết nối',
-    description: 'Nhiệt ẩm kế phòng ngủ chưa gửi dữ liệu trong 2 giờ gần đây.',
-    time: '10 giờ trước',
-    area: 'Thiết bị',
-    tone: 'info',
-  },
-  {
-    id: 'system-check',
-    title: 'Hoàn tất kiểm tra hệ thống',
-    description: 'Bộ điều khiển trung tâm đã kiểm tra trạng thái các phòng.',
-    time: '15 giờ trước',
-    area: 'Hệ thống',
-    tone: 'info',
-  },
-]
+const getToneFromTitle = (title: string): NotificationTone => {
+  const lowerTitle = title.toLowerCase()
+  if (lowerTitle.includes('cảnh báo') || lowerTitle.includes('nguy hiểm') || lowerTitle.includes('vượt ngưỡng')) {
+    return 'warning'
+  }
 
-const unreadCount = notifications.filter((item) => item.unread).length
-const warningCount = notifications.filter((item) => item.tone === 'warning').length
+  if (lowerTitle.includes('thành công') || lowerTitle.includes('chấp nhận') || lowerTitle.includes('chấp thuận')) {
+    return 'success'
+  }
+
+  return 'info'
+}
 
 export function NotificationsPage() {
+  const [notis, setNotis] = useState<NotiDTO[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchNotis = async () => {
+    try {
+      setLoading(true)
+      
+      const data = await apiGetNotis()
+      setNotis(data)
+    } catch (error: any) {
+      message.error(error.message || 'Lỗi tải danh sách thông báo')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchNotis()
+  }, [])
+
+  const handleRead = async (notiId: string) => {
+    try {
+      await apiReadNoti(notiId)
+      message.success('Đã đánh dấu đọc')
+
+      setNotis((prev) => prev.map((n) => (n.notiId === notiId ? {...n, isRead: true} : n)))
+    } catch (error: any) {
+      message.error(error.message || 'Không thể đánh dấu đã đọc')
+    }
+  }
+
+  const unreadCount = notis.filter((item) => !item.isRead).length
+  const warningCount = notis.filter((item) => getToneFromTitle(item.title) === 'warning').length
+  const latestWarning = notis.find((item) => getToneFromTitle(item.title) === 'warning')
+
+  if (loading) {
+    return (
+      <section className='customer-page' aria-labelledby='notifications-title'>
+        <div style={{ textAlign: 'center', marginTop: 100 }}>
+          <Spin size='large' />
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="customer-page" aria-labelledby="notifications-title">
       <div className="customer-heading">
@@ -98,17 +84,13 @@ export function NotificationsPage() {
             Thông báo
           </Title>
         </div>
-
-        <Button size="large" type="primary">
-          Đánh dấu đã đọc
-        </Button>
       </div>
 
       <Row className="notifications-summary" gutter={[14, 14]}>
         <Col lg={8} sm={12} xs={24}>
           <Card className="notification-stat-card" size="small">
             <Text>Tổng thông báo</Text>
-            <Title level={2}>{notifications.length}</Title>
+            <Title level={2}>{notis.length}</Title>
           </Card>
         </Col>
         <Col lg={8} sm={12} xs={24}>
@@ -125,51 +107,69 @@ export function NotificationsPage() {
         </Col>
       </Row>
 
-      <Alert
-        className="notifications-alert"
-        description="Có cảnh báo khí gas mới từ phòng bếp. Vui lòng kiểm tra thiết bị khi có thể."
-        icon={<SafetyCertificateOutlined />}
-        message="Ưu tiên kiểm tra an toàn"
-        showIcon
-        type="warning"
-      />
+      {warningCount > 0 && latestWarning && (
+        <Alert
+          className="notifications-alert"
+          title="Ưu tiên kiểm tra an toàn"
+          description={
+            <span>
+              Có cảnh báo hệ thống cần bạn kiểm tra: <strong>{latestWarning.title}</strong> - {latestWarning.content}
+            </span>
+          }
+          showIcon
+          type="warning"
+        />
+      )}
 
       <Card className="notifications-card">
         <List
-          dataSource={notifications}
+          dataSource={notis}
           itemLayout="horizontal"
-          renderItem={(notification) => (
-            <List.Item className={notification.unread ? 'is-unread' : undefined}>
-              <List.Item.Meta
-                avatar={
-                  <Badge dot={notification.unread} offset={[-4, 4]}>
-                    <Avatar
-                      className={`notification-avatar ${notification.tone}`}
-                      icon={notificationIconByTone[notification.tone]}
-                      size={58}
-                    />
-                  </Badge>
-                }
-                description={
-                  <Space className="notification-meta" direction="vertical" size={8}>
-                    <Text>{notification.description}</Text>
-                    <Space className="notification-extra" size={8} wrap>
-                      <Tag>{notification.area}</Tag>
-                      <Text type="secondary">
-                        <ClockCircleOutlined /> {notification.time}
-                      </Text>
+          renderItem={(notification) => {
+            const tone = getToneFromTitle(notification.title)
+            const isUnread = !notification.isRead
+
+            return (
+              <List.Item
+                className={isUnread ? 'is-unread' : undefined}
+                actions={isUnread ?
+                  [
+                    <Button type='link' size='small' onClick={()=> handleRead(notification.notiId)}>
+                      Đánh dấu đã đọc
+                    </Button>
+                  ] : undefined
+              }>
+                <List.Item.Meta
+                  avatar={
+                    <Badge dot={isUnread} offset={[-4, 4]}>
+                      <Avatar
+                        className={`notification-avatar ${tone}`}
+                        icon={notificationIconByTone[tone]}
+                        size={58}
+                      />
+                    </Badge>
+                  }
+                  description={
+                    <Space className="notification-meta" orientation="vertical" size={8}>
+                      <Text>{notification.content}</Text>
+                      <Space className="notification-extra" size={8} wrap>
+                        <Tag>Hệ thống</Tag>
+                        <Text type="secondary">
+                          <ClockCircleOutlined /> {new Date(notification.createdAt).toLocaleString('vi-VN')}
+                        </Text>
+                      </Space>
                     </Space>
-                  </Space>
-                }
-                title={
-                  <Space className="notification-title" size={10} wrap>
-                    <Text strong>{notification.title}</Text>
-                    {notification.unread && <Tag color="blue">Mới</Tag>}
-                  </Space>
-                }
-              />
-            </List.Item>
-          )}
+                  }
+                  title={
+                    <Space className="notification-title" size={10} wrap>
+                      <Text strong>{notification.title}</Text>
+                      {isUnread && <Tag color="blue">Mới</Tag>}
+                    </Space>
+                  }
+                />
+              </List.Item>
+            )            
+          }}
         />
       </Card>
     </section>

@@ -68,3 +68,66 @@ export async function apiDeleteUser(userId: string): Promise<void> {
 
     return json.data
 }
+
+export async function apiGetProfile(): Promise<UserDetailInfo> {
+    const token = authStore.getToken()
+    if (!token) {
+        throw new Error('Yêu cầu xác thực tài khoản')
+    }
+
+    const res = await fetch(`${BASE}/profile`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+        throw new Error(json.message ?? `HTTP Error ${res.status}`)
+    }
+
+    return json.data
+}
+
+export async function apiUpdateProfile(updates: Pick<UserDetailInfo, 'firstName' | 'lastName'>): Promise<UserDetailInfo> {
+    const token = authStore.getToken()
+    if (!token) {
+        throw new Error('Yêu cầu xác thực tài khoản')
+    }
+
+    const res = await fetch(`${BASE}/profile`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(updates)
+    })
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+        throw new Error(json.message ?? `Lỗi cập nhật hồ sơ cá nhân (${res.status})`)
+    }
+
+    return json.data
+}
+
+export async function apiChangePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const token = authStore.getToken()
+    if (!token) {
+        throw new Error('Yêu cầu xác thực tài khoản')
+    }
+
+    const res = await fetch(`${BASE}/auth/change-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ currentPassword, newPassword })
+    })
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+        throw new Error(json.message ?? `Lỗi thay đổi mật khẩu (${res.status})`)
+    }
+}

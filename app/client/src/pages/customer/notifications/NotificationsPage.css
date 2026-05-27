@@ -15,7 +15,7 @@
 .notification-stat-card span.ant-typography {
   color: #5c707c;
   font-size: 14px;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .notification-stat-card h2.ant-typography {
@@ -23,7 +23,7 @@
   color: #0b5f95;
   font-size: 30px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: 0;
 }
 
@@ -34,7 +34,7 @@
 
 .notifications-alert .ant-alert-message {
   color: #573f11;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .notifications-alert .ant-alert-description {
@@ -116,7 +116,7 @@
   border-color: #cbdde6;
   color: #0b5f95;
   background: #eef6fa;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 @media (max-width: 680px) {
