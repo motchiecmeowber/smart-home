@@ -1,11 +1,12 @@
-import { Modal, Form, Select, Input, InputNumber, Radio, message, Typography, Space } from "antd"
-import { useEffect, useState, useMemo } from "react"
-import { apiGetLocations, type LocationDTO } from "../../../../lib/locationApi"
-import { apiGetDevices, type DeviceInfo } from "../../../../lib/deviceApi"
-import { apiRequestAdd, apiRequestUpdate, apiRequestDelete } from "../../../../lib/requestApi"
+import { Modal, Form, Select, Input, Radio, message, Typography } from "antd"
+import { useEffect, useState } from "react"
+import { apiGetMyDevices, apiGetAvailableDevices, type DeviceInfo } from "../../../../lib/deviceApi"
+import { apiCreateRequest } from "../../../../lib/requestApi"
 
 const { Text } = Typography
 const { TextArea } = Input
+
+type RequestType = 'ADD' | 'UPDATE' | 'DELETE'
 
 type AddRequestModalProps = {
   open: boolean
@@ -16,13 +17,11 @@ type AddRequestModalProps = {
 export function AddRequestModal({ open, onCancel, onSuccess }: AddRequestModalProps) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
-  
-  const [requestType, setRequestType] = useState<'ADD' | 'UPDATE' | 'DELETE'>('ADD')
-  const [locations, setLocations] = useState<LocationDTO[]>([])
-  const [devices, setDevices] = useState<DeviceInfo[]>([])
-  const [loadingData, setLoadingData] = useState(false)
 
-  const selectedDeviceId = Form.useWatch('deviceId', form)
+  const [requestType, setRequestType] = useState<RequestType>('ADD')
+  const [myDevices, setMyDevices] = useState<DeviceInfo[]>([])
+  const [availableDevices, setAvailableDevices] = useState<DeviceInfo[]>([])
+  const [loadingData, setLoadingData] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -35,12 +34,12 @@ export function AddRequestModal({ open, onCancel, onSuccess }: AddRequestModalPr
   const fetchFormData = async () => {
     try {
       setLoadingData(true)
-      const [locs, devs] = await Promise.all([
-        apiGetLocations(),
-        apiGetDevices()
+      const [myDevs, availDevs] = await Promise.all([
+        apiGetMyDevices(),
+        apiGetAvailableDevices(),
       ])
-      setLocations(locs)
-      setDevices(devs)
+      setMyDevices(myDevs)
+      setAvailableDevices(availDevs)
     } catch (error: any) {
       message.error(error.message || 'Lỗi tải dữ liệu')
     } finally {
@@ -48,68 +47,75 @@ export function AddRequestModal({ open, onCancel, onSuccess }: AddRequestModalPr
     }
   }
 
-  // Lọc thiết bị trống (Chưa có chủ)
-  const unassignedDevices = useMemo(() => {
-    return devices.filter(d => !d.hasOwner)
-  }, [devices])
-
-  // Lọc thiết bị của người dùng
-  const myDevices = useMemo(() => {
-    return devices.filter(d => d.hasOwner)
-  }, [devices])
-
-  // Lấy thông tin thiết bị đang chọn
-  const selectedDevice = useMemo(() => {
-    if (!selectedDeviceId) return null
-    return devices.find(d => d.deviceId === selectedDeviceId)
-  }, [selectedDeviceId, devices])
-
-  // Cập nhật lại deviceType khi chọn thiết bị (đối với ADD)
-  const handleDeviceChange = (deviceId: string) => {
-    const dev = devices.find(d => d.deviceId === deviceId)
-    if (dev) {
-      form.setFieldsValue({ deviceType: dev.deviceType })
-    }
-  }
-
   const handleSubmit = async (values: any) => {
     try {
       setSubmitting(true)
-      const dev = devices.find(d => d.deviceId === values.deviceId)
-      
-      if (requestType === 'ADD') {
-        if (!dev) throw new Error('Không tìm thấy thông tin thiết bị')
-        await apiRequestAdd({
-          deviceId: dev.deviceId,
-          deviceName: dev.deviceName,
-          deviceType: dev.deviceType,
-          locationId: values.locationId,
-          unit: values.unit,
-          threshold: values.threshold,
-          note: values.note
-        })
-        message.success('Gửi yêu cầu thêm thiết bị thành công')
-      } 
-      else if (requestType === 'UPDATE') {
-        if (!dev) throw new Error('Không tìm thấy thông tin thiết bị')
-        await apiRequestUpdate(dev.deviceId, {
-          content: values.content,
-          note: values.note
-        })
-        message.success('Gửi yêu cầu cập nhật thiết bị thành công')
+
+      const selectedSerials: string[] = values.serials ?? []
+      const sourceList = requestType === 'ADD' ? availableDevices : myDevices
+      const selectedDevices = sourceList.filter(d => selectedSerials.includes(d.serial))
+      const names = selectedDevices.map(d => d.deviceName)
+
+      if (selectedSerials.length === 0) {
+        message.warning('Vui lòng chọn ít nhất một thiết bị hợp lệ')
+        return
       }
-      else if (requestType === 'DELETE') {
-        if (!dev) throw new Error('Không tìm thấy thông tin thiết bị')
-        await apiRequestDelete(dev.deviceId)
-        message.success('Gửi yêu cầu gỡ bỏ thiết bị thành công')
+
+      const titleMap: Record<RequestType, string> = {
+        ADD: names.length === 1 ? `Yêu cầu thêm thiết bị ${names[0]}` : `Yêu cầu thêm ${names.length} thiết bị`,
+        UPDATE: names.length === 1 ? `Yêu cầu cập nhật thiết bị ${names[0]}` : `Yêu cầu cập nhật ${names.length} thiết bị`,
+        DELETE: names.length === 1 ? `Yêu cầu gỡ bỏ thiết bị ${names[0]}` : `Yêu cầu gỡ bỏ ${names.length} thiết bị`,
       }
-      
+
+      await apiCreateRequest({
+        title: titleMap[requestType],
+        requestType,
+        serial_list: selectedSerials,
+        content: values.content || undefined,
+      })
+
+      const successMsg: Record<RequestType, string> = {
+        ADD: 'Gửi yêu cầu thêm thiết bị thành công',
+        UPDATE: 'Gửi yêu cầu cập nhật thiết bị thành công',
+        DELETE: 'Gửi yêu cầu gỡ bỏ thiết bị thành công',
+      }
+      message.success(successMsg[requestType])
       onSuccess()
     } catch (error: any) {
       message.error(error.message || 'Lỗi gửi yêu cầu')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const addOptions = availableDevices.map(d => ({
+    label: `${d.deviceName} (${d.serial})`,
+    value: d.serial,
+  }))
+
+  const myOptions = myDevices.map(d => ({
+    label: `${d.deviceName} – ${d.location ?? 'Chưa gán phòng'} (${d.serial})`,
+    value: d.serial,
+  }))
+
+  const deviceOptions = requestType === 'ADD' ? addOptions : myOptions
+
+  const deviceSelectLabel: Record<RequestType, string> = {
+    ADD: 'Chọn thiết bị muốn thêm',
+    UPDATE: 'Chọn thiết bị cần cập nhật',
+    DELETE: 'Chọn thiết bị muốn gỡ bỏ',
+  }
+
+  const deviceSelectPlaceholder: Record<RequestType, string> = {
+    ADD: 'Chọn thiết bị có sẵn...',
+    UPDATE: 'Chọn từ thiết bị của bạn...',
+    DELETE: 'Chọn từ thiết bị của bạn...',
+  }
+
+  const notFoundContent: Record<RequestType, string> = {
+    ADD: loadingData ? 'Đang tải...' : 'Không có thiết bị khả dụng',
+    UPDATE: loadingData ? 'Đang tải...' : 'Bạn chưa có thiết bị nào',
+    DELETE: loadingData ? 'Đang tải...' : 'Bạn chưa có thiết bị nào',
   }
 
   return (
@@ -123,12 +129,14 @@ export function AddRequestModal({ open, onCancel, onSuccess }: AddRequestModalPr
       cancelText="Hủy"
       width={600}
       centered
+      destroyOnHidden
     >
+      {/* Request type selector */}
       <div style={{ marginBottom: 24, textAlign: 'center' }}>
-        <Radio.Group 
-          value={requestType} 
+        <Radio.Group
+          value={requestType}
           onChange={e => {
-            setRequestType(e.target.value)
+            setRequestType(e.target.value as RequestType)
             form.resetFields()
           }}
           buttonStyle="solid"
@@ -145,130 +153,69 @@ export function AddRequestModal({ open, onCancel, onSuccess }: AddRequestModalPr
         onFinish={handleSubmit}
         disabled={loadingData}
       >
+        <Form.Item
+          name="serials"
+          label={deviceSelectLabel[requestType]}
+          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một thiết bị' }]}
+        >
+          <Select
+            mode="multiple"
+            allowClear
+            placeholder={deviceSelectPlaceholder[requestType]}
+            loading={loadingData}
+            showSearch
+            filterOption={(input, option) =>
+              (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+            options={deviceOptions}
+            notFoundContent={notFoundContent[requestType]}
+          />
+        </Form.Item>
+
+        {/* Nội dung / ghi chú */}
         {requestType === 'ADD' && (
-          <>
-            <Form.Item 
-              name="deviceId" 
-              label="Chọn thiết bị (Danh sách thiết bị trống)" 
-              rules={[{ required: true, message: 'Vui lòng chọn thiết bị' }]}
-            >
-              <Select 
-                placeholder="Chọn thiết bị để lắp đặt"
-                onChange={handleDeviceChange}
-                loading={loadingData}
-                showSearch={{
-                  filterOption: (input, option) =>
-                    (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
-                }}
-                options={unassignedDevices.map(d => ({
-                  label: `${d.deviceName} (${d.tbDeviceId})`,
-                  value: d.deviceId
-                }))}
-              />
-            </Form.Item>
-
-            {selectedDevice && (
-              <Form.Item 
-                name="locationId" 
-                label="Phòng / Khu vực" 
-                rules={[{ required: true, message: 'Vui lòng chọn phòng/khu vực' }]}
-              >
-                <Select 
-                  placeholder="Chọn nơi lắp đặt"
-                  options={locations.map(loc => ({
-                    label: loc.locationName,
-                    value: loc.locationId
-                  }))}
-                />
-              </Form.Item>
-            )}
-
-            {/* Chỉ hiện cấu hình khi thiết bị là Cảm biến (SENSOR) */}
-            {selectedDevice?.deviceType === 'SENSOR' && (
-              <Space style={{ display: 'flex' }} size={16}>
-                <Form.Item 
-                  name="unit" 
-                  label="Đơn vị đo"
-                >
-                  <Input placeholder="Ví dụ: °C, %, ppm..." />
-                </Form.Item>
-                
-                <Form.Item 
-                  name="threshold" 
-                  label="Ngưỡng cảnh báo"
-                >
-                  <InputNumber controls={false} placeholder="Nhập ngưỡng..." style={{ width: '100%' }} />
-                </Form.Item>
-              </Space>
-            )}
-
-            <Form.Item name="note" label="Ghi chú thêm">
-              <TextArea placeholder="Mô tả cụ thể vị trí lắp hoặc yêu cầu khác..." rows={3} />
-            </Form.Item>
-          </>
+          <Form.Item name="content" label="Ghi chú thêm">
+            <TextArea
+              placeholder="Mô tả cụ thể vị trí lắp hoặc yêu cầu khác..."
+              rows={3}
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
         )}
 
         {requestType === 'UPDATE' && (
-          <>
-            <Form.Item 
-              name="deviceId" 
-              label="Thiết bị cần cập nhật" 
-              rules={[{ required: true, message: 'Vui lòng chọn thiết bị' }]}
-            >
-              <Select 
-                placeholder="Chọn thiết bị của bạn"
-                loading={loadingData}
-                showSearch={{
-                  filterOption: (input, option) =>
-                    (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
-                }}
-                options={myDevices.map(d => ({
-                  label: `${d.deviceName} - ${d.location || 'Chưa gán phòng'}`,
-                  value: d.deviceId
-                }))}
-              />
-            </Form.Item>
-
-            <Form.Item 
-              name="content" 
-              label="Nội dung cần cập nhật" 
-              rules={[{ required: true, message: 'Vui lòng ghi rõ nội dung cần cập nhật' }]}
-            >
-              <Input placeholder="Ví dụ: Đổi tên thiết bị..." />
-            </Form.Item>
-
-            <Form.Item name="note" label="Ghi chú thêm">
-              <TextArea placeholder="Chi tiết yêu cầu cập nhật..." rows={3} />
-            </Form.Item>
-          </>
+          <Form.Item
+            name="content"
+            label="Nội dung cần cập nhật"
+            rules={[{ required: true, message: 'Vui lòng ghi rõ nội dung cần cập nhật' }]}
+          >
+            <TextArea
+              placeholder="Ví dụ: Đổi tên thiết bị, thay đổi cấu hình..."
+              rows={3}
+              maxLength={500}
+              showCount
+            />
+          </Form.Item>
         )}
 
         {requestType === 'DELETE' && (
           <>
-            <Form.Item 
-              name="deviceId" 
-              label="Thiết bị cần gỡ bỏ" 
-              rules={[{ required: true, message: 'Vui lòng chọn thiết bị' }]}
-            >
-              <Select 
-                placeholder="Chọn thiết bị của bạn"
-                loading={loadingData}
-                showSearch={{
-                  filterOption: (input, option) =>
-                    (option?.label as string ?? '').toLowerCase().includes(input.toLowerCase())
-                }}
-                options={myDevices.map(d => ({
-                  label: `${d.deviceName} - ${d.location || 'Chưa gán phòng'}`,
-                  value: d.deviceId
-                }))}
+            <Form.Item name="content" label="Lý do gỡ bỏ (tuỳ chọn)">
+              <TextArea
+                placeholder="Ghi rõ lý do nếu cần..."
+                rows={2}
+                maxLength={500}
+                showCount
               />
             </Form.Item>
 
+            {/* Warning box – giữ nguyên style cũ */}
             <div style={{ padding: '16px 20px', background: '#fff1f0', border: '1px solid #ffa39e', borderRadius: 8, marginBottom: 16 }}>
               <Text type="danger" strong>Cảnh báo:</Text>
               <br />
               <Text type="danger">
-                Gửi yêu cầu xóa thiết bị sẽ thông báo cho quản trị viên gỡ thiết bị khỏi tài khoản của bạn. 
+                Gửi yêu cầu xóa thiết bị sẽ thông báo cho quản trị viên gỡ thiết bị khỏi tài khoản của bạn.
                 Sau khi quản trị viên duyệt, bạn sẽ mất quyền truy cập vào thiết bị này.
               </Text>
             </div>
