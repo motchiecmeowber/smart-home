@@ -1,42 +1,102 @@
 import { prisma } from "../../config/prisma";
-import { Prisma, RequestStatus } from "@prisma/client";
+import { Prisma, RequestStatus, RequestType } from "@prisma/client";
 
-export const requestRepo = {
-  async createRequest(data: Prisma.RequestCreateInput) {
-    return prisma.request.create({ data });
-  },
+export class RequestRepository {
+  async createRequest(data: Prisma.RequestCreateManyInput[]) {
+    return prisma.request.createMany({ data });
+  }
 
-  async getRequests(filters?: { customerId?: string; adminId?: string; status?: RequestStatus }) {
+  async getRequests(whereClause: { customerId?: string; status?: RequestStatus; requestType?: RequestType }, skip: number, take: number) {
     return prisma.request.findMany({
-      where: filters,
+      where: whereClause,
+      skip: skip,
+      take: take,
       orderBy: { createdAt: 'desc' },
-      include: {
-        customer: true,
-        device: true,
-      }
+      select: {
+        requestId: true,
+        content: true,
+        requestType: true,
+        status: true,
+        createdAt: true,
+        note: true,
+        customerId: true,
+        batchId: true,
+        customer: {
+          select: {
+            user: {
+              select: {
+                username: true,
+                email: true,
+              }
+            }
+          }
+        },
+        device: {
+          select: {
+            deviceName: true,
+            serial: true,
+            status: true,
+            deviceType: true,
+            location: true,
+          }
+        }
+      },
     });
-  },
+  }
+
+  async countRequests(whereClause: { customerId?: string; status?: RequestStatus; requestType?: RequestType }) {
+    return prisma.request.count({
+      where: whereClause
+    })
+  }
 
   async getRequestById(requestId: string) {
     return prisma.request.findUnique({ 
       where: { requestId },
       include: {
-        customer: true,
+        customer: {
+          include: {
+            user: {
+              select: {
+                username: true,
+                email: true,
+              }
+            }
+          }
+        },
+        admin: {
+          include: {
+            user: {
+              select: {
+                username: true,
+                email: true,
+              }
+            }
+          }
+        },
         device: true,
       }
     });
-  },
+  }
 
-  async updateRequestStatus(requestId: string, status: RequestStatus, note?: string, adminId?: string) {
+  async getRequestsByIds(requestIds: string[]) {
+    return prisma.request.findMany({
+      where: {
+        requestId: {
+          in: requestIds
+        }
+      }
+    })
+  }
+
+  async updateRequestStatus(requestId: string, status: RequestStatus) {
     return prisma.request.update({
       where: { requestId },
       data: {
         status,
-        note,
-        adminId
       }
     });
-  },
+  }
 
   async deleteRequest(requestId: string) {
     return prisma.request.delete({

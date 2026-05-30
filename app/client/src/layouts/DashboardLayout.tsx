@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { Layout, Menu } from 'antd'
+import { useState, useEffect, type ReactNode } from 'react'
+import { Layout, Menu, Badge } from 'antd'
 import type { MenuProps } from 'antd'
 import {
   BarChartOutlined,
@@ -49,10 +49,16 @@ const accountNavItems: DashboardNavItem[] = [
   { label: 'Hồ sơ của tôi', route: 'dashboard-profile', icon: <UserOutlined /> },
 ]
 
-function createMenuItems(items: DashboardNavItem[]): MenuItem[] {
+function createMenuItems(items: DashboardNavItem[], unreadCount: number = 0): MenuItem[] {
   return items.map((item) => ({
     key: item.route ?? item.label,
-    icon: item.icon,
+    icon: item.route === 'dashboard-notifications' ? (
+      <Badge count={unreadCount} size="small" offset={[10, 0]}>
+        {item.icon}
+      </Badge>
+    ) : (
+      item.icon
+    ),
     label: item.label,
   }))
 }
@@ -72,6 +78,30 @@ export function DashboardLayout({
   onLogout,
 }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const { apiGetNotis } = await import('../lib/notiApi')
+        const notis = await apiGetNotis()
+        const count = notis.filter(n => !n.isRead).length
+        setUnreadCount(count)
+      } catch (e) {
+        // Ignore error
+      }
+    }
+
+    if (activeRoute === 'dashboard-notifications') {
+      setUnreadCount(0)
+    } else {
+      fetchUnread()
+      // Optional: Polling every 30s to get new notifications
+      const interval = setInterval(fetchUnread, 30000)
+      return () => clearInterval(interval)
+    }
+  }, [activeRoute])
 
   const handleMainMenuClick: MenuProps['onClick'] = ({ key }) => {
     if (key === 'dashboard-devices') {
@@ -147,7 +177,7 @@ export function DashboardLayout({
 
         <Menu
           className="dashboard-menu"
-          items={createMenuItems(mainNavItems)}
+          items={createMenuItems(mainNavItems, unreadCount)}
           mode="inline"
           onClick={handleMainMenuClick}
           selectedKeys={[activeRoute]}

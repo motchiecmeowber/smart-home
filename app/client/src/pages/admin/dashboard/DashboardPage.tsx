@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { message, Typography, Spin, Space } from 'antd'
 import { CalendarOutlined } from '@ant-design/icons'
 import { apiGetUsers } from '../../../lib/userApi'
-import { apiGetDevices } from '../../../lib/deviceApi'
+import { apiGetAllDevices } from '../../../lib/deviceApi'
 import { apiGetRequests, apiGetRequestDetail, apiUpdateRequest, apiDeleteRequest, type RequestItemDto } from '../../../lib/requestApi'
 import { apiGetUserDetail } from '../../../lib/userApi'
 import { StatCards, type DashboardStats } from './components/StatCards'
@@ -42,31 +42,22 @@ export function AdminDashboardPage() {
             try {
                 const [users, devices, requests] = await Promise.all([
                     apiGetUsers(),
-                    apiGetDevices(),
-                    apiGetRequests(),
+                    apiGetAllDevices(),
+                    apiGetRequests({ status: 'PENDING', pageSize: 5 }),
                 ])
 
                 const customerUsers = users.filter(u => u.role === 'CUSTOMER')
-                const pendingReqs = requests.filter(r => r.status === 'PENDING')
+                const pendingReqs = requests.data
 
                 setStats({
                     totalUsers: customerUsers.length,
                     totalDevices: devices.length,
                     onlineDevices: devices.filter(d => d.status === 'ONLINE').length,
-                    pendingRequests: pendingReqs.length,
+                    pendingRequests: requests.pagination?.total || 0,
                 })
 
-                // Top 5 recent pending requests enriched
-                const top5Pending = pendingReqs.slice(0, 5)
-                const enrichedRecentRequests = top5Pending.map((req: any) => {
-                    const reqUser = users.find(u => u.userId === req.customerId)
-                    return {
-                        ...req,
-                        customer: reqUser ? { username: reqUser.username, email: reqUser.email } : req.customer
-                    }
-                })
-
-                setRecentRequests(enrichedRecentRequests)
+                // Top 5 recent pending requests
+                setRecentRequests(pendingReqs)
             } catch (error) {
                 message.error('Lỗi khi tải dữ liệu')
             } finally {

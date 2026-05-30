@@ -234,6 +234,7 @@ model Notification {
 
 model Request {
     requestId   String   @id @default(cuid()) @map("Request_ID")
+    batchId     String?  @map("Batch_ID")
     content     String?  @map("Content")
     requestType RequestType?    @map("Request_type")
     status      RequestStatus?  @map("Status")
@@ -252,6 +253,7 @@ model Request {
     @@index([adminId]) // query: request admin đang xử lý
     @@index([deviceId]) // query: request liên quan thiết bị
     @@index([status, createdAt]) // query: lọc theo status + sort thời gian
+    @@index([batchId])
     @@map("REQUEST")
 }
 

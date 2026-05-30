@@ -17,6 +17,7 @@ import {
   SaveOutlined,
 } from '@ant-design/icons'
 import type { SystemSettings } from '../../../types/dashboard'
+import { useAuth } from '../../../hooks/useAuth'
 import '../CustomerPages.css'
 import './SettingsPage.css'
 
@@ -32,6 +33,8 @@ const initialSettings: SystemSettings = {
 
 export function SettingsPage() {
   const [settings, setSettings] = useState<SystemSettings>(initialSettings)
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'ADMIN'
 
   const updateSetting = <TKey extends keyof SystemSettings>(
     key: TKey,
@@ -115,74 +118,78 @@ export function SettingsPage() {
           </Row>
         </Card>
 
-        <Card
-          className="settings-card"
-          title={
-            <Space className="settings-card-title">
-              <span className="settings-icon">
-                <BellOutlined />
-              </span>
-              <span>Thông báo</span>
-            </Space>
-          }
-        >
-          <div className="settings-row">
-            <Text>Nhận thông báo qua Email</Text>
-            <Switch
-              checked={settings.emailNotification}
-              onChange={(checked) =>
-                updateSetting('emailNotification', checked)
+        {!isAdmin && (
+          <>
+            <Card
+              className="settings-card"
+              title={
+                <Space className="settings-card-title">
+                  <span className="settings-icon">
+                    <BellOutlined />
+                  </span>
+                  <span>Thông báo</span>
+                </Space>
               }
-            />
-          </div>
-        </Card>
+            >
+              <div className="settings-row">
+                <Text>Nhận thông báo qua Email</Text>
+                <Switch
+                  checked={settings.emailNotification}
+                  onChange={(checked) =>
+                    updateSetting('emailNotification', checked)
+                  }
+                />
+              </div>
+            </Card>
 
-        <Card
-          className="settings-card"
-          title={
-            <Space className="settings-card-title">
-              <span className="settings-icon">
-                <ApiOutlined />
-              </span>
-              <span>Điều khiển từ xa</span>
-            </Space>
-          }
-        >
-          <div className="settings-row">
-            <Text>Cho phép điều khiển thiết bị từ xa</Text>
-            <Switch
-              checked={settings.remoteControl}
-              onChange={(checked) => updateSetting('remoteControl', checked)}
-            />
-          </div>
-        </Card>
+            <Card
+              className="settings-card"
+              title={
+                <Space className="settings-card-title">
+                  <span className="settings-icon">
+                    <ApiOutlined />
+                  </span>
+                  <span>Điều khiển từ xa</span>
+                </Space>
+              }
+            >
+              <div className="settings-row">
+                <Text>Cho phép điều khiển thiết bị từ xa</Text>
+                <Switch
+                  checked={settings.remoteControl}
+                  onChange={(checked) => updateSetting('remoteControl', checked)}
+                />
+              </div>
+            </Card>
 
-        <Card
-          className="settings-card"
-          title={
-            <Space className="settings-card-title">
-              <span className="settings-icon">
-                <CloudOutlined />
-              </span>
-              <span>Ngưỡng cho nồng độ gas</span>
-            </Space>
-          }
-        >
-          <div className="settings-row threshold-row">
-            <Text>Nồng độ cảnh báo</Text>
-            <Select
-              onChange={(value) => updateSetting('gasThreshold', value)}
-              options={[
-                { value: '80ppm', label: '80ppm' },
-                { value: '100ppm', label: '100ppm' },
-                { value: '120ppm', label: '120ppm' },
-                { value: '150ppm', label: '150ppm' },
-              ]}
-              size="large"
-              value={settings.gasThreshold}
-            />
-          </div>
-        </Card>
+            <Card
+              className="settings-card"
+              title={
+                <Space className="settings-card-title">
+                  <span className="settings-icon">
+                    <CloudOutlined />
+                  </span>
+                  <span>Ngưỡng cho nồng độ gas</span>
+                </Space>
+              }
+            >
+              <div className="settings-row threshold-row">
+                <Text>Nồng độ cảnh báo</Text>
+                <Select
+                  onChange={(value) => updateSetting('gasThreshold', value)}
+                  options={[
+                    { value: '80ppm', label: '80ppm' },
+                    { value: '100ppm', label: '100ppm' },
+                    { value: '120ppm', label: '120ppm' },
+                    { value: '150ppm', label: '150ppm' },
+                  ]}
+                  size="large"
+                  value={settings.gasThreshold}
+                />
+              </div>
+            </Card>
+          </>
+        )}
       </div>
 
       <div className="settings-actions">

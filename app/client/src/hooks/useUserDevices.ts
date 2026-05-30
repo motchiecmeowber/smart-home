@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState } from 'react'
-import { apiGetDevices } from '../lib/deviceApi'
+import { apiGetMyDevices } from '../lib/deviceApi'
 import type { DeviceInfo } from '../lib/deviceApi'
 
 export interface UseUserDevicesResult {
@@ -24,7 +24,7 @@ export function useUserDevices(): UseUserDevicesResult {
     setLoading(true)
     setError(null)
 
-    apiGetDevices()
+    apiGetMyDevices()
       .then((data) => {
         if (!cancelled) setDevices(data)
       })

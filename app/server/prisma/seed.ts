@@ -167,28 +167,6 @@ async function main() {
 
     console.log('Devices created');
 
-    // ─── REQUEST ────────────────────────────────────
-    await prisma.request.create({
-        data: {
-            content: 'Request to add new temperature sensor for bedroom',
-            requestType: RequestType.ADD,
-            status: RequestStatus.PENDING,
-            serial: 'SN-TEMP-002',
-            customer: {
-                connect: {
-                    userId: customer.userId,
-                },
-            },
-            admin: {
-                connect: {
-                    userId: admin.userId,
-                },
-            },
-        },
-    });
-
-    console.log('Request created');
-
     // ─── SENSOR DATA ────────────────────────────────
     await prisma.data.createMany({
         data: [

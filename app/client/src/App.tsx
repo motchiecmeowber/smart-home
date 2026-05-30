@@ -117,7 +117,7 @@ function App() {
         justifyContent: 'center',
         background: '#eef3f6',
       }}>
-        <Spin size="large" tip="Đang khôi phục phiên..." />
+        <Spin size="large" description="Đang khôi phục phiên..." />
       </div>
     )
   }

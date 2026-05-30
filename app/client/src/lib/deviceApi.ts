@@ -49,6 +49,7 @@ export interface DeviceInfo {
   actuatorFunction: ActuatorFunction | null
   status: 'ONLINE' | 'OFFLINE' | 'DISCONNECTED'
   location: string | null
+  locationId: string | null
   hasOwner: boolean
   ownerId: string | null
   threshold: number | null
@@ -107,7 +108,68 @@ async function authedFetch<T>(path: string): Promise<T> {
   return json as T
 }
 
-export async function apiGetDevices(): Promise<DeviceInfo[]> {
+export async function apiGetMyDevices(): Promise<DeviceInfo[]> {
+  const res = await authedFetch<{ data: RawDevice[] }>('/devices/my-devices')
+  const raw: RawDevice[] = res.data ?? (res as unknown as RawDevice[])
+
+  return raw
+    .filter((d) => Boolean(d.tbDeviceId))
+    .map((d): DeviceInfo => {
+      const suffix = parseSuffixFromDeviceName(d.deviceName)
+      const currentOwnerId = d.deviceType === 'SENSOR' ? d.sensor?.customerId : d.actuator?.customerId
+
+      return {
+        deviceId: d.deviceId,
+        tbDeviceId: d.tbDeviceId!,
+        deviceName: d.deviceName ?? 'Thiết bị không tên',
+        deviceType: d.deviceType,
+        serial: d.serial ?? '',
+        serialSuffix: suffix,
+        sensorFunction: d.deviceType === 'SENSOR' ? resolveSensorFunction(suffix) : null,
+        actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
+        status: d.status,
+        location: d.location?.locationName ?? null,
+        locationId: d.location?.locationId ?? null,
+        hasOwner: Boolean(currentOwnerId),
+        ownerId: currentOwnerId ?? null,
+        threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
+        unit: d.deviceType === 'SENSOR' ? (d.sensor?.unit ?? null) : null
+      }
+    })
+}
+
+export async function apiGetAvailableDevices(): Promise<DeviceInfo[]> {
+  const res = await authedFetch<{ data: RawDevice[] }>('/devices/available')
+  const raw: RawDevice[] = res.data ?? (res as unknown as RawDevice[])
+
+  return raw
+    .filter((d) => Boolean(d.tbDeviceId))
+    .map((d): DeviceInfo => {
+      const suffix = parseSuffixFromDeviceName(d.deviceName)
+      const currentOwnerId = d.deviceType === 'SENSOR' ? d.sensor?.customerId : d.actuator?.customerId
+
+      return {
+        deviceId: d.deviceId,
+        tbDeviceId: d.tbDeviceId!,
+        deviceName: d.deviceName ?? 'Thiết bị không tên',
+        deviceType: d.deviceType,
+        serial: d.serial ?? '',
+        serialSuffix: suffix,
+        sensorFunction: d.deviceType === 'SENSOR' ? resolveSensorFunction(suffix) : null,
+        actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
+        status: d.status,
+        location: d.location?.locationName ?? null,
+        locationId: d.location?.locationId ?? null,
+        hasOwner: Boolean(currentOwnerId),
+        ownerId: currentOwnerId ?? null,
+        threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
+        unit: d.deviceType === 'SENSOR' ? (d.sensor?.unit ?? null) : null
+      }
+    })
+}
+
+// For admin use
+export async function apiGetAllDevices(): Promise<DeviceInfo[]> {
   const res = await authedFetch<{ data: RawDevice[] }>('/devices')
   const raw: RawDevice[] = res.data ?? (res as unknown as RawDevice[])
 
@@ -128,6 +190,7 @@ export async function apiGetDevices(): Promise<DeviceInfo[]> {
         actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
         status: d.status,
         location: d.location?.locationName ?? null,
+        locationId: d.location?.locationId ?? null,
         hasOwner: Boolean(currentOwnerId),
         ownerId: currentOwnerId ?? null,
         threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
@@ -154,6 +217,7 @@ export async function apiGetDeviceById(deviceId: string): Promise<DeviceInfo> {
     actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
     status: d.status,
     location: d.location?.locationName ?? null,
+    locationId: d.location?.locationId ?? null,
     hasOwner: Boolean(currentOwnerId),
     ownerId: currentOwnerId ?? null,
     threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
@@ -269,5 +333,26 @@ export async function apiControlActuator(deviceId: string, action: string): Prom
   const json = await res.json().catch(() => ({}))
   if (!res.ok) {
     throw new Error(json.message ?? `Lỗi điều khiển thiết bị (${res.status})`)
+  }
+}
+
+export async function apiUpdateDeviceLocation(deviceId: string, locationId: string | null): Promise<void> {
+  const token = authStore.getToken()
+  if (!token) {
+    throw new Error('Yêu cầu xác thực tài khoản')
+  }
+  
+  const res = await fetch(`${BASE}/devices/${deviceId}/location`, {
+    method: 'PATCH',
+    headers: { 
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ locationId })
+  })
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) {
+    throw new Error(json.message ?? `Lỗi cập nhật vị trí thiết bị (${res.status})`)
   }
 }

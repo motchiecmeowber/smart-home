@@ -2,11 +2,34 @@ import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import { apiError, apiSuccess } from "@/common/api-response";
 
-import { updateRequestStatusDto, deleteRequestDto } from "@/modules/request/request.dto";
+import { createRequestSchema, updateRequestStatusDto, deleteRequestDto, getRequestsQuerySchema } from "@/modules/request/request.dto";
 
 export function registerRequestDocs(registry: OpenAPIRegistry) {
+    registry.register("CreateRequest", createRequestSchema);
     registry.register("UpdateRequestStatus", updateRequestStatusDto);
     registry.register("DeleteRequest", deleteRequestDto);
+
+    registry.registerPath({
+        method: "post",
+        path: "/api/requests/create",
+        tags: ["Request"],
+        summary: "[CUSTOMER] Create a new request",
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: createRequestSchema
+                    }
+                }
+            }
+        },
+        responses: {
+            201: {
+                description: "Request created successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            }
+        }
+    })
 
     registry.registerPath({
         method: "get",
@@ -14,11 +37,7 @@ export function registerRequestDocs(registry: OpenAPIRegistry) {
         summary: "Get requests",
         tags: ["Request"],
         request: {
-            query: z.object({
-                customerId: z.string().optional().openapi({ description: "Filter by customer ID" }),
-                adminId: z.string().optional().openapi({ description: "Filter by admin ID" }),
-                status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional().openapi({ description: "Filter by status" })
-            })
+            query: getRequestsQuerySchema
         },
         responses: {
             200: {
@@ -28,6 +47,63 @@ export function registerRequestDocs(registry: OpenAPIRegistry) {
             401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
         }
     });
+
+    registry.registerPath({
+        method: "patch",
+        path: "/api/requests/approve-by-ids",
+        summary: "[ADMIN] Approve requests by IDs",
+        tags: ["Request"],
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            list_id: z.array(z.string()).openapi({ description: "List of request IDs to approve" })
+                        })
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: "Requests approved successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            400: { description: "Bad Request", content: { "application/json": { schema: apiError } } },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            403: { description: "Forbidden", content: { "application/json": { schema: apiError } } },
+            404: { description: "One or more requests not found", content: { "application/json": { schema: apiError } } }
+        }
+    })
+
+    registry.registerPath({
+        method: "patch",
+        path: "/api/requests/reject-by-ids",
+        summary: "[ADMIN] Reject requests by IDs",
+        tags: ["Request"],
+        request: {
+            body: {
+                content: {
+                    "application/json": {
+                        schema: z.object({
+                            list_id: z.array(z.string()).openapi({ description: "List of request IDs to reject" })
+                        })
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: "Requests rejected successfully",
+                content: { "application/json": { schema: apiSuccess(z.any()) } }
+            },
+            400: { description: "Bad Request", content: { "application/json": { schema: apiError } } },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } },
+            403: { description: "Forbidden", content: { "application/json": { schema: apiError } } },
+            404: { description: "One or more requests not found", content: { "application/json": { schema: apiError } } }
+        }
+    })
+
 
     registry.registerPath({
         method: "get",

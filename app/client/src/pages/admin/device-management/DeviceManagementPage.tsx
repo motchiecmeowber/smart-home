@@ -1,6 +1,6 @@
 import { message, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { apiGetDevices, apiSyncDevices, type DeviceInfo } from "../../../lib/deviceApi";
+import { apiGetAllDevices, apiSyncDevices, type DeviceInfo } from "../../../lib/deviceApi";
 import { DeviceFilters } from "./components/DeviceFilters";
 import { DeviceTable } from "./components/DeviceTable";
 import { DeviceDetailModal } from "./components/DeviceDetailModal";
@@ -27,7 +27,7 @@ export function DeviceManagementPage() {
         setLoading(true)
 
         try {
-            const data = await apiGetDevices()
+            const data = await apiGetAllDevices()
             setDevices(data)
         } catch (error) {
             message.error(error instanceof Error ? error.message : 'Không thể tải danh sách thiết bị')

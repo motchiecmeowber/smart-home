@@ -13,7 +13,7 @@ export class DeviceService {
     locationId?: string;
     unit?: string;
     threshold?: number;
-    customerId?: string;
+    customerId?: string | null;
   }) {
     const existing = await hardwareRepo.getDeviceBySerial(data.serial);
     if (existing) {
@@ -51,8 +51,16 @@ export class DeviceService {
     return hardwareRepo.createDevice(createData);
   }
 
-  async getDevices(filters?: { locationId?: string; deviceType?: DeviceType }, userId?: string, role?: string) {
-    return hardwareRepo.getDevices(filters, userId, role);
+  async getMyDevices(filters?: { locationId?: string; deviceType?: DeviceType }, userId?: string, role?: string) {
+    return hardwareRepo.getMyDevices(filters, userId, role);
+  }
+
+  async getAvailableDevices() {
+    return hardwareRepo.getAvailableDevices();
+  }
+
+  async getAllDevices(filters?: { locationId?: string; deviceType?: DeviceType }) {
+    return hardwareRepo.getAllDevices(filters);
   }
 
   async getDeviceById(deviceId: string) {
@@ -91,6 +99,67 @@ export class DeviceService {
     }
 
     return hardwareRepo.updateDevice(deviceId, updateData);
+  }
+
+  async assignDeviceToCustomer(deviceId: string, customerId: string) {
+    const existing = await hardwareRepo.getDeviceById(deviceId);
+    if (!existing) {
+      throw new HttpError(404, "Device not found");
+    }
+    
+    if (existing.sensor?.customerId || existing.actuator?.customerId) {
+      throw new HttpError(400, "Device is already assigned to another customer");
+    }
+    if (existing.deviceType === DeviceType.SENSOR) {
+      return hardwareRepo.updateDevice(deviceId, {
+        sensor: {
+          update: {
+            customerId,
+          },
+        },
+      });
+    } else if (existing.deviceType === DeviceType.ACTUATOR) {
+      return hardwareRepo.updateDevice(deviceId, {
+        actuator: {
+          update: {
+            customerId,
+          },
+        },
+      });
+    } else {
+      throw new HttpError(400, "Invalid device type");
+    }
+  }
+
+  async unassignDeviceFromCustomer(deviceId: string) {
+    const existing = await hardwareRepo.getDeviceById(deviceId);
+    if (!existing) {
+      throw new HttpError(404, "Device not found");
+    }
+
+    if (!existing.sensor?.customerId && !existing.actuator?.customerId) {
+      throw new HttpError(400, "Device is not assigned to any customer");
+    }
+
+    if (existing.deviceType === DeviceType.SENSOR) {
+      return hardwareRepo.updateDevice(deviceId, {
+        sensor: {
+          update: {
+            customerId: null,
+          },
+        },
+      });
+    } else if (existing.deviceType === DeviceType.ACTUATOR) {
+      return hardwareRepo.updateDevice(deviceId, {
+        actuator: {
+          update: {
+            customerId: null,
+          },
+        },
+      });
+    } else {
+      throw new HttpError(400, "Invalid device type");
+    }
   }
 
   async removeDevice(deviceId: string) {

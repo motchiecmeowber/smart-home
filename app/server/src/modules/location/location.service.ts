@@ -25,7 +25,7 @@ export class LocationService {
       throw new HttpError(404, "Location not found");
     }
 
-    const devicesInLocation = await hardwareRepo.getDevices({ locationId: id });
+    const devicesInLocation = await hardwareRepo.getMyDevices({ locationId: id });
     if (devicesInLocation.length > 0) {
       throw new HttpError(400, `Cannot delete location: ${devicesInLocation.length} device(s) still assigned`)
     }

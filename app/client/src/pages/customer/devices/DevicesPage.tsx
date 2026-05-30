@@ -2,7 +2,7 @@ import { Col, message, Row, Typography, Spin, Button, Divider, Space } from 'ant
 import { PlusOutlined, HomeOutlined, RestOutlined, CoffeeOutlined,
   InboxOutlined, AppstoreOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useState } from 'react'
-import { apiGetDevices, type DeviceInfo } from '../../../lib/deviceApi'
+import { apiGetMyDevices, type DeviceInfo } from '../../../lib/deviceApi'
 import { DeviceFilters } from './components/DeviceFilters'
 import { DeviceDetailModal } from './components/DeviceDetailModal'
 import { DeviceCard } from './components/DeviceCard'
@@ -37,12 +37,18 @@ export function DevicesPage() {
 
     try {
       const [devicesData, locationsData] = await Promise.all([
-        apiGetDevices(),
+        apiGetMyDevices(),
         apiGetLocations()
       ])
 
       setDevices(devicesData)
       setLocations(locationsData)
+
+      setSelectedDevice(prev => {
+        if (!prev) return null;
+        const updated = devicesData.find(d => d.deviceId === prev.deviceId);
+        return updated || prev;
+      });
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'Không thể tải dữ liệu')
     } finally {
@@ -111,9 +117,9 @@ export function DevicesPage() {
 
   const getRoomIcon = (roomName: string) => {
     const name = roomName.toLowerCase()
-    if (name.includes('khách')) return <HomeOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
-    if (name.includes('ngủ')) return <RestOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
-    if (name.includes('bếp') || name.includes('ăn')) return <CoffeeOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
+    if (name.includes('khách') || name.includes('living')) return <HomeOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
+    if (name.includes('ngủ') || name.includes('bed') || name.includes('sleep')) return <RestOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
+    if (name.includes('bếp') || name.includes('ăn') || name.includes('kitchen') || name.includes('eat')) return <CoffeeOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
     if (name === 'chưa có vị trí') return <InboxOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
     return <AppstoreOutlined style={{ fontSize: '24px', color: '#0b5f95' }} />
   }
@@ -269,7 +275,11 @@ export function DevicesPage() {
       <DeviceDetailModal
         visible={modalVisible}
         device={selectedDevice}
+        locations={locations}
         onClose={() => setModalVisible(false)}
+        onUpdateSuccess={() => {
+          fetchDevices() // refresh list
+        }}
       />
 
       <AddLocationModal

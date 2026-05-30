@@ -116,7 +116,7 @@ export function ProfilePage() {
               size={140}
               style={{ marginBottom: 16 }}
             />
-            <Title level={2} style={{ margin: 0, textAlign: 'center' }}>{fullName}</Title>
+            <Title level={2} style={{ fontSize: 22, marginTop: 10, margin:10, textAlign: 'center' }}>{fullName}</Title>
           </Col>
 
           {/* Cột phải: Thông tin còn lại + Buttons */}
