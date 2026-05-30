@@ -224,14 +224,23 @@ export class IdentityService {
       throw new Error("User không tồn tại");
     }
 
-    const update = await this.repository.updateUser(userId, data);
+    if (data.emailNotification !== undefined) {
+      await redisClient.set(`settings:email_notification:${userId}`, String(data.emailNotification));
+    }
+
+    const { emailNotification, ...profileData } = data as any;
+    const update = await this.repository.updateUser(userId, profileData);
     
+    const emailNoti = await redisClient.get(`settings:email_notification:${userId}`);
+    const emailNotificationVal = emailNoti === null ? true : emailNoti === "true";
+
     return {
       userId: update.userId,
       email: update.email,
       username: update.username,
       createdAt: update.createdAt,
-      role: update.role
+      role: update.role,
+      emailNotification: emailNotificationVal
     };
   }
 
@@ -240,7 +249,13 @@ export class IdentityService {
   }
 
   async getUserById(userId: string): Promise<UserDetailResponse | null> {
-    return this.repository.getUserById(userId);
+    const user = await this.repository.getUserById(userId);
+    if (!user) return null;
+
+    const emailNoti = await redisClient.get(`settings:email_notification:${userId}`);
+    user.emailNotification = emailNoti === null ? true : emailNoti === "true";
+
+    return user;
   }
 
   async deleteUser(userId: string): Promise<void> {

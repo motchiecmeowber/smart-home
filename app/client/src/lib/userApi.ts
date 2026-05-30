@@ -10,6 +10,7 @@ const BASE = import.meta.env.VITE_API_URL
 export interface UserDetailInfo extends UserDto {
     firstName?: string;
     lastName?: string;
+    emailNotification?: boolean;
 }
 
 export async function apiGetUsers(): Promise<UserDto[]> {
@@ -88,7 +89,7 @@ export async function apiGetProfile(): Promise<UserDetailInfo> {
     return json.data
 }
 
-export async function apiUpdateProfile(updates: Pick<UserDetailInfo, 'firstName' | 'lastName'>): Promise<UserDetailInfo> {
+export async function apiUpdateProfile(updates: { firstName?: string; lastName?: string; emailNotification?: boolean }): Promise<UserDetailInfo> {
     const token = authStore.getToken()
     if (!token) {
         throw new Error('Yêu cầu xác thực tài khoản')

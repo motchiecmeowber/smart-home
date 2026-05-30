@@ -67,6 +67,20 @@ export function SchedulesPage() {
   }
 
   const handleSubmit = async (values: any) => {
+    // Only block if creating a NEW schedule, editing or updating existing schedules is allowed
+    if (!editingSchedule) {
+      const savedSettings = localStorage.getItem('system_settings')
+      if (savedSettings) {
+        try {
+          const parsed = JSON.parse(savedSettings)
+          if (parsed.remoteControl === false) {
+            message.error('Không thể tạo lịch trình mới khi tính năng điều khiển từ xa đang bị tắt!')
+            return
+          }
+        } catch (e) {}
+      }
+    }
+
     try {
       let formattedStartTime = undefined
 
@@ -115,7 +129,19 @@ export function SchedulesPage() {
           icon={<PlusOutlined />}
           size="large"
           type="primary"
-          onClick={() => setModalVisible(true)}
+          onClick={() => {
+            const savedSettings = localStorage.getItem('system_settings')
+            if (savedSettings) {
+              try {
+                const parsed = JSON.parse(savedSettings)
+                if (parsed.remoteControl === false) {
+                  message.error('Không thể tạo lịch trình mới khi tính năng điều khiển từ xa đang bị tắt!')
+                  return
+                }
+              } catch (e) {}
+            }
+            setModalVisible(true)
+          }}
         >
           Thêm lịch trình
         </Button>

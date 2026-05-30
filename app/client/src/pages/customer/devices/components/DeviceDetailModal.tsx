@@ -47,6 +47,18 @@ export function DeviceDetailModal({ visible, device, locations, onClose, onUpdat
     const handleControl = async (action: string) => {
         if (!device) return
         
+        // Check remote control setting
+        const savedSettings = localStorage.getItem('system_settings')
+        if (savedSettings) {
+            try {
+                const parsed = JSON.parse(savedSettings)
+                if (parsed.remoteControl === false) {
+                    message.error('Không thể điều khiển thiết bị khi tính năng điều khiển từ xa đang bị tắt!')
+                    return
+                }
+            } catch (e) {}
+        }
+
         try {
             setLoadingAction(action)
             await apiControlActuator(device.deviceId, action)

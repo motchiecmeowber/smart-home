@@ -35,20 +35,21 @@ export const ChangePasswordRequestSchema = z.object({
 export const UpdateProfileRequestSchema = z.object({
   firstName: z.string().min(1, "Tên phải có ít nhất 1 ký tự").optional(),
   lastName: z.string().min(1, "Họ phải có ít nhất 1 ký tự").optional(),
+  emailNotification: z.boolean().optional(),
 }).refine(
-  (data) => data.firstName !== undefined || data.lastName !== undefined,
+  (data) => data.firstName !== undefined || data.lastName !== undefined || data.emailNotification !== undefined,
   {
-    message: "Phải cung cấp ít nhất một trong hai trường firstName hoặc lastName",
+    message: "Phải cung cấp ít nhất một trong các trường firstName, lastName hoặc emailNotification",
   }
 ).openapi("UpdateProfileRequest");
 
-// Response DTOs
 export const UserResponseSchema = z.object({
   userId: z.string(),
   email: z.string(),
   username: z.string(),
   createdAt: z.date(),
   role: z.string(),
+  emailNotification: z.boolean().optional(),
 });
 
 export const AuthResponseSchema = z.object({
@@ -59,7 +60,8 @@ export const AuthResponseSchema = z.object({
 
 export const UserDetailResponseSchema = UserResponseSchema.extend({
   firstName: z.string().nullable(),
-  lastName: z.string().nullable()
+  lastName: z.string().nullable(),
+  emailNotification: z.boolean().optional()
 });
 
 // Type Exports

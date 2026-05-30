@@ -111,23 +111,28 @@ export class InteractionService {
         }
 
         try {
-          const user = await prisma.user.findUnique({
-            where: { userId: targetUserId },
-            select: { email: true }
-          });
+          const emailNoti = await redisClient.get(`settings:email_notification:${targetUserId}`);
+          if (emailNoti === "false") {
+            console.log(`[EMAIL] Skipping email alert for user ${targetUserId} as email notifications are disabled.`);
+          } else {
+            const user = await prisma.user.findUnique({
+              where: { userId: targetUserId },
+              select: { email: true }
+            });
 
-          if (user?.email) {
-            const timeString = new Date().toLocaleTimeString("vi-VN");
-            const subject = `[Smart Home] Cảnh báo an toàn - ${dataType} [${timeString}]`;
+            if (user?.email) {
+              const timeString = new Date().toLocaleTimeString("vi-VN");
+              const subject = `[Smart Home] Cảnh báo an toàn - ${dataType} [${timeString}]`;
 
-            const htmlContent = `
-              <h3>Hệ thống Smart Home cảnh báo</h3>
-              <p>Thiết bị <b>${triggeringDevice?.deviceName ?? "cảm biến"}</b> (Vị trí: <b>${triggeringDevice?.location?.locationName ?? "N/A"}</b>) phát hiện chỉ số <b>${dataType}</b> đạt mức <b>${value}</b>.</p>
-              <p>Ngưỡng an toàn thiết lập: <b>${threshold}</b>.</p>
-              <p>Vui lòng kiểm tra thiết bị của bạn ngay lập tức!</p>
-            `;
-            await notificationService.sendEmailAlert(user.email, subject, htmlContent);
-            console.log(`[EMAIL] Sent to user ${targetUserId}: Cảnh báo ${dataType} vượt ngưỡng!`);
+              const htmlContent = `
+                <h3>Hệ thống Smart Home cảnh báo</h3>
+                <p>Thiết bị <b>${triggeringDevice?.deviceName ?? "cảm biến"}</b> (Vị trí: <b>${triggeringDevice?.location?.locationName ?? "N/A"}</b>) phát hiện chỉ số <b>${dataType}</b> đạt mức <b>${value}</b>.</p>
+                <p>Ngưỡng an toàn thiết lập: <b>${threshold}</b>.</p>
+                <p>Vui lòng kiểm tra thiết bị của bạn ngay lập tức!</p>
+              `;
+              await notificationService.sendEmailAlert(user.email, subject, htmlContent);
+              console.log(`[EMAIL] Sent to user ${targetUserId}: Cảnh báo ${dataType} vượt ngưỡng!`);
+            }
           }
         } catch (err) {
           console.error("Failed to send email notification:", err);
