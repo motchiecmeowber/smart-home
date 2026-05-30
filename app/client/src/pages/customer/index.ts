@@ -1,6 +1,6 @@
 export * from './devices/DevicesPage'
 export * from './notifications/NotificationsPage'
-export * from './dashboard/OverviewPage'
+export * from './dashboard/DashboardPage'
 export * from './profile/ProfilePage'
 export * from './realtime/RealtimePage'
 export * from './requests/RequestsPage'

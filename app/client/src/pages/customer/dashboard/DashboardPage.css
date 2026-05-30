@@ -1,0 +1,315 @@
+/* DashboardPage.css - Light Mode Component Design */
+
+.dashboard-page {
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.dashboard-section-title {
+  margin-bottom: 16px !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #0b2a3a !important;
+}
+
+/* =========================================
+   1. Environment Cards (Top Row) 
+========================================= */
+.env-card {
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  text-align: center;
+  border: 1px solid #f0f0f0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.env-card .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.env-card-body {
+  flex: 1;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.env-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0 auto 16px auto;
+  font-size: 24px;
+}
+
+.env-icon-wrapper.temp { background-color: #fff1f0; color: #f5222d; }
+.env-icon-wrapper.humid { background-color: #e6f7ff; color: #1890ff; }
+.env-icon-wrapper.gas { background-color: #f6ffed; color: #52c41a; }
+
+.env-value {
+  font-size: 2.25rem !important;
+  font-weight: 700 !important;
+  margin: 0 0 4px 0 !important;
+  color: #0b2a3a !important;
+  line-height: 1.2;
+}
+
+.env-label {
+  font-size: 1rem;
+  color: #8c8c8c;
+  font-weight: 500;
+}
+
+/* =========================================
+   2. Common Section Cards (Middle & Bottom) 
+========================================= */
+.dashboard-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  height: 100%;
+  border: 1px solid #f0f0f0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-card .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 20px;
+  min-height: 56px;
+}
+
+.dashboard-card .ant-card-head-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0b2a3a;
+}
+
+.dashboard-card .ant-card-extra {
+  font-size: 0.9rem;
+  color: #1890ff;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.dashboard-card .ant-card-extra:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   3. Devices Overview 
+========================================= */
+.device-stat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.device-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.device-stat-label {
+  color: #595959;
+  font-weight: 500;
+}
+
+.device-stat-value {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.device-stat-value.online { color: #52c41a; }
+.device-stat-value.offline { color: #f5222d; }
+
+.dashboard-card-link {
+  color: #1890ff;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+.dashboard-card-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   4. Notifications Overview 
+========================================= */
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+}
+
+.notification-item.warning { border-left-color: #f5222d; }
+.notification-item.info { border-left-color: #1890ff; }
+.notification-item.success { border-left-color: #52c41a; }
+
+.notification-icon {
+  font-size: 16px;
+  margin-top: 2px;
+}
+.notification-icon.warning { color: #f5222d; }
+.notification-icon.info { color: #1890ff; }
+.notification-icon.success { color: #52c41a; }
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 4px;
+  display: block;
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 0.8rem;
+  color: #8c8c8c;
+}
+
+/* =========================================
+   5. Schedules Overview 
+========================================= */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.schedule-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.schedule-info-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+}
+
+.schedule-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 8px;
+}
+.schedule-dot.active { background-color: #1890ff; box-shadow: 0 0 4px rgba(24,144,255,0.4); }
+.schedule-dot.inactive { background-color: #d9d9d9; }
+
+.schedule-content {
+  flex: 1;
+}
+
+.schedule-time-row {
+  margin-bottom: 4px;
+}
+
+.schedule-time {
+  font-weight: 700;
+  color: #0b2a3a;
+  margin-right: 8px;
+  font-size: 0.95rem;
+}
+
+.schedule-title {
+  display: block;
+  font-weight: 600;
+  color: #262626;
+  margin-bottom: 4px;
+}
+
+.schedule-desc {
+  font-size: 0.85rem;
+  color: #8c8c8c;
+  line-height: 1.4;
+}
+
+/* =========================================
+   6. Support Requests Overview 
+========================================= */
+.request-stat-card {
+  border-radius: 8px;
+  background-color: #fafafa;
+  padding: 20px 16px;
+  border: 1px solid #e8e8e8;
+  height: 100%;
+}
+
+.request-stat-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #595959;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.request-stat-icon {
+  font-size: 16px;
+  color: #8c8c8c;
+}
+
+.request-stat-value {
+  font-size: 2.5rem !important;
+  font-weight: 700 !important;
+  color: #0b2a3a !important;
+  margin: 0 0 8px 0 !important;
+  line-height: 1;
+}
+
+.request-stat-desc {
+  font-size: 0.85rem;
+  color: #8c8c8c;
+  font-style: italic;
+}

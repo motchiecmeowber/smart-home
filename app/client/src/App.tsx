@@ -207,7 +207,7 @@ function App() {
             {appRoute === 'dashboard-profile' && <Customer.ProfilePage />}
             {appRoute === 'dashboard-statistics' && <Customer.StatisticsPage />}
             {appRoute === 'dashboard-schedules' && <Customer.SchedulesPage />}
-            {appRoute === 'dashboard-overview' && <Customer.OverviewPage />}
+            {appRoute === 'dashboard-overview' && <Customer.DashboardPage />}
           </DashboardLayout>
         )}
 
