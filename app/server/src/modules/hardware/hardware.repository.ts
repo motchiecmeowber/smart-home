@@ -6,7 +6,7 @@ export class HardwareRepository {
     return prisma.device.create({ data });
   }
 
-  async getDevices(filters?: { locationId?: string; deviceType?: DeviceType }, userId?: string, role?: string) {
+  async getMyDevices(filters?: { locationId?: string; deviceType?: DeviceType }, userId?: string, role?: string) {
     const where: any = { ...filters };
 
     if (role === "CUSTOMER" && userId) {
@@ -28,6 +28,39 @@ export class HardwareRepository {
       },
     });
   }
+
+  async getAvailableDevices() {
+  return prisma.device.findMany({
+    where: {
+      OR: [
+        { actuator: { customerId: null } },
+        { sensor: { customerId: null } },
+      ],
+    },
+    include: {
+      sensor: true,
+      actuator: true,
+      location: true,
+    },
+  });
+}
+
+async getAllDevices(filters?: { locationId?: string; deviceType?: DeviceType }) {
+  const where: any = { ...filters };
+
+  return prisma.device.findMany({
+    where,
+    include: {
+      sensor: true,
+      actuator: true,
+      location: true,
+    },
+    orderBy: {
+      deviceId: 'asc',
+    },
+  });
+}
+
 
   async getDeviceById(deviceId: string) {
     return prisma.device.findUnique({
@@ -53,6 +86,20 @@ export class HardwareRepository {
         actuator: true,
       },
     });
+  }
+
+  async getDevicesBySerials(serials: string[]) {
+    return prisma.device.findMany({
+      where: {
+        serial: {
+          in: serials
+        }
+      },
+      include: {
+        sensor: true,
+        actuator: true,
+      }
+    })
   }
 
   async updateDevice(deviceId: string, data: Prisma.DeviceUpdateInput) {

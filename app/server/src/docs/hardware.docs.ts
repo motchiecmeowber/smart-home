@@ -7,9 +7,9 @@ import { controlActuatorDto, updateDeviceDto, updateThresholdDto } from "@/modul
 export function registerHardwareDocs(registry: OpenAPIRegistry){
     registry.registerPath({
         method: "get",
-        path: "/api/devices",
-        summary: "Get all devices",
-        description: "Lấy danh sách tất cả thiết bị. Dữ liệu trả về sẽ bao gồm thông tin chi tiết của Sensor (nếu có) hoặc Actuator (nếu có).",
+        path: "/api/devices/my-devices",
+        summary: "Lấy thông tin thiết bị của tôi",
+        description: "Lấy danh sách tất cả thiết bị của người dùng hiện tại. Dữ liệu trả về sẽ bao gồm thông tin chi tiết của Sensor (nếu có) hoặc Actuator (nếu có).",
         tags: ["Hardware"],
         security: [{ bearerAuth: [] }],
         request: {
@@ -18,6 +18,22 @@ export function registerHardwareDocs(registry: OpenAPIRegistry){
             deviceType: z.enum(["SENSOR", "ACTUATOR"]).optional().openapi({ description: "Filter by Device Type" })
             })
         },
+        responses: {
+            200: {
+                description: "Success",
+                content: { "application/json": { schema: apiSuccess(z.array(z.any())) } }
+            },
+            401: { description: "Unauthorized", content: { "application/json": { schema: apiError } } }
+        }
+    });
+
+    registry.registerPath({
+        method: "get",
+        path: "/api/devices/available",
+        summary: "Lấy danh sách thiết bị có sẵn",
+        description: "Lấy danh sách tất cả thiết bị có sẵn để sử dụng.",
+        tags: ["Hardware"],
+        security: [{ bearerAuth: [] }],
         responses: {
             200: {
                 description: "Success",
