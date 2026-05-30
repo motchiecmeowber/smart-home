@@ -107,7 +107,66 @@ async function authedFetch<T>(path: string): Promise<T> {
   return json as T
 }
 
-export async function apiGetDevices(): Promise<DeviceInfo[]> {
+export async function apiGetMyDevices(): Promise<DeviceInfo[]> {
+  const res = await authedFetch<{ data: RawDevice[] }>('/devices/my-devices')
+  const raw: RawDevice[] = res.data ?? (res as unknown as RawDevice[])
+
+  return raw
+    .filter((d) => Boolean(d.tbDeviceId))
+    .map((d): DeviceInfo => {
+      const suffix = parseSuffixFromDeviceName(d.deviceName)
+      const currentOwnerId = d.deviceType === 'SENSOR' ? d.sensor?.customerId : d.actuator?.customerId
+
+      return {
+        deviceId: d.deviceId,
+        tbDeviceId: d.tbDeviceId!,
+        deviceName: d.deviceName ?? 'Thiết bị không tên',
+        deviceType: d.deviceType,
+        serial: d.serial ?? '',
+        serialSuffix: suffix,
+        sensorFunction: d.deviceType === 'SENSOR' ? resolveSensorFunction(suffix) : null,
+        actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
+        status: d.status,
+        location: d.location?.locationName ?? null,
+        hasOwner: Boolean(currentOwnerId),
+        ownerId: currentOwnerId ?? null,
+        threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
+        unit: d.deviceType === 'SENSOR' ? (d.sensor?.unit ?? null) : null
+      }
+    })
+}
+
+export async function apiGetAvailableDevices(): Promise<DeviceInfo[]> {
+  const res = await authedFetch<{ data: RawDevice[] }>('/devices/available')
+  const raw: RawDevice[] = res.data ?? (res as unknown as RawDevice[])
+
+  return raw
+    .filter((d) => Boolean(d.tbDeviceId))
+    .map((d): DeviceInfo => {
+      const suffix = parseSuffixFromDeviceName(d.deviceName)
+      const currentOwnerId = d.deviceType === 'SENSOR' ? d.sensor?.customerId : d.actuator?.customerId
+
+      return {
+        deviceId: d.deviceId,
+        tbDeviceId: d.tbDeviceId!,
+        deviceName: d.deviceName ?? 'Thiết bị không tên',
+        deviceType: d.deviceType,
+        serial: d.serial ?? '',
+        serialSuffix: suffix,
+        sensorFunction: d.deviceType === 'SENSOR' ? resolveSensorFunction(suffix) : null,
+        actuatorFunction: d.deviceType === 'ACTUATOR' ? resolveActuatorFunction(suffix) : null,
+        status: d.status,
+        location: d.location?.locationName ?? null,
+        hasOwner: Boolean(currentOwnerId),
+        ownerId: currentOwnerId ?? null,
+        threshold: d.deviceType === 'SENSOR' ? (d.sensor?.threshold ?? null) : null,
+        unit: d.deviceType === 'SENSOR' ? (d.sensor?.unit ?? null) : null
+      }
+    })
+}
+
+// For admin use
+export async function apiGetAllDevices(): Promise<DeviceInfo[]> {
   const res = await authedFetch<{ data: RawDevice[] }>('/devices')
   const raw: RawDevice[] = res.data ?? (res as unknown as RawDevice[])
 

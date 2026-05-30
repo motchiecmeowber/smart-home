@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { message, Typography, Spin, Space } from 'antd'
 import { CalendarOutlined } from '@ant-design/icons'
 import { apiGetUsers } from '../../../lib/userApi'
-import { apiGetDevices } from '../../../lib/deviceApi'
+import { apiGetAllDevices } from '../../../lib/deviceApi'
 import { apiGetRequests, apiGetRequestDetail, apiUpdateRequest, apiDeleteRequest, type RequestItemDto } from '../../../lib/requestApi'
 import { apiGetUserDetail } from '../../../lib/userApi'
 import { StatCards, type DashboardStats } from './components/StatCards'
@@ -42,7 +42,7 @@ export function AdminDashboardPage() {
             try {
                 const [users, devices, requests] = await Promise.all([
                     apiGetUsers(),
-                    apiGetDevices(),
+                    apiGetAllDevices(),
                     apiGetRequests(),
                 ])
 

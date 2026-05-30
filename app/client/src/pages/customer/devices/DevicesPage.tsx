@@ -2,7 +2,7 @@ import { Col, message, Row, Typography, Spin, Button, Divider, Space } from 'ant
 import { PlusOutlined, HomeOutlined, RestOutlined, CoffeeOutlined,
   InboxOutlined, AppstoreOutlined, InfoCircleOutlined } from '@ant-design/icons'
 import { useEffect, useMemo, useState } from 'react'
-import { apiGetDevices, type DeviceInfo } from '../../../lib/deviceApi'
+import { apiGetMyDevices, type DeviceInfo } from '../../../lib/deviceApi'
 import { DeviceFilters } from './components/DeviceFilters'
 import { DeviceDetailModal } from './components/DeviceDetailModal'
 import { DeviceCard } from './components/DeviceCard'
@@ -37,7 +37,7 @@ export function DevicesPage() {
 
     try {
       const [devicesData, locationsData] = await Promise.all([
-        apiGetDevices(),
+        apiGetMyDevices(),
         apiGetLocations()
       ])
 

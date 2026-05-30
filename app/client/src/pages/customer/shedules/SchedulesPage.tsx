@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button, Form, Typography, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import { apiGetDevices, type DeviceInfo } from '../../../lib/deviceApi'
+import { apiGetMyDevices, type DeviceInfo } from '../../../lib/deviceApi'
 import { apiCreateSchedule, apiDeleteSchedule, apiGetSchedules, apiUpdateSchedule, type ScheduleDTO } from '../../../lib/scheduleApi'
 import { SchedulesSummary } from './components/SchedulesSummary'
 import { SchedulesTable } from './components/SchedulesTable'
@@ -27,7 +27,7 @@ export function SchedulesPage() {
       setLoading(true)
       const [schData, devData] = await Promise.all([
         apiGetSchedules(),
-        apiGetDevices()
+        apiGetMyDevices()
       ])
 
       setSchedules(schData)
