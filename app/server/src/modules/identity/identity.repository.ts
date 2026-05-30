@@ -131,4 +131,13 @@ export class IdentityRepository {
       }
     });
   }
+
+  async findAvailableAdmin(): Promise<{ userId: string } | null> {
+    return prisma.user.findFirst({
+      where: { role: "ADMIN" },
+      select: {
+        userId: true,
+      }
+    })
+  }
 }
