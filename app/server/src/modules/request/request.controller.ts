@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { requestService } from "./request.service";
-import { createRequestSchema, getRequestsQuerySchema, updateRequestStatusDto } from "./request.dto";
+import { createRequestSchema, getRequestsQuerySchema, processRequestsSchema } from "./request.dto";
 import { sendSuccess } from "../../common/app-error";
 
 export class RequestController {
@@ -38,7 +38,7 @@ export class RequestController {
 
   async approveRequestsByIds(req: Request, res: Response, next: NextFunction) {
     try {
-      const { list_id } = req.body;
+      const { list_id } = processRequestsSchema.parse(req.body);
 
       await requestService.approveRequestsByIds(list_id);
       return sendSuccess(res, 200, null, "Requests approved successfully");
@@ -53,7 +53,7 @@ export class RequestController {
 
   async rejectRequestsByIds(req: Request, res: Response, next: NextFunction) {
     try {
-      const { list_id } = req.body;
+      const { list_id } = processRequestsSchema.parse(req.body);
 
       await requestService.rejectRequestsByIds(list_id);
       return sendSuccess(res, 200, null, "Requests rejected successfully");

@@ -130,8 +130,10 @@ export class RequestService {
   async approveRequestsByIds(list_id: string[]) {
     const requests = await this.requestRepo.getRequestsByIds(list_id);
 
-    if (requests.some(r => !r)) {
-      throw new HttpError(404, "One or more requests not found");
+    if (requests.length !== list_id.length) {
+      const foundIds = new Set(requests.map(r => r.requestId));
+      const missing = list_id.filter(id => !foundIds.has(id));
+      throw new HttpError(404, `One or more requests not found: ${missing.join(", ")}`);
     }
 
     for (const request of requests) {
@@ -152,8 +154,6 @@ export class RequestService {
         }
       }
 
-      await this.requestRepo.updateRequestStatus(request.requestId, RequestStatus.APPROVED);
-
       switch (requestType) {
         case RequestType.ADD:
           await deviceService.assignDeviceToCustomer(deviceId!, request.customerId!);
@@ -166,6 +166,8 @@ export class RequestService {
         default:
           throw new HttpError(400, `Invalid request type: ${requestType}`);
       }
+
+      await this.requestRepo.updateRequestStatus(request.requestId, RequestStatus.APPROVED);
 
       if (request.customerId) {
         const customer = await this.identityService.getUserById(request.customerId);
@@ -193,8 +195,10 @@ export class RequestService {
   async rejectRequestsByIds(list_id: string[]) {
     const requests = await this.requestRepo.getRequestsByIds(list_id);
 
-    if (requests.some(r => !r)) {
-      throw new HttpError(404, "One or more requests not found");
+    if (requests.length !== list_id.length) {
+      const foundIds = new Set(requests.map(r => r.requestId));
+      const missing = list_id.filter(id => !foundIds.has(id));
+      throw new HttpError(404, `One or more requests not found: ${missing.join(", ")}`);
     }
 
     for (const request of requests) {

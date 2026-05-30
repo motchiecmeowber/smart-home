@@ -37,7 +37,7 @@ export function RequestTable({
             render: (text: string, record: RequestItemDto) => (
                 <Space orientation="vertical" size={0}>
                     <Text>{text}</Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>{record.customer?.email}</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>{record.customer?.user.email}</Text>
                 </Space>
             )
         },

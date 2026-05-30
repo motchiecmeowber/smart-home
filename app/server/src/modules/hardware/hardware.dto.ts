@@ -30,3 +30,7 @@ export const controlActuatorDto = z.object({
 export const updateThresholdDto = z.object({
   threshold: z.number().min(0, "Threshold must be greater than or equal to 0")
 }).openapi("UpdateThreshold");
+
+export const updateDeviceLocationDto = z.object({
+  locationId: z.string().nullable()
+}).openapi("UpdateDeviceLocation")

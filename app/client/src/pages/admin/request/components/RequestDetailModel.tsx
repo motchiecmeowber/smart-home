@@ -142,11 +142,15 @@ export function RequestDetailModal({
                 </Descriptions.Item>
                 
                 <Descriptions.Item label="Tài Khoản Gửi">
-                    <Text strong>{request.customer?.username}</Text> <Text type="secondary">({request.customer?.email})</Text>
+                    <Text strong>{request.customer?.user.username}</Text> <Text type="secondary">({request.customer?.user.email})</Text>
                 </Descriptions.Item>
                 
                 <Descriptions.Item label="Thời Gian Gửi">
                     <Text>{new Date(request.createdAt).toLocaleString('vi-VN')}</Text>
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Ghi chú">
+                    <Text>{request.note || 'Không có ghi chú'}</Text>
                 </Descriptions.Item>
                 
                 <Descriptions.Item label="Trạng Thái">

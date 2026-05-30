@@ -1,5 +1,6 @@
-import { Button, Descriptions, InputNumber, message, Modal, Space, Tag, Typography } from 'antd'
-import { apiControlActuator, apiUpdateThreshold, type DeviceInfo } from '../../../../lib/deviceApi'
+import { Button, Descriptions, InputNumber, message, Modal, Select, Space, Tag, Typography } from 'antd'
+import { apiControlActuator, apiUpdateDeviceLocation, apiUpdateThreshold, type DeviceInfo } from '../../../../lib/deviceApi'
+import type { LocationDTO } from '../../../../lib/locationApi'
 import { useEffect, useState } from 'react'
 
 const { Text, Link } = Typography
@@ -7,18 +8,41 @@ const { Text, Link } = Typography
 type Props = {
     visible: boolean
     device: DeviceInfo | null
+    locations: LocationDTO[]
     onClose: () => void
+    onUpdateSuccess: () => void
 }
 
-export function DeviceDetailModal({ visible, device, onClose }: Props) {
+export function DeviceDetailModal({ visible, device, locations, onClose, onUpdateSuccess }: Props) {
     const [loadingAction, setLoadingAction] = useState<string | null>(null)
     const [threshold, setThreshold] = useState<number | null>()
+    const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null)
+    const [isEditingLocation, setIsEditingLocation] = useState(false)
 
     useEffect(() => {
         if (visible && device) {
             setThreshold(device.threshold ?? null)
+            setSelectedLocationId(device.locationId)
+            setIsEditingLocation(false)
         }
     }, [visible, device])
+
+    const handleSaveLocation = async () => {
+        if (!device) return
+
+        try {
+            setLoadingAction('SAVE_LOCATION')
+            await apiUpdateDeviceLocation(device.deviceId, selectedLocationId)
+            message.success(`Đã chuyển vị trí thành công`)
+
+            setIsEditingLocation(false)
+            onUpdateSuccess()
+        } catch (error: any) {
+            message.error(error.message || 'Lỗi cập nhật vị trí')
+        } finally {
+            setLoadingAction(null)
+        }
+    }
 
     const handleControl = async (action: string) => {
         if (!device) return
@@ -65,7 +89,26 @@ export function DeviceDetailModal({ visible, device, onClose }: Props) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <Descriptions bordered size='small' column={1}>
                         <Descriptions.Item label='Phòng/Khu vực'>
-                            {device.location || 'Chưa cập nhật'}
+                            {isEditingLocation ? (
+                                <Space>
+                                    <Select
+                                        value={selectedLocationId}
+                                        style={{ width: 180 }}
+                                        onChange={(val) => setSelectedLocationId(val)}
+                                        options={[
+                                            { label: 'Chưa có vị trí', value: null},
+                                            ...locations.map(l => ({ label: l.locationName, value: l.locationId }))
+                                        ]}
+                                    />
+                                    <Button type='primary' size='small' onClick={handleSaveLocation} loading={loadingAction === 'SAVE_LOCATION'}>Lưu</Button>
+                                    <Button size='small' onClick={() => setIsEditingLocation(false)}>Hủy</Button>
+                                </Space>
+                            ) : (
+                                <Space>
+                                    <Text>{device.location || 'Chưa cập nhật'}</Text>
+                                    <Button type='link' size='small' onClick={() => setIsEditingLocation(true)}>Sửa</Button>
+                                </Space>
+                            )}
                         </Descriptions.Item>
                         
                         <Descriptions.Item label='Loại thiết bị'>

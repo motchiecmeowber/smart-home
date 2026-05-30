@@ -29,6 +29,7 @@ export interface RequestItemDto {
         deviceType: 'SENSOR' | 'ACTUATOR'
     } | null
     admin?: {
+        username: string
         user: {
             username: string
             email: string

@@ -17,7 +17,7 @@
 .settings-card-title {
   color: #172f3d;
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .settings-icon {
@@ -42,7 +42,6 @@
   margin-bottom: 10px;
   color: #4c626e;
   font-size: 15px;
-  font-weight: 700;
 }
 
 .settings-card .ant-select {
@@ -59,8 +58,7 @@
 
 .settings-row .ant-typography {
   color: #445763;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
 }
 
 .settings-row .ant-switch {
@@ -81,7 +79,7 @@
 .settings-actions .ant-btn {
   min-width: 180px;
   min-height: 44px;
-  font-weight: 800;
+  font-weight: 550;
 }
 
 @media (max-width: 680px) {

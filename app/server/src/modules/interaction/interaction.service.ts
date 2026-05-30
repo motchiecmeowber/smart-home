@@ -13,7 +13,7 @@ export class InteractionService {
     const triggeringDevice = await interactionRepo.getDeviceOwner(deviceId);
     if (triggeringDevice?.locationId) {
       // Find an actuator in the same location that acts as a buzzer
-      const devicesInLocation = await hardwareRepo.getDevices({
+      const devicesInLocation = await hardwareRepo.getMyDevices({
         locationId: triggeringDevice.locationId,
         deviceType: DeviceType.ACTUATOR
       });
@@ -89,7 +89,7 @@ export class InteractionService {
 
       if (!targetUserId && triggeringDevice?.locationId) {
         // If sensor has no direct owner, find the owner of any actuator in the same location
-        const actuatorsInLocation = await hardwareRepo.getDevices({
+        const actuatorsInLocation = await hardwareRepo.getMyDevices({
           locationId: triggeringDevice.locationId,
           deviceType: DeviceType.ACTUATOR
         });

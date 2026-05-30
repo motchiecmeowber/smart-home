@@ -175,7 +175,7 @@
 
 /* Status Badge */
 .request-status-badge {
-  display: inline;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 13px;

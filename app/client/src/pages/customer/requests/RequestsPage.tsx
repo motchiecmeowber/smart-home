@@ -192,8 +192,8 @@ export function RequestsPage() {
         {
             title: 'Trạng thái',
             key: 'status',
-            align: 'right',
-            width: 140,
+            align: 'center',
+            width: 180,
             render: (_, r) => {
                 const cfg = STATUS_CONFIG[r.status]
                 return <div className={`request-status-badge ${cfg.className}`}>{cfg.label}</div>
@@ -284,7 +284,7 @@ export function RequestsPage() {
                     <>
                         <Collapse
                             accordion={false}
-                            expandIconPosition="end"
+                            expandIconPlacement="end"
                             expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}
                             style={{ background: 'transparent' }}
                             items={batches.map((batch) => {

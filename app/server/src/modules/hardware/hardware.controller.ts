@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { deviceService } from "./device.service";
 import { actuatorService } from "./actuator.service";
-import { createDeviceDto, updateDeviceDto, controlActuatorDto, updateThresholdDto } from "./hardware.dto";
+import { createDeviceDto, updateDeviceDto, controlActuatorDto, updateThresholdDto, updateDeviceLocationDto } from "./hardware.dto";
 import { sendSuccess, HttpError } from "../../common/app-error";
 import { sensorService } from "./sensor.service";
 import { DeviceType } from "@prisma/client";
@@ -135,6 +135,29 @@ export class HardwareController {
       return sendSuccess(res, 200, updated, "Sensor threshold updated successfully");
     } catch (error) {
       next(error);
+    }
+  }
+
+  async updateDeviceLocation(req: any, res: Response, next: NextFunction) {
+    try {
+      const deviceId = req.params.id
+      const customerId = (req as any).userId
+      const { locationId } = updateDeviceLocationDto.parse(req.body)
+
+      const device = await deviceService.getDeviceById(deviceId)
+      if (!device) {
+        throw new HttpError(404, "Device not found")
+      }
+
+      const ownerId = device.sensor?.customerId || device.actuator?.customerId
+      if (ownerId !== customerId) {
+        throw new HttpError(403, "Forbidden: You do not own this device")
+      }
+
+      const updated = await deviceService.updateDevice(deviceId, { locationId: locationId })
+      return sendSuccess(res, 200, updated, "Device location updated successfully")
+    } catch (error) {
+      next(error)
     }
   }
 }

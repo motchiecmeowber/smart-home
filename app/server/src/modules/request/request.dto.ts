@@ -29,5 +29,11 @@ export const createRequestSchema = z.object({
   content: z.string().optional(),
 })
 
+export const processRequestsSchema = z.object({
+  list_id: z.array(
+    z.string().min(1, "Request ID cannot be empty")
+  ).min(1, "list_id must contain at least one ID")
+}).openapi("ProcessRequests");
+
 export type createRequestDto = z.infer<typeof createRequestSchema>;
 export type getRequestsQueryDto = z.infer<typeof getRequestsQuerySchema>;

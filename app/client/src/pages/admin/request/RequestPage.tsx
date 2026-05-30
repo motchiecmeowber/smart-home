@@ -75,7 +75,9 @@ function groupByBatch(requests: RequestItemDto[]): BatchGroup[] {
             requestType: items[0].requestType ?? '',
             status,
             createdAt: items[0].createdAt,
-            title: items[0].note ?? `Yêu cầu ${items[0].requestType?.toLowerCase() ?? ''} ${items.length} thiết bị`,
+            title: items[0].note ?? `Yêu cầu ${items[0].requestType === 'ADD' 
+                ? 'thêm' : items[0].requestType === 'UPDATE' 
+                ? 'cập nhật' : 'xóa'} ${items.length} thiết bị`,
         }
     })
 }
@@ -289,6 +291,7 @@ export function RequestManagementPage() {
         {
             title: 'Thiết bị',
             key: 'device',
+            width: '25%',
             render: (_, r) => (
                 <Space>
                     <AppstoreOutlined />
@@ -304,8 +307,9 @@ export function RequestManagementPage() {
         {
             title: 'Khách hàng',
             key: 'customer',
+            width: '25%',
             render: (_, r) => (
-                <Space direction="vertical" size={0}>
+                <Space orientation="vertical" size={0}>
                     <Text strong style={{ fontSize: 13 }}>{r.customer?.user.username ?? '—'}</Text>
                     <Text type="secondary" style={{ fontSize: 12 }}>{r.customer?.user.email ?? ''}</Text>
                 </Space>
@@ -314,6 +318,7 @@ export function RequestManagementPage() {
         {
             title: 'Thời gian',
             key: 'time',
+            align: 'center',
             width: 130,
             render: (_, r) => {
                 const d = new Date(r.createdAt)
@@ -328,7 +333,7 @@ export function RequestManagementPage() {
         {
             title: 'Trạng thái',
             key: 'status',
-            align: 'right',
+            align: 'center',
             width: 140,
             render: (_, r) => {
                 const cfg = STATUS_CONFIG[r.status]
@@ -338,8 +343,7 @@ export function RequestManagementPage() {
         {
             title: '',
             key: 'actions',
-            width: 210,
-            align: 'right',
+            align: 'center',
             render: (_, r) => (
                 <Space onClick={e => e.stopPropagation()}>
                     {r.status === 'PENDING' && (
@@ -364,20 +368,22 @@ export function RequestManagementPage() {
                             </Button>
                         </>
                     )}
-                    <Popconfirm
-                        title="Xóa yêu cầu này?"
-                        description="Hành động không thể hoàn tác."
-                        onConfirm={() => handleDelete(r.requestId)}
-                        okText="Xóa"
-                        cancelText="Hủy"
-                        okButtonProps={{ danger: true }}
-                    >
-                        <Button
-                            size="small"
-                            icon={<DeleteOutlined />}
-                            loading={deleteLoading}
-                        />
-                    </Popconfirm>
+                    {r.status !== 'PENDING' && (
+                        <Popconfirm
+                            title="Xóa yêu cầu này?"
+                            description="Hành động không thể hoàn tác."
+                            onConfirm={() => handleDelete(r.requestId)}
+                            okText="Xóa"
+                            cancelText="Hủy"
+                            okButtonProps={{ danger: true }}
+                        >
+                            <Button
+                                size="small"
+                                icon={<DeleteOutlined />}
+                                loading={deleteLoading}
+                            />
+                        </Popconfirm>
+                    )}
                 </Space>
             )
         },
@@ -475,7 +481,7 @@ export function RequestManagementPage() {
                     <>
                         <Collapse
                             accordion={false}
-                            expandIconPosition="end"
+                            expandIconPlacement="end"
                             expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}
                             style={{ background: 'transparent' }}
                             items={batches.map(batch => {

@@ -39,7 +39,10 @@ export function RecentRequests({ requests, onNavigateToRequests, onRowClick }: R
       dataIndex: ['customer', 'username'],
       key: 'customer',
       render: (_: any, record: RequestItemDto) => (
-        <Text style={{ fontWeight: 500 }}>{record.customer?.email}</Text>
+        <Space orientation="vertical" size={0}>
+          <Text style={{ fontWeight: 500 }}>{record.customer?.user?.username || 'Không rõ'}</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>{record.customer?.user?.email || ''}</Text>
+        </Space>
       ),
     },
     {

@@ -13,7 +13,7 @@ export class DeviceService {
     locationId?: string;
     unit?: string;
     threshold?: number;
-    customerId?: string;
+    customerId?: string | null;
   }) {
     const existing = await hardwareRepo.getDeviceBySerial(data.serial);
     if (existing) {

@@ -63,7 +63,7 @@ export class AnalyticsService {
     }
 
     // fetch raw data
-    const devices = await hardwareRepo.getDevices({ deviceType: DeviceType.SENSOR }, customerId, Role.CUSTOMER);
+    const devices = await hardwareRepo.getMyDevices({ deviceType: DeviceType.SENSOR }, customerId, Role.CUSTOMER);
     const sensorIds = devices.map(device => device.deviceId);
 
     if (sensorIds.length === 0) {

@@ -6,7 +6,6 @@ import { roleMiddleware } from "@/middlewares/role.middleware";
 const hardwareRouter = Router();
 
 hardwareRouter.get("/devices/available", authMiddleware, hardwareController.getAvailableDevices);
-hardwareRouter.get("/devices/my-devices", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.getMyDevices);
 
 // Admin
 hardwareRouter.get("/devices", authMiddleware, roleMiddleware("ADMIN"), hardwareController.getAllDevices);
@@ -15,6 +14,8 @@ hardwareRouter.delete("/devices/:id", authMiddleware, roleMiddleware("ADMIN"), h
 hardwareRouter.patch("/devices/:id", authMiddleware, roleMiddleware("ADMIN"), hardwareController.updateDevice);
 
 // Customer
+hardwareRouter.get("/devices/my-devices", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.getMyDevices);
+hardwareRouter.patch("/devices/:id/location", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.updateDeviceLocation);
 hardwareRouter.post("/actuators/:id/control", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.controlActuator);
 hardwareRouter.patch("/sensors/:id/threshold", authMiddleware, roleMiddleware("CUSTOMER"), hardwareController.updateThreshold);
 
