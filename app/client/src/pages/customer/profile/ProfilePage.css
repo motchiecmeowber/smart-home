@@ -1,0 +1,141 @@
+.profile-card.ant-card {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-color: #d4dde3;
+  box-shadow: 0 8px 20px rgba(30, 50, 62, 0.08);
+}
+
+.profile-card .ant-card-body {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(32px, 4vw, 52px);
+}
+
+.profile-overview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+}
+
+.profile-avatar-wrap {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.profile-avatar.ant-avatar {
+  color: #0b5f95;
+  background: #e4f0f5;
+  border: 1px solid #cbdde6;
+}
+
+.profile-edit-avatar.ant-btn {
+  position: absolute;
+  right: -6px;
+  bottom: 4px;
+  color: #0b5f95;
+  background: #ffffff;
+  border-color: #c9d8df;
+  box-shadow: 0 4px 10px rgba(30, 50, 62, 0.16);
+}
+
+.profile-user .ant-typography {
+  margin: 0;
+}
+
+.profile-user h2.ant-typography {
+  color: #273946;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.profile-user .ant-typography-secondary {
+  display: block;
+  margin-top: 6px;
+  color: #6c7b86;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.profile-card .ant-divider {
+  margin: 30px 0 12px;
+}
+
+.profile-descriptions {
+  width: 100%;
+}
+
+.profile-descriptions .ant-descriptions-item {
+  padding: 24px 0;
+  border-bottom: 1px solid #e7eef2;
+}
+
+.profile-descriptions .ant-descriptions-item:last-child {
+  border-bottom: 0;
+}
+
+.profile-descriptions .ant-descriptions-item-container {
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.profile-descriptions .ant-descriptions-item-label {
+  color: #445763;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.profile-descriptions .ant-descriptions-item-content {
+  justify-content: flex-end;
+  color: #5f6f7a;
+  font-size: 17px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.profile-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 40px;
+}
+
+.profile-actions .ant-btn {
+  min-width: 210px;
+  min-height: 44px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+@media (max-width: 680px) {
+  .profile-heading .ant-typography {
+    font-size: 31px;
+  }
+
+  .profile-card .ant-card-body {
+    padding: 24px;
+  }
+
+  .profile-overview {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-descriptions .ant-descriptions-item-container {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .profile-descriptions .ant-descriptions-item-content {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}

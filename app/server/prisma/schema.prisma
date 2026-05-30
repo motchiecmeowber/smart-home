@@ -52,6 +52,7 @@ enum ReportType {
     DAILY
     WEEKLY
     MONTHLY
+    CUSTOM
 }
 
 // ─── LOCATION ─────────────────────────────────────────────────────────────────
@@ -59,6 +60,9 @@ enum ReportType {
 model Location {
     locationId   String  @id @default(cuid()) @map("Location_ID")
     locationName String? @map("Location_name")
+
+    customerId   String? @map("Location_CustomerID")
+    customer     Customer? @relation(fields: [customerId], references: [userId], onDelete: Cascade)
 
     devices Device[] // owning side
 
@@ -81,7 +85,10 @@ model User {
     notifications Notification[]
     customer      Customer?
     admin         Admin?
+    refreshTokens  RefreshToken[]
 
+    @@index([username])
+    @@index([email])
     @@map("USER")
 }
 
@@ -98,7 +105,9 @@ model Customer {
     admin Admin? @relation("AdminManagesCustomer", fields: [adminId], references: [userId])
 
     // owning side
+    locations Location[]
     actuators Actuator[]
+    sensors   Sensor[]
     schedules Schedule[]
     reports   Report[]
     requests  Request[]  @relation("CustomerRequests")
@@ -127,6 +136,7 @@ model Admin {
 model Device {
     deviceId   String  @id @default(cuid()) @map("Device_ID")
     serial     String  @unique @map("Serial")
+    tbDeviceId String  @map("TB_Device_ID")
     deviceName String? @map("Device_name")
     status     DeviceStatus? @map("Status")
     deviceType DeviceType? @map("Device_type")
@@ -169,11 +179,15 @@ model Actuator {
 
 model Sensor {
     deviceId  String  @id @map("Device_ID")
+    customerId String? @map("Sensor_CustomerID")
     unit      String? @map("Unit")
     threshold Float? @map("Threshold")
 
     // superclass
     device Device @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
+    // possessed by Customer
+    customer Customer? @relation(fields: [customerId], references: [userId])
 
     data        Data[]
     summaryData SummaryData[]
@@ -220,12 +234,13 @@ model Notification {
 
 model Request {
     requestId   String   @id @default(cuid()) @map("Request_ID")
+    batchId     String?  @map("Batch_ID")
     content     String?  @map("Content")
     requestType RequestType?    @map("Request_type")
     status      RequestStatus?  @map("Status")
     createdAt   DateTime @default(now()) @map("Created_at")
     note        String?  @map("Note")
-    serial      String?  @map("Serial")
+
     deviceId    String?  @map("Request_DeviceID")
     customerId  String?  @map("Request_UserID") // optional: request có thể từ system
     adminId     String?  @map("Request_AdminID") // optional: chưa assign admin
@@ -238,6 +253,7 @@ model Request {
     @@index([adminId]) // query: request admin đang xử lý
     @@index([deviceId]) // query: request liên quan thiết bị
     @@index([status, createdAt]) // query: lọc theo status + sort thời gian
+    @@index([batchId])
     @@map("REQUEST")
 }
 
@@ -268,6 +284,7 @@ model Report {
     createdAt  DateTime  @default(now()) @map("Created_at")
     startTime  DateTime? @map("Start_time")
     endTime    DateTime? @map("End_time")
+    targetDate DateTime? @map("Target_time")
     customerId String    @map("Report_UserID")
 
     customer    Customer      @relation(fields: [customerId], references: [userId])
@@ -292,4 +309,21 @@ model SummaryData {
     @@index([sensorId]) // query: summary theo sensor
     @@index([reportId]) // query: tất cả metrics của 1 report
     @@map("SUMMARY_DATA")
+}
+
+// ─── REFRESH_TOKEN ───────────────────────────────────────────────────────────────────
+model RefreshToken {
+    id String @id @default(cuid()) @map("ID")
+    token String @unique @map("Token")
+    userId String @map("User_ID")
+    createdAt DateTime @default(now()) @map("Created_at")
+    expiresAt DateTime @map("Expires_at")
+    revoked Boolean @default(false) @map("Revoked")
+
+    user User @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+
+    @@index([userId])
+    @@index([token])
+    @@map("REFRESH_TOKEN")
 }

@@ -2,6 +2,19 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
+import { authStore } from './lib/authStore.ts'
+
+// Intercept all API calls
+// If HTTP 401 (Token expired), clear session immediately and return login page
+const originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  const response = await originalFetch(...args);
+  if (response.status === 401) {
+    sessionStorage.setItem('auth_error', 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    authStore.clearSession();
+  }
+  return response;
+};
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -1,0 +1,121 @@
+.devices-summary {
+  flex-wrap: nowrap;
+}
+
+.summary-box.ant-card {
+  min-width: 104px;
+  border-color: #d4dde3;
+  text-align: center;
+}
+
+.summary-box .ant-card-body {
+  padding: 14px 16px;
+}
+
+.summary-box .ant-statistic-title {
+  color: #60727c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.summary-box .ant-statistic-content {
+  color: #0b5f95;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.rooms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.room-section {
+  display: block;
+}
+
+.room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.device-card.ant-card {
+  height: 100%;
+  border-color: #dce4e8;
+  background: #f8fbfc;
+}
+
+.device-card .ant-card-body {
+  padding: 16px;
+}
+
+.device-item {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.device-icon {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b7cbd5;
+  border-radius: 10px;
+  color: #0b5f95;
+  background: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.device-item .ant-typography {
+  margin: 0;
+}
+
+.device-item h3.ant-typography {
+  color: #17323f;
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.device-item .ant-typography-secondary {
+  display: block;
+  margin-top: 6px;
+  color: #5f727c;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .devices-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .devices-summary {
+    width: 100%;
+  }
+
+  .devices-summary .ant-col {
+    flex: 1;
+  }
+
+  .summary-box.ant-card {
+    width: 100%;
+  }
+
+  .devices-heading .ant-typography {
+    font-size: 31px;
+  }
+
+  .room-card > .ant-card-body {
+    padding: 16px;
+  }
+}

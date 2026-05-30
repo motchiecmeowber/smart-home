@@ -1,0 +1,31 @@
+/* Shared CSS for all Customer pages */
+
+.customer-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 2px;
+  min-height: 100%;
+}
+
+.customer-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.customer-heading-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.customer-title {
+  margin: 0 !important;
+  font-size: 1.75rem !important;
+  font-weight: 700 !important;
+  color: #0b2a3a !important;
+  letter-spacing: -0.02em;
+}

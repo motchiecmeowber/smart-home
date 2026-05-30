@@ -1,0 +1,57 @@
+.schedules-summary {
+  margin-bottom: 24px;
+}
+
+.schedule-summary-card {
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background-color: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.schedule-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.schedule-summary-card .ant-card-body {
+  padding: 20px;
+}
+
+.schedule-summary-card .ant-typography {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.schedule-summary-card h2.ant-typography {
+  margin: 6px 0 0 0 !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #0b5f95;
+}
+
+.schedules-list-card {
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  background-color: #ffffff;
+}
+
+.schedules-table .ant-table-thead > tr > th {
+  background-color: #fcfcfc;
+  font-weight: 600;
+  color: #595959;
+}
+
+.schedules-table .ant-table-tbody > tr:hover > td {
+  background-color: #f7f9fa;
+}
+
+.device-icon-wrapper {
+  transition: transform 0.2s ease;
+}
+
+.device-icon-wrapper:hover {
+  transform: scale(1.05);
+}
