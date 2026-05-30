@@ -211,8 +211,10 @@ export function RequestsPage() {
                 </div>
                 <Button
                     icon={<PlusOutlined />}
-                    size="large" type="primary"
+                    size="large" 
+                    type="primary"
                     onClick={() => setIsAddModalOpen(true)}
+                    style={{ fontSize: 15, fontWeight: 600, background: '#0b5f95', borderColor: '#0b5f95' }}
                 >
                     Thêm yêu cầu
                 </Button>

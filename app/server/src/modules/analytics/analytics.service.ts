@@ -11,7 +11,7 @@ interface GroupedData {
 }
 
 export class AnalyticsService {
-  async generateReport(customerId: string, data: { reportType: ReportType, targetTime?: string, startTime?: string, endTime?: string }) {
+  async generateReport(customerId: string, data: { reportType: ReportType, targetTime?: string, startTime?: string, endTime?: string, sensorIds?: string[] }) {
     const { reportType, targetTime, startTime, endTime } = data;
     let actualStartTime: Date;
     let actualEndTime: Date;
@@ -64,7 +64,11 @@ export class AnalyticsService {
 
     // fetch raw data
     const devices = await hardwareRepo.getMyDevices({ deviceType: DeviceType.SENSOR }, customerId, Role.CUSTOMER);
-    const sensorIds = devices.map(device => device.deviceId);
+    let sensorIds = devices.map(device => device.deviceId);
+
+    if (data.sensorIds && data.sensorIds.length > 0) {
+      sensorIds = sensorIds.filter(id => data.sensorIds!.includes(id));
+    }
 
     if (sensorIds.length === 0) {
       return { message: "No sensors found for this customer, no report generated" };

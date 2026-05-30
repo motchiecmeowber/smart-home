@@ -3,7 +3,10 @@ import { Prisma, ReportType, Role } from "@prisma/client";
 
 export class AnalyticsRepository {
     async createReport(data: Prisma.ReportCreateInput) {
-        return prisma.report.create({ data });
+        return prisma.report.create({
+            data,
+            include: { summaryData: true }
+        });
     }
 
     async getReports(filters?: {reportType?: ReportType, startDate?: string, endDate?: string}, customerId?: string, role?: string) {

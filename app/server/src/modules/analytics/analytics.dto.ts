@@ -9,4 +9,5 @@ export const createReportDto = z.object({
     targetTime: z.iso.datetime().optional(),
     startTime: z.iso.datetime().optional(),
     endTime: z.iso.datetime().optional(),
+    sensorIds: z.array(z.string()).optional(),
 }).openapi("CreateReport");

@@ -15,7 +15,14 @@ type LoginPageProps = {
 
 export function LoginPage({ onNavigateRegister, onLoginSuccess }: LoginPageProps) {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() => {
+    const saved = sessionStorage.getItem('auth_error')
+    if (saved) {
+      sessionStorage.removeItem('auth_error')
+      return saved
+    }
+    return null
+  })
 
   const handleSubmit = async (values: LoginFormValues) => {
     setLoading(true)
