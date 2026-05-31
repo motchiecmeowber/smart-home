@@ -1,4 +1,4 @@
-import { Card, Col, Row, Typography } from "antd";
+import { Card, Col, Row, Typography, Spin } from "antd";
 import { useUserDevices } from "../../../../hooks/useUserDevices";
 import { useDeviceTelemetry } from "../../../../hooks/useDeviceTelemetry";
 import { DashboardOutlined, SignalFilled, FireOutlined } from "@ant-design/icons";
@@ -6,7 +6,7 @@ import { DashboardOutlined, SignalFilled, FireOutlined } from "@ant-design/icons
 const { Text, Title } = Typography
 
 export function Env() {
-    const { devices } = useUserDevices()
+    const { devices, loading } = useUserDevices()
     const { states: telemetry} = useDeviceTelemetry(devices)
 
     let tempSum = 0, tempCount = 0
@@ -37,43 +37,45 @@ export function Env() {
         <div style={{ marginBottom: 24 }}>
             <div className="dashboard-section-title">Tổng Quan Môi Trường</div>
 
-            <Row gutter={[16, 16]}>
-                {/* Temp */}
-                <Col xs={24} sm={8}>
-                    <Card className="env-card" variant="borderless" styles={{ body: {padding: 0} }}>
-                        <div className="env-card-body">
-                            <div className="env-icon-wrapper temp"><DashboardOutlined /></div>
+            <Spin spinning={loading}>
+                <Row gutter={[16, 16]}>
+                    {/* Temp */}
+                    <Col xs={24} sm={8}>
+                        <Card className="env-card" variant="borderless" styles={{ body: {padding: 0} }}>
+                            <div className="env-card-body">
+                                <div className="env-icon-wrapper temp"><DashboardOutlined /></div>
 
-                            <Title className="env-value">{avgTemp}{avgTemp !== '--' ? '°C' : ''}</Title>
-                            <Text className="env-label">Nhiệt độ trung bình</Text>
-                        </div>
-                    </Card>
-                </Col>
+                                <Title className="env-value">{avgTemp}{avgTemp !== '--' ? '°C' : ''}</Title>
+                                <Text className="env-label">Nhiệt độ trung bình</Text>
+                            </div>
+                        </Card>
+                    </Col>
 
-                {/* Humi */}
-                <Col xs={24} sm={8}>
-                    <Card className="env-card" variant="borderless" styles={{ body: {padding: 0} }}>
-                        <div className="env-card-body">
-                            <div className="env-icon-wrapper humid"><SignalFilled /></div>
+                    {/* Humi */}
+                    <Col xs={24} sm={8}>
+                        <Card className="env-card" variant="borderless" styles={{ body: {padding: 0} }}>
+                            <div className="env-card-body">
+                                <div className="env-icon-wrapper humid"><SignalFilled /></div>
 
-                            <Title className="env-value">{avgHumi}{avgHumi !== '--' ? '%' : ''}</Title>
-                            <Text className="env-label">Độ ẩm trung bình</Text>
-                        </div>
-                    </Card>
-                </Col>
+                                <Title className="env-value">{avgHumi}{avgHumi !== '--' ? '%' : ''}</Title>
+                                <Text className="env-label">Độ ẩm trung bình</Text>
+                            </div>
+                        </Card>
+                    </Col>
 
-                {/* Gas */}
-                <Col xs={24} sm={8}>
-                    <Card className="env-card" variant="borderless" styles={{ body: {padding: 0} }}>
-                        <div className="env-card-body">
-                            <div className="env-icon-wrapper gas"><FireOutlined /></div>
+                    {/* Gas */}
+                    <Col xs={24} sm={8}>
+                        <Card className="env-card" variant="borderless" styles={{ body: {padding: 0} }}>
+                            <div className="env-card-body">
+                                <div className="env-icon-wrapper gas"><FireOutlined /></div>
 
-                            <Title className="env-value">{avgGas}{avgGas !== '--' ? ' ppm' : ''}</Title>
-                            <Text className="env-label">Nồng độ Gas trung bình</Text>
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
+                                <Title className="env-value">{avgGas}{avgGas !== '--' ? '%' : ''}</Title>
+                                <Text className="env-label">Nồng độ Gas trung bình</Text>
+                            </div>
+                        </Card>
+                    </Col>
+                </Row>
+            </Spin>
         </div>
     )
 }

@@ -32,7 +32,6 @@ export function AdminDashboardLayout({ children, activeRoute, onNavigate, onLogo
   ]
 
   const accountNavItems: MenuProps['items'] = [
-    { key: 'admin-settings', icon: <SettingOutlined />, label: 'Cài đặt'},
     { key: 'admin-profile', icon: <UserOutlined />, label: 'Hồ sơ cá nhân'},
     { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất'}
   ]

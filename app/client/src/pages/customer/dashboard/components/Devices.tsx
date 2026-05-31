@@ -1,9 +1,9 @@
-import { Card } from "antd";
+import { Card, Spin } from "antd";
 import { useUserDevices } from "../../../../hooks/useUserDevices";
 import { DesktopOutlined, RightOutlined } from "@ant-design/icons";
 
 export function Devices() {
-    const { devices } = useUserDevices()
+    const { devices, loading } = useUserDevices()
     const navigate = (path: string) => {
         window.history.pushState(null, '', path)
         window.dispatchEvent(new Event('popstate'))
@@ -20,21 +20,23 @@ export function Devices() {
                 <span>Thiết Bị</span>
             </div>
         }>
-            <div className="device-stat-list">
-                <div className="device-stat-row">
-                    <span className="device-stat-label">Đang hoạt động</span>
-                    <span className="device-stat-value online">{onlineCount}</span>
+            <Spin spinning={loading}>
+                <div className="device-stat-list">
+                    <div className="device-stat-row">
+                        <span className="device-stat-label">Đang hoạt động</span>
+                        <span className="device-stat-value online">{onlineCount}</span>
+                    </div>
+
+                    <div className="device-stat-row">
+                        <span className="device-stat-label">Ngoại tuyến</span>
+                        <span className="device-stat-value offline">{offlineCount}</span>
+                    </div>
                 </div>
 
-                <div className="device-stat-row">
-                    <span className="device-stat-label">Ngoại tuyến</span>
-                    <span className="device-stat-value offline">{offlineCount}</span>
+                <div className="dashboard-card-link" onClick={() => navigate('/devices')}>
+                    Quản lý thiết bị <RightOutlined style={{ fontSize: 12, marginTop: 2 }} />
                 </div>
-            </div>
-
-            <div className="dashboard-card-link" onClick={() => navigate('/devices')}>
-                Quản lý thiết bị <RightOutlined style={{ fontSize: 12, marginTop: 2 }} />
-            </div>
+            </Spin>
         </Card>
     )
 }

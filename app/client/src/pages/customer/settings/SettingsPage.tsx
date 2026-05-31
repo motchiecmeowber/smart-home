@@ -14,7 +14,7 @@ const initialSettings: SystemSettings = {
   timezone: 'GMT+07:00',
   emailNotification: true,
   remoteControl: true,
-  gasThreshold: '100ppm',
+  gasThreshold: '100%',
 }
 
 export function SettingsPage() {

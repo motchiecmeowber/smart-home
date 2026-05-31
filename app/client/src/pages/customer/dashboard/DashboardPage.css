@@ -59,7 +59,7 @@
 .env-icon-wrapper.gas { background-color: #f6ffed; color: #52c41a; }
 
 .env-value {
-  font-size: 2.25rem !important;
+  font-size: 1.75rem !important;
   font-weight: 700 !important;
   margin: 0 0 4px 0 !important;
   color: #0b2a3a !important;
@@ -67,7 +67,7 @@
 }
 
 .env-label {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #8c8c8c;
   font-weight: 500;
 }

@@ -308,7 +308,12 @@ class ThingsBoardWebSocket {
 
             for (const key of allowedKeys) {
                 if (rawPayload[key] !== undefined) {
-                    filtered[key] = rawPayload[key];
+                    let val = rawPayload[key];
+                    if (key === "gas") {
+                        const numericVal = typeof val === "string" ? parseFloat(val) : val;
+                        val = Math.round((numericVal / 4095) * 100 * 100) / 100;
+                    }
+                    filtered[key] = val;
                 }
             }
 

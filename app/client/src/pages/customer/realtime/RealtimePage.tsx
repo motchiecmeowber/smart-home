@@ -49,7 +49,7 @@ interface MetricMeta {
 const METRIC_META: Record<string, MetricMeta> = {
   temperature: { label: 'Nhiệt độ', icon: <ThunderboltOutlined />, unit: '°C', colorClass: 'temp' },
   humidity: { label: 'Độ ẩm', icon: <SignalFilled />, unit: '%', colorClass: 'hum' },
-  gas: { label: 'Gas', icon: <FireOutlined />, unit: '', colorClass: 'gas' },
+  gas: { label: 'Gas', icon: <FireOutlined />, unit: '%', colorClass: 'gas' },
 }
 
 function Sparkline({ data, color, height = 32 }: { data: TelemetryPoint[]; color: string; height?: number }) {

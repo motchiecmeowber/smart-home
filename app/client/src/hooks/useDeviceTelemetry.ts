@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import type {
   DeviceTelemetryState,
   TelemetryPoint,
@@ -36,7 +36,7 @@ function isSensor(d: DeviceInfo): boolean {
 }
 
 export function useDeviceTelemetry(devices: DeviceInfo[]) {
-  const sensorDevices = devices.filter(isSensor)
+  const sensorDevices = useMemo(() => devices.filter(isSensor), [devices])
 
   const [states, setStates] = useState<Record<string, DeviceTelemetryState>>(() => {
     const init: Record<string, DeviceTelemetryState> = {}
@@ -191,14 +191,16 @@ export function useDeviceTelemetry(devices: DeviceInfo[]) {
     if (!ws || !wsConnected) return
 
     setStates((prev) => {
+      let changed = false
       const next = { ...prev }
       for (const d of sensorDevices) {
         if (!next[d.deviceId]) {
           next[d.deviceId] = makeInitialState(d)
           subscribe(ws, d)
+          changed = true
         }
       }
-      return next
+      return changed ? next : prev
     })
   }, [sensorDevices, wsConnected, subscribe])
 

@@ -34,7 +34,7 @@ export function Notification() {
             variant="borderless" 
             title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Badge count={unreadCount} size="small" offset={[2, 0]}>
+                    <Badge dot={unreadCount > 0} offset={[2, 0]}>
                         <BellOutlined style={{ color: '#faad14', fontSize: 18 }} />
                     </Badge>
                     <span style={{ marginLeft: 4 }}>Thông Báo</span>

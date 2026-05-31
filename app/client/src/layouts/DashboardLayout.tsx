@@ -53,7 +53,7 @@ function createMenuItems(items: DashboardNavItem[], unreadCount: number = 0): Me
   return items.map((item) => ({
     key: item.route ?? item.label,
     icon: item.route === 'dashboard-notifications' ? (
-      <Badge count={unreadCount} size="small" offset={[10, 0]}>
+      <Badge count={unreadCount} size="small" offset={[-2, 2]}>
         {item.icon}
       </Badge>
     ) : (

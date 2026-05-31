@@ -93,7 +93,7 @@ export function RequestManagementPage() {
         hasNextPage: false, hasPrevPage: false,
     })
     const [loading, setLoading] = useState(false)
-    const [actionLoading, setActionLoading] = useState(false)
+    const [actionLoading, setActionLoading] = useState<string | false>(false)
 
     // ── Filter / page state ───────────────────────────────────────────────────
     // 'ALL' | 'PENDING' | 'DONE'  (UI)
@@ -225,9 +225,9 @@ export function RequestManagementPage() {
         .map(([k]) => k)
 
     // ── Bulk actions ──────────────────────────────────────────────────────────
-    const handleApprove = async (ids: string[]) => {
+    const handleApprove = async (ids: string[], loadingKey: string) => {
         if (!ids.length) { message.warning('Chưa chọn yêu cầu nào'); return }
-        setActionLoading(true)
+        setActionLoading(loadingKey)
         try {
             await apiApproveByIds(ids)
             message.success(`Đã phê duyệt ${ids.length} yêu cầu`)
@@ -240,9 +240,9 @@ export function RequestManagementPage() {
         }
     }
 
-    const handleReject = async (ids: string[]) => {
+    const handleReject = async (ids: string[], loadingKey: string) => {
         if (!ids.length) { message.warning('Chưa chọn yêu cầu nào'); return }
-        setActionLoading(true)
+        setActionLoading(loadingKey)
         try {
             await apiRejectByIds(ids)
             message.success(`Đã từ chối ${ids.length} yêu cầu`)
@@ -352,8 +352,8 @@ export function RequestManagementPage() {
                                 size="small"
                                 type="primary"
                                 icon={<CheckCircleOutlined />}
-                                loading={actionLoading}
-                                onClick={() => handleApprove([r.requestId])}
+                                loading={actionLoading === `approve-${r.requestId}`}
+                                onClick={() => handleApprove([r.requestId], `approve-${r.requestId}`)}
                             >
                                 Duyệt
                             </Button>
@@ -361,8 +361,8 @@ export function RequestManagementPage() {
                                 size="small"
                                 danger
                                 icon={<CloseCircleOutlined />}
-                                loading={actionLoading}
-                                onClick={() => handleReject([r.requestId])}
+                                loading={actionLoading === `reject-${r.requestId}`}
+                                onClick={() => handleReject([r.requestId], `reject-${r.requestId}`)}
                             >
                                 Từ chối
                             </Button>
@@ -408,16 +408,16 @@ export function RequestManagementPage() {
                         <Button
                             type="primary"
                             icon={<CheckCircleOutlined />}
-                            loading={actionLoading}
-                            onClick={() => handleApprove(allSelectedIds)}
+                            loading={actionLoading === 'approve-all'}
+                            onClick={() => handleApprove(allSelectedIds, 'approve-all')}
                         >
                             Duyệt tất cả
                         </Button>
                         <Button
                             danger
                             icon={<CloseCircleOutlined />}
-                            loading={actionLoading}
-                            onClick={() => handleReject(allSelectedIds)}
+                            loading={actionLoading === 'reject-all'}
+                            onClick={() => handleReject(allSelectedIds, 'reject-all')}
                         >
                             Từ chối tất cả
                         </Button>
@@ -539,12 +539,12 @@ export function RequestManagementPage() {
                                                                 size="small"
                                                                 type="primary"
                                                                 icon={<CheckCircleOutlined />}
-                                                                loading={actionLoading}
+                                                                loading={actionLoading === `approve-batch-${batch.batchKey}`}
                                                                 onClick={() => {
                                                                     const ids = batch.items
                                                                         .filter(r => r.status === 'PENDING' && selectedIds[r.requestId])
                                                                         .map(r => r.requestId)
-                                                                    handleApprove(ids)
+                                                                    handleApprove(ids, `approve-batch-${batch.batchKey}`)
                                                                 }}
                                                             >
                                                                 Duyệt đã chọn
@@ -553,12 +553,12 @@ export function RequestManagementPage() {
                                                                 size="small"
                                                                 danger
                                                                 icon={<CloseCircleOutlined />}
-                                                                loading={actionLoading}
+                                                                loading={actionLoading === `reject-batch-${batch.batchKey}`}
                                                                 onClick={() => {
                                                                     const ids = batch.items
                                                                         .filter(r => r.status === 'PENDING' && selectedIds[r.requestId])
                                                                         .map(r => r.requestId)
-                                                                    handleReject(ids)
+                                                                    handleReject(ids, `reject-batch-${batch.batchKey}`)
                                                                 }}
                                                             >
                                                                 Từ chối đã chọn

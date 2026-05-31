@@ -77,51 +77,28 @@ export class AnalyticsService {
     const durationHours = Math.ceil((actualEndTime.getTime() - actualStartTime.getTime()) / (1000 * 60 * 60));
     await Promise.all(sensorIds.map(id => sensorService.syncTelemetry(id, undefined, durationHours)));
 
-    const rawData = await hardwareRepo.getSensorDataInRange(sensorIds, actualStartTime.toISOString(), actualEndTime.toISOString());
-    const groupedData: Record<string, GroupedData> = {};
+    const aggregations = await hardwareRepo.getSensorDataAggregations(sensorIds, actualStartTime.toISOString(), actualEndTime.toISOString());
 
-    // statistics
-    for (const data of rawData) {
-      const key = `${data.sensorId}_${data.dataType}`;
-
-      if (!groupedData[key]) {
-        groupedData[key] = {
-          values: [],
-          sensorId: data.sensorId,
-          dataType: data.dataType
-        };
-      }
-
-      groupedData[key].values.push(data.value);
-    }
-
-    // calculate
     const summaryItems = [];
-    for (const key in groupedData) {
-      const group = groupedData[key];
-      const vals = group.values;
-      if (vals.length === 0) continue;
-
-      const min = Math.min(...vals);
-      const max = Math.max(...vals);
-      const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    for (const agg of aggregations) {
+      if (agg._min.value === null || agg._max.value === null || agg._avg.value === null) continue;
 
       summaryItems.push({
-        sensorId: group.sensorId,
-        metricName: `${group.dataType}_MIN`,
-        value: min
+        sensorId: agg.sensorId,
+        metricName: `${agg.dataType}_MIN`,
+        value: agg._min.value
       });
 
       summaryItems.push({
-        sensorId: group.sensorId,
-        metricName: `${group.dataType}_MAX`,
-        value: max
+        sensorId: agg.sensorId,
+        metricName: `${agg.dataType}_MAX`,
+        value: agg._max.value
       });
 
       summaryItems.push({
-        sensorId: group.sensorId,
-        metricName: `${group.dataType}_AVG`,
-        value: avg
+        sensorId: agg.sensorId,
+        metricName: `${agg.dataType}_AVG`,
+        value: agg._avg.value
       });
     }
 

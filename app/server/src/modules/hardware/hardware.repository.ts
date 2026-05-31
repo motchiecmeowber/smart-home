@@ -142,6 +142,22 @@ async getAllDevices(filters?: { locationId?: string; deviceType?: DeviceType }) 
       }
     });
   }
+
+  async getSensorDataAggregations(sensorIds: string[], startTime: string, endTime: string) {
+    return prisma.data.groupBy({
+      by: ['sensorId', 'dataType'],
+      where: {
+        sensorId: { in: sensorIds },
+        timestamp: {
+          gte: new Date(startTime),
+          lte: new Date(endTime)
+        }
+      },
+      _avg: { value: true },
+      _min: { value: true },
+      _max: { value: true }
+    });
+  }
 }
 
 export const hardwareRepo = new HardwareRepository();

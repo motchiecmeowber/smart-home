@@ -44,5 +44,4 @@ export type AppRoute =
   | 'admin-devices'
   | 'admin-users'
   | 'admin-requests'
-  | 'admin-settings'
   | 'admin-profile'

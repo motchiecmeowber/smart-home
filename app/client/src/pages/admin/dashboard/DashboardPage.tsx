@@ -3,8 +3,7 @@ import { message, Typography, Spin, Space } from 'antd'
 import { CalendarOutlined } from '@ant-design/icons'
 import { apiGetUsers } from '../../../lib/userApi'
 import { apiGetAllDevices } from '../../../lib/deviceApi'
-import { apiGetRequests, apiGetRequestDetail, apiUpdateRequest, apiDeleteRequest, type RequestItemDto } from '../../../lib/requestApi'
-import { apiGetUserDetail } from '../../../lib/userApi'
+import { apiGetRequests, apiUpdateRequest, apiDeleteRequest, type RequestItemDto } from '../../../lib/requestApi'
 import { StatCards, type DashboardStats } from './components/StatCards'
 import { RecentRequests } from './components/RecentRequests'
 import { useAuth } from '../../../hooks/useAuth'
@@ -73,28 +72,6 @@ export function AdminDashboardPage() {
         window.dispatchEvent(new PopStateEvent('popstate'))
     }
 
-    const handleOpenDetail = async (record: RequestItemDto) => {
-        setModalVisible(true)
-        
-        try {
-            const data: any = await apiGetRequestDetail(record.requestId)
-            let customerInfo = data.customer;
-            let adminInfo = data.admin;
-            if (data.customerId) {
-                const user = await apiGetUserDetail(data.customerId).catch(() => null);
-                if (user) customerInfo = { username: user.username, email: user.email };
-            }
-            if (data.adminId) {
-                const adminUser = await apiGetUserDetail(data.adminId).catch(() => null);
-                if (adminUser) adminInfo = { username: adminUser.username, email: adminUser.email };
-            }
-            setSelectedRequest({ ...data, customer: customerInfo, admin: adminInfo })
-        } catch (error) {
-            message.error('Không thể lấy thông tin chi tiết')
-            setModalVisible(false)
-        }
-    }
-
     const handleProcessRequest = async (id: string, status: 'APPROVED' | 'REJECTED') => {
         setBtnLoading(true)
         try {
@@ -141,7 +118,6 @@ export function AdminDashboardPage() {
                     <RecentRequests 
                         requests={recentRequests} 
                         onNavigateToRequests={handleNavigateToRequests} 
-                        onRowClick={handleOpenDetail}
                     />
                 </>
             )}

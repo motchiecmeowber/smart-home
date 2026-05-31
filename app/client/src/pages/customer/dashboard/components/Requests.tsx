@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Col, Row } from "antd";
+import { Col, Row, Spin } from "antd";
 import { ProfileOutlined, CheckCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { apiGetRequests } from "../../../../lib/requestApi";
 
@@ -7,6 +7,7 @@ export function Request() {
     const [totalAll, setTotalAll] = useState(0);
     const [totalDone, setTotalDone] = useState(0);
     const [totalPending, setTotalPending] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     const navigate = (path: string) => {
         window.history.pushState(null, '', path);
@@ -25,7 +26,8 @@ export function Request() {
             setTotalDone(approved.pagination.total + rejected.pagination.total);
             setTotalPending(pending.pagination.total);
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => setLoading(false));
     }, []);
 
     return (
@@ -41,40 +43,42 @@ export function Request() {
                 </span>
             </div>
             
-            <Row gutter={[16, 16]}>
-                <Col xs={24} sm={8}>
-                    <div className="request-stat-card">
-                        <div className="request-stat-header">
-                            <span style={{ textTransform: 'uppercase' }}>Tổng yêu cầu</span>
-                            <ProfileOutlined className="request-stat-icon" style={{ color: '#1890ff' }} />
+            <Spin spinning={loading}>
+                <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={8}>
+                        <div className="request-stat-card">
+                            <div className="request-stat-header">
+                                <span style={{ textTransform: 'uppercase' }}>Tổng yêu cầu</span>
+                                <ProfileOutlined className="request-stat-icon" style={{ color: '#1890ff' }} />
+                            </div>
+                            <h2 className="request-stat-value">{totalAll.toString().padStart(2, '0')}</h2>
+                            <span className="request-stat-desc">Tất cả yêu cầu</span>
                         </div>
-                        <h2 className="request-stat-value">{totalAll.toString().padStart(2, '0')}</h2>
-                        <span className="request-stat-desc">Tất cả yêu cầu</span>
-                    </div>
-                </Col>
+                    </Col>
 
-                <Col xs={24} sm={8}>
-                    <div className="request-stat-card">
-                        <div className="request-stat-header">
-                            <span style={{ textTransform: 'uppercase' }}>Đã xử lý</span>
-                            <CheckCircleOutlined className="request-stat-icon" style={{ color: '#52c41a' }} />
+                    <Col xs={24} sm={8}>
+                        <div className="request-stat-card">
+                            <div className="request-stat-header">
+                                <span style={{ textTransform: 'uppercase' }}>Đã xử lý</span>
+                                <CheckCircleOutlined className="request-stat-icon" style={{ color: '#52c41a' }} />
+                            </div>
+                            <h2 className="request-stat-value">{totalDone.toString().padStart(2, '0')}</h2>
+                            <span className="request-stat-desc">Hoàn thành & Từ chối</span>
                         </div>
-                        <h2 className="request-stat-value">{totalDone.toString().padStart(2, '0')}</h2>
-                        <span className="request-stat-desc">Hoàn thành & Từ chối</span>
-                    </div>
-                </Col>
+                    </Col>
 
-                <Col xs={24} sm={8}>
-                    <div className="request-stat-card">
-                        <div className="request-stat-header">
-                            <span style={{ textTransform: 'uppercase' }}>Đang xử lý</span>
-                            <ClockCircleOutlined className="request-stat-icon" style={{ color: '#faad14' }} />
+                    <Col xs={24} sm={8}>
+                        <div className="request-stat-card">
+                            <div className="request-stat-header">
+                                <span style={{ textTransform: 'uppercase' }}>Đang xử lý</span>
+                                <ClockCircleOutlined className="request-stat-icon" style={{ color: '#faad14' }} />
+                            </div>
+                            <h2 className="request-stat-value">{totalPending.toString().padStart(2, '0')}</h2>
+                            <span className="request-stat-desc">Đợi phản hồi</span>
                         </div>
-                        <h2 className="request-stat-value">{totalPending.toString().padStart(2, '0')}</h2>
-                        <span className="request-stat-desc">Đợi phản hồi</span>
-                    </div>
-                </Col>
-            </Row>
+                    </Col>
+                </Row>
+            </Spin>
         </div>
     );
 }

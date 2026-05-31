@@ -46,6 +46,7 @@ export function ReportDetailModal({
             onCancel={onCancel}
             onOk={handleOk}
             confirmLoading={loading}
+            centered
             okText="Tạo báo cáo"
             cancelText="Hủy"
             okButtonProps={{ style: { background: '#0b5f95', borderColor: '#0b5f95' } }}

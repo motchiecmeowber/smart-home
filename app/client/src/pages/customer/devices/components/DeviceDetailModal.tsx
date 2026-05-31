@@ -63,6 +63,7 @@ export function DeviceDetailModal({ visible, device, locations, onClose, onUpdat
             setLoadingAction(action)
             await apiControlActuator(device.deviceId, action)
             message.success(`Đã gửi lệnh ${action === 'ON' ? 'BẬT' : 'TẮT'} thiết bị`)
+            onUpdateSuccess()
         } catch (error: any) {
             message.error(error.message || 'Lỗi điều khiển thiết bị')
         } finally {
@@ -80,6 +81,7 @@ export function DeviceDetailModal({ visible, device, locations, onClose, onUpdat
             setLoadingAction('SAVE_THRESHOLD')
             await apiUpdateThreshold(device.deviceId, threshold)
             message.success('Đã cập nhật ngưỡng cảnh báo thành công')
+            onUpdateSuccess()
         } catch (error: any) {
             message.error(error.message || 'Lỗi cập nhật ngưỡng cảnh báo')
         } finally {

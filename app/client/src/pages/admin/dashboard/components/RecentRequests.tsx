@@ -7,10 +7,9 @@ const { Title, Text } = Typography
 interface RecentRequestsProps {
   requests: RequestItemDto[]
   onNavigateToRequests: () => void
-  onRowClick: (record: RequestItemDto) => void
 }
 
-export function RecentRequests({ requests, onNavigateToRequests, onRowClick }: RecentRequestsProps) {
+export function RecentRequests({ requests, onNavigateToRequests }: RecentRequestsProps) {
   const columns = [
     {
       title: 'Thiết bị',
@@ -90,10 +89,6 @@ export function RecentRequests({ requests, onNavigateToRequests, onRowClick }: R
         pagination={false}
         size="middle"
         locale={{ emptyText: 'Không có yêu cầu chờ duyệt nào' }}
-        onRow={(record) => ({
-          onClick: () => onRowClick(record),
-          style: { cursor: 'pointer' }
-        })}
       />
     </div>
   )

@@ -5,6 +5,7 @@ import { AdminDashboardLayout } from './layouts/AdminLayout'
 import * as Admin from './pages/admin/index'
 import * as Customer from './pages/customer/index'
 import { LoginPage } from './pages/auth/LoginPage'
+import { RegisterPage } from './pages/auth/RegisterPage'
 import type { AppRoute } from './types/auth'
 import { authStore } from './lib/authStore'
 import { useAuth } from './hooks/useAuth'
@@ -26,7 +27,6 @@ const routePaths: Record<AppRoute, string> = {
   'admin-devices': '/admin/devices',
   'admin-users': '/admin/users',
   'admin-requests': '/admin/requests',
-  'admin-settings': '/admin/settings',
   'admin-profile': '/admin/profile'
 }
 
@@ -47,7 +47,6 @@ const ADMIN_ROUTES: AppRoute[] = [
   'admin-devices',
   'admin-users',
   'admin-requests',
-  'admin-settings',
   'admin-profile',
 ]
 
@@ -192,7 +191,9 @@ function App() {
           />
         )}
 
-      <div className="ticks"></div>
+        {appRoute === 'register' && (
+          <RegisterPage onNavigateLogin={() => navigateToAppRoute('login')} />
+        )}
 
         {auth.user?.role === 'CUSTOMER' && auth.accessToken && (
           <DashboardLayout activeRoute={appRoute as any} {...layoutProps}>
@@ -215,8 +216,6 @@ function App() {
             {appRoute === 'admin-devices' && <Admin.DeviceManagementPage />}
             {appRoute === 'admin-users' && <Admin.UserManagementPage />}
             {appRoute === 'admin-requests' && <Admin.RequestManagementPage />}
-
-            {appRoute === 'admin-settings' && <Customer.SettingsPage />}
             {appRoute === 'admin-profile' && <Customer.ProfilePage />}
           </AdminDashboardLayout>
         )}
