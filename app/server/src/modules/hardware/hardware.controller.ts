@@ -130,7 +130,6 @@ export class HardwareController {
       }
 
       const updated = await deviceService.updateDevice(sensorId, { threshold });
-      await sensorService.syncTelemetry(sensorId);
 
       return sendSuccess(res, 200, updated, "Sensor threshold updated successfully");
     } catch (error) {

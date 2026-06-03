@@ -56,7 +56,7 @@ export function LoginPage({ onNavigateRegister, onLoginSuccess }: LoginPageProps
           <span className="login-brand-mark">S</span>
           <span>Smart Home</span>
         </div>
-        <p>SMART BUILDING, LỰA CHỌN CHO MỌI GIA ĐÌNH</p>
+        <p>SMART HOME, LỰA CHỌN CHO MỌI GIA ĐÌNH</p>
       </header>
 
       <section className="login-stage" aria-labelledby="login-title">

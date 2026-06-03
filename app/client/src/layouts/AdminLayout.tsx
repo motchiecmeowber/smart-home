@@ -7,7 +7,6 @@ import {
   TeamOutlined,
   LogoutOutlined,
   MailOutlined,
-  SettingOutlined,
   UserOutlined,
 } from '@ant-design/icons'
 import './DashboardLayout.css'

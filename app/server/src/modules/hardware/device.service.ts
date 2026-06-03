@@ -2,6 +2,7 @@ import { hardwareRepo } from "./hardware.repository";
 import { HttpError } from "../../common/app-error";
 import { Prisma, DeviceType, DeviceStatus } from "@prisma/client";
 import { getTenantDevices, getClientAttributes, getDeviceStatus } from "../../config/tb-api";
+import { redisClient } from "@/config/redis";
 
 export class DeviceService {
   async addDevice(data: {
@@ -48,7 +49,13 @@ export class DeviceService {
       };
     }
 
-    return hardwareRepo.createDevice(createData);
+    const createdDevice = await hardwareRepo.createDevice(createData);
+
+    if (data.threshold !== undefined && data.threshold !== null) {
+      await redisClient.set(`threshold:${createdDevice.deviceId}`, data.threshold.toString());
+    }
+
+    return createdDevice;
   }
 
   async getMyDevices(filters?: { locationId?: string; deviceType?: DeviceType }, userId?: string, role?: string) {
@@ -96,6 +103,14 @@ export class DeviceService {
           customerId: data.customerId,
         },
       };
+    }
+
+    if (data.threshold !== undefined) {
+      if (data.threshold === null) {
+        await redisClient.set(`threshold:${deviceId}`, "NONE");
+      } else {
+        await redisClient.set(`threshold:${deviceId}`, data.threshold.toString());
+      }
     }
 
     return hardwareRepo.updateDevice(deviceId, updateData);
@@ -167,6 +182,11 @@ export class DeviceService {
     if (!existing) {
       throw new HttpError(404, "Device not found");
     }
+
+    if (existing.deviceType === DeviceType.SENSOR) {
+      await redisClient.del(`threshold:${deviceId}`);
+    }
+    
     return hardwareRepo.deleteDevice(deviceId);
   }
 

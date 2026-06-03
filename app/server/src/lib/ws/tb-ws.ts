@@ -4,6 +4,9 @@ import { redisClient } from "@/config/redis";
 import { REDIS_KEYS } from "@/config/redis.keys";
 import { REDIS_CHANNELS } from "@/config/redis.keys";
 import { getDeviceTelemetryKeys } from "@/config/tb-api";
+import { hardwareRepo } from "@/modules/hardware/hardware.repository";
+import { DataType } from "@prisma/client";
+import { interactionService } from "@/modules/interaction/interaction.service";
 
 type TbAgg = "NONE" | "AVG" | "MIN" | "MAX" | "SUM" | "COUNT";
 
@@ -336,6 +339,44 @@ class ThingsBoardWebSocket {
                 );
             } catch (err) {
                 console.error(`[TB-WS] Failed to publish to ${channel}:`, err);
+            }
+
+            let thresholdStr = await redisClient.get(`threshold:${logical.deviceId}`)
+            if (thresholdStr === null) {
+                try {
+                    const device = await hardwareRepo.getDeviceById(logical.deviceId)
+                    thresholdStr = device?.sensor?.threshold?.toString() ?? "NONE"
+                    await redisClient.set(`threshold:${logical.deviceId}`, thresholdStr)
+                } catch (err) {
+                    console.error(`[TB-WS] Failed to fetch device ${logical.deviceId} from DB:`, err)
+                    thresholdStr = "NONE"
+                }
+            }
+
+            if (thresholdStr !== "NONE") {
+                const threshold = parseFloat(thresholdStr)
+                const safeThreshold = threshold * 0.96
+
+                for (const [key, val] of Object.entries(filtered)) {
+                    let dataType: DataType | null = null
+                    
+                    if (key === 'temperature') dataType = DataType.TEMPERATURE
+                    else if (key === 'humidity') dataType = DataType.HUMIDITY
+                    else if (key === 'gas') dataType = DataType.GAS
+
+                    if (dataType && typeof val === 'number') {
+                        if (val > threshold) {
+                            await redisClient.set(`isAlerting:${logical.deviceId}`, "1")
+                            interactionService.checkThresholdAndAlert(logical.deviceId, dataType, val, threshold).catch(e => console.error(e))
+                        } else if (val <= safeThreshold) {
+                            const wasAlerting = await redisClient.get(`isAlerting:${logical.deviceId}`)
+                            if (wasAlerting) {
+                                await redisClient.del(`isAlerting:${logical.deviceId}`)
+                                interactionService.checkThresholdAndAlert(logical.deviceId, dataType, val, threshold).catch(e => console.error(e))
+                            }
+                        }
+                    }
+                }
             }
         }
     }

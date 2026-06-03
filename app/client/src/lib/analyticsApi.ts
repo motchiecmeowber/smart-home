@@ -22,6 +22,17 @@ export interface Report {
     summaryData?: SummaryData[]
 }
 
+export interface ChartDataPoint {
+    timestamp: string
+    value: number
+}
+
+export interface ChartDataResponse {
+    sensorId: string
+    metricName: string
+    points: ChartDataPoint[]
+}
+
 export async function apiGenerateReport(data: {
     reportType: ReportType
     targetTime?: string
@@ -94,6 +105,40 @@ export async function apiGetReportDetail(id: string): Promise<Report> {
     const json = await res.json().catch(() => ({}))
     if (!res.ok) {
         throw new Error(json.message || `Lỗi lấy danh sách báo cáo (${res.status})`)
+    }
+
+    return json.data
+}
+
+export async function apiGetChartData(
+    sensorId: string,
+    startTime: string,
+    endTime: string,
+    bucketTimes?: number
+): Promise<ChartDataResponse> {
+    const token = authStore.getToken()
+    if (!token) {
+        throw new Error('Yêu cầu xác thực tài khoản')
+    }
+
+    const params = new URLSearchParams()
+    params.append('sensorId', sensorId)
+    params.append('startTime', startTime)
+    params.append('endTime', endTime)
+    
+    if (bucketTimes) {
+        params.append('bucketTimes', bucketTimes.toString())
+    }
+
+    const queryStr = params.toString() ? `?${params.toString()}` : ''
+    const res = await fetch(`${BASE}/chart-data${queryStr}`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) {
+        throw new Error(json.message || `Lỗi lấy dữ liệu biểu đồ (${res.status})`)
     }
 
     return json.data
