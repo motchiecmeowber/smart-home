@@ -212,7 +212,7 @@ function DeviceCard({ state }: { state: DeviceTelemetryState }) {
           {([
             { key: 'temperature' as const, label: 'T°', color: '#e05c2a' },
             { key: 'humidity' as const, label: 'H%', color: '#2677cc' },
-            { key: 'gas' as const, label: 'Gas', color: '#8b59c2' },
+            { key: 'gas' as const, label: 'G%', color: '#8b59c2' },
           ]).filter(({ key }) => history[key].length > 0).map(({ key, label, color }) => (
             <div className="rt-sparkline-row" key={key}>
               <span className="rt-sparkline-label">{label}</span>

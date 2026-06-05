@@ -15,9 +15,6 @@ export default defineConfig(({ mode }) => {
     preview: {
       port,
       strictPort: true,
-    },
-    optimizeDeps: {
-      include: ['recharts']
     }
   }
 })

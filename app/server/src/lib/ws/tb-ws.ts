@@ -341,43 +341,10 @@ class ThingsBoardWebSocket {
                 console.error(`[TB-WS] Failed to publish to ${channel}:`, err);
             }
 
-            let thresholdStr = await redisClient.get(`threshold:${logical.deviceId}`)
-            if (thresholdStr === null) {
-                try {
-                    const device = await hardwareRepo.getDeviceById(logical.deviceId)
-                    thresholdStr = device?.sensor?.threshold?.toString() ?? "NONE"
-                    await redisClient.set(`threshold:${logical.deviceId}`, thresholdStr)
-                } catch (err) {
-                    console.error(`[TB-WS] Failed to fetch device ${logical.deviceId} from DB:`, err)
-                    thresholdStr = "NONE"
-                }
-            }
-
-            if (thresholdStr !== "NONE") {
-                const threshold = parseFloat(thresholdStr)
-                const safeThreshold = threshold * 0.96
-
-                for (const [key, val] of Object.entries(filtered)) {
-                    let dataType: DataType | null = null
-                    
-                    if (key === 'temperature') dataType = DataType.TEMPERATURE
-                    else if (key === 'humidity') dataType = DataType.HUMIDITY
-                    else if (key === 'gas') dataType = DataType.GAS
-
-                    if (dataType && typeof val === 'number') {
-                        if (val > threshold) {
-                            await redisClient.set(`isAlerting:${logical.deviceId}`, "1")
-                            interactionService.checkThresholdAndAlert(logical.deviceId, dataType, val, threshold).catch(e => console.error(e))
-                        } else if (val <= safeThreshold) {
-                            const wasAlerting = await redisClient.get(`isAlerting:${logical.deviceId}`)
-                            if (wasAlerting) {
-                                await redisClient.del(`isAlerting:${logical.deviceId}`)
-                                interactionService.checkThresholdAndAlert(logical.deviceId, dataType, val, threshold).catch(e => console.error(e))
-                            }
-                        }
-                    }
-                }
-            }
+            // Fire-and-forget: threshold check runs in background, never blocks telemetry
+            checkAndAlert(logical.deviceId, filtered).catch((e) =>
+                console.error(`[TB-WS] Threshold check error for ${logical.deviceId}:`, e),
+            );
         }
     }
 
@@ -435,3 +402,58 @@ class ThingsBoardWebSocket {
 
 const tbWsUrl = `wss://${env.THINGSBOARD_HOST}`;
 export const tbWsClient = new ThingsBoardWebSocket(tbWsUrl);
+
+/**
+ * Standalone async helper for threshold alerting.
+ * Called fire-and-forget so it NEVER blocks the telemetry publish pipeline.
+ */
+async function checkAndAlert(
+    deviceId: string,
+    filtered: Record<string, string | number>,
+): Promise<void> {
+    // 1. Try Redis cache first, fall back to DB only on cache miss
+    let thresholdStr = await redisClient.get(`threshold:${deviceId}`);
+    if (thresholdStr === null) {
+        try {
+            const device = await hardwareRepo.getDeviceById(deviceId);
+            thresholdStr = device?.sensor?.threshold?.toString() ?? "NONE";
+            await redisClient.set(`threshold:${deviceId}`, thresholdStr);
+        } catch (err) {
+            console.error(`[TB-WS] Failed to fetch threshold for ${deviceId}:`, err);
+            thresholdStr = "NONE";
+        }
+    }
+
+    if (thresholdStr === "NONE") return;
+
+    const threshold = parseFloat(thresholdStr);
+    const safeThreshold = threshold * 0.96;   // 4 % hysteresis band
+
+    for (const [key, val] of Object.entries(filtered)) {
+        if (typeof val !== "number") continue;
+
+        let dataType: DataType | null = null;
+        if (key === "temperature") dataType = DataType.TEMPERATURE;
+        else if (key === "humidity")  dataType = DataType.HUMIDITY;
+        else if (key === "gas")       dataType = DataType.GAS;
+
+        if (!dataType) continue;
+
+        if (val > threshold) {
+            // Rising edge: mark alerting and trigger action
+            await redisClient.set(`isAlerting:${deviceId}`, "1");
+            interactionService
+                .checkThresholdAndAlert(deviceId, dataType, val, threshold)
+                .catch((e) => console.error("[TB-WS] checkThresholdAndAlert error:", e));
+        } else if (val <= safeThreshold) {
+            // Falling edge: only act if we were already alerting (prevents spam)
+            const wasAlerting = await redisClient.get(`isAlerting:${deviceId}`);
+            if (wasAlerting) {
+                await redisClient.del(`isAlerting:${deviceId}`);
+                interactionService
+                    .checkThresholdAndAlert(deviceId, dataType, val, threshold)
+                    .catch((e) => console.error("[TB-WS] checkThresholdAndAlert error:", e));
+            }
+        }
+    }
+}

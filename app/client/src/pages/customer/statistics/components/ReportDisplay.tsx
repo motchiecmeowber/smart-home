@@ -3,7 +3,6 @@ import { DashboardOutlined, CompassOutlined, FireOutlined, AlertOutlined } from 
 import type { Report, SummaryData } from '../../../../lib/analyticsApi'
 import type { DeviceInfo } from '../../../../lib/deviceApi'
 import type { SensorFilterType } from './FilterBar'
-import { SensorChart } from './SensorChart'
 
 const { Text, Title } = Typography
 
@@ -182,13 +181,6 @@ export function ReportDisplay({ report, devices, filterType, selectedRoom, selec
                                                 />
                                             </Col>
                                         </Row>
-                                        
-                                        <SensorChart 
-                                            sensorId={sensorId}
-                                            startTime={report.startTime}
-                                            endTime={report.endTime}
-                                            metricType={type}
-                                        />
                                     </div>
                                 ))}
                             </Card>

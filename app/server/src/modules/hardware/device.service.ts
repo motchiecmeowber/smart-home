@@ -182,11 +182,9 @@ export class DeviceService {
     if (!existing) {
       throw new HttpError(404, "Device not found");
     }
-
     if (existing.deviceType === DeviceType.SENSOR) {
       await redisClient.del(`threshold:${deviceId}`);
     }
-    
     return hardwareRepo.deleteDevice(deviceId);
   }
 

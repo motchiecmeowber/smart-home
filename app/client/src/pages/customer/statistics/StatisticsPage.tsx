@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Typography, message } from 'antd'
 import { PlusOutlined, DownloadOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
@@ -32,6 +32,10 @@ export function StatisticsPage() {
     const [modalVisible, setModalVisible] = useState<boolean>(false)
     const [selectedReport, setSelectedReport] = useState<Report | null>(null)
     const [exporting, setExporting] = useState<boolean>(false)
+
+    // In-memory cache: avoids re-fetching the same report detail on every click.
+    // Lives for the lifetime of the page component (cleared on unmount/refresh).
+    const reportCache = useRef<Map<string, Report>>(new Map())
 
     // Fetch initial data: rooms, devices, reports
     async function initData() {
@@ -91,7 +95,8 @@ export function StatisticsPage() {
             )
             setReportsList(sorted)
 
-            // Auto-select the newly generated report
+            // Warm the local cache and auto-select the newly generated report
+            reportCache.current.set(newReport.reportId, newReport)
             setSelectedReport(newReport)
         } catch (error: any) {
             message.error(error.message ?? 'Lỗi khi tạo báo cáo thống kê')
@@ -101,9 +106,19 @@ export function StatisticsPage() {
     }
 
     const handleSelectReport = async (reportId: string) => {
+        // ── Memory cache hit: instant, no loading spinner ────────────────────
+        const cached = reportCache.current.get(reportId)
+        if (cached) {
+            setSelectedReport(cached)
+            setReportSensorsFilter(null)
+            return
+        }
+
+        // ── Cache miss: fetch from server then store ──────────────────────────
         setLoading(true)
         try {
             const detail = await apiGetReportDetail(reportId)
+            reportCache.current.set(reportId, detail)
             setSelectedReport(detail)
             setReportSensorsFilter(null)
         } catch (error: any) {

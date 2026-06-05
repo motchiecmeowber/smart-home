@@ -143,9 +143,9 @@ export class AnalyticsService {
         throw new HttpError(403, "Forbidden: You do not have permission to access this sensor");
       }
     }
-    
-    const durationHours = Math.ceil((new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60 * 60));
-    await sensorService.syncTelemetry(sensorId as string, undefined, durationHours);
+
+      const durationHours = Math.ceil((new Date(endTime).getTime() - new Date(startTime).getTime()) / (1000 * 60 * 60));
+      await sensorService.syncTelemetry(sensorId as string, undefined, durationHours);
 
     const rawData = await hardwareRepo.getSensorDataInRange([sensorId], startTime, endTime);
     if (!rawData) return null;
